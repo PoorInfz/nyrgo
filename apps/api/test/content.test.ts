@@ -84,7 +84,7 @@ describe.skipIf(!TEST_DB_URL)('content', () => {
     const dex = res.json();
     expect(dex.creatures).toHaveLength(50);
     expect(dex.elements).toHaveLength(10);
-    expect(dex.creatures[0]).toMatchObject({ id: 'gwisp', dex: 1, model: '/creatures/gwisp.glb' });
+    expect(dex.creatures[0]).toMatchObject({ id: 'gwisp', dex: 1, art: '/creatures/gwisp.svg' });
     expect(dex.creatures[0].passive.name.es).toBe('Peaje');
     expect(res.headers['cache-control']).toContain('max-age');
     const again = await injectAs(t.app, {

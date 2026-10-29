@@ -41,7 +41,7 @@ export function buildDex() {
       starter: c.starter,
       evolution: c.evolution,
       lore: c.lore,
-      model: `/creatures/${c.id}.glb`,
+      art: `/creatures/${c.id}.svg`,
     })),
     items: ITEMS,
     recipes: RECIPES,

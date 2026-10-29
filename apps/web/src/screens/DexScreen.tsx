@@ -1,14 +1,12 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import { type CSSProperties, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Element } from '@nyrgo/shared';
 import type { Api, Dex, DexCreature } from '../api';
 
-const CreatureViewer = lazy(() => import('../models/CreatureViewer'));
-
 type Lang = 'es' | 'en';
 
 /** The encyclopedia: every creature, its element, stats, skills and evolution. */
-export function DexScreen({ api, show3d = true }: { api: Api; show3d?: boolean }) {
+export function DexScreen({ api }: { api: Api }) {
   const { t, i18n } = useTranslation();
   const lang: Lang = i18n.language.startsWith('en') ? 'en' : 'es';
   const [dex, setDex] = useState<Dex | null>(null);
@@ -54,15 +52,9 @@ export function DexScreen({ api, show3d = true }: { api: Api; show3d?: boolean }
               {el.name[lang]}
             </span>
           </p>
-          {show3d && (
-            <Suspense fallback={<div className="viewer" />}>
-              <CreatureViewer
-                url={open.model}
-                label={t('modelLabel', { name: open.name })}
-                fallback={t('modelUnavailable')}
-              />
-            </Suspense>
-          )}
+          <div className="portrait" style={{ '--el': el.color } as CSSProperties}>
+            <img src={open.art} alt={t('artLabel', { name: open.name })} width={256} height={256} />
+          </div>
           <p>{open.lore[lang]}</p>
         </section>
 
@@ -166,6 +158,7 @@ export function DexScreen({ api, show3d = true }: { api: Api; show3d?: boolean }
         {list.map((c) => (
           <li key={c.id}>
             <button type="button" className="dex-card" onClick={() => setOpenId(c.id)}>
+              <img src={c.art} alt="" width={96} height={96} loading="lazy" decoding="async" />
               <span className="dex-dot" style={{ background: elements.get(c.element)!.color }} />
               <span className="muted">#{String(c.dex).padStart(3, '0')}</span>
               <span className="dex-name">{c.name}</span>

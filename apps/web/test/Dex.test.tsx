@@ -30,7 +30,7 @@ const DEX: Dex = {
   creatures: CREATURES.map((c) => ({
     ...c,
     passive: PASSIVES_BY_ID.get(c.passive)!,
-    model: `/creatures/${c.id}.glb`,
+    art: `/creatures/${c.id}.svg`,
   })),
   items: ITEMS,
   recipes: RECIPES,
@@ -48,13 +48,15 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const renderDex = () => render(<DexScreen api={createApi('http://api.test')} show3d={false} />);
+const renderDex = () => render(<DexScreen api={createApi('http://api.test')} />);
 
 describe('Dex', () => {
   it('lists all 50 creatures and filters by element', async () => {
     renderDex();
     expect(await screen.findByText('50 criaturas')).toBeInTheDocument();
     expect(screen.getAllByRole('listitem')).toHaveLength(50);
+    // thumbnails are decorative: the name is already on the card
+    expect(document.querySelectorAll('.dex-card img[alt=""]')).toHaveLength(50);
     fireEvent.click(screen.getByRole('button', { name: 'Gas' }));
     expect(screen.getByText('5 criaturas')).toBeInTheDocument();
     expect(screen.getByText('Gwisp')).toBeInTheDocument();
@@ -67,6 +69,10 @@ describe('Dex', () => {
     const page = screen.getByRole('article');
     expect(within(page).getByRole('heading', { name: 'Gwisp' })).toBeInTheDocument();
     expect(within(page).getByText(/#001 · Común · Inicial/)).toBeInTheDocument();
+    expect(within(page).getByRole('img', { name: 'Ilustración de Gwisp' })).toHaveAttribute(
+      'src',
+      '/creatures/gwisp.svg',
+    );
     expect(within(page).getByText(/cobra un peaje/)).toBeInTheDocument();
     expect(within(page).getByText('Tarifa base')).toBeInTheDocument();
     expect(within(page).getByText('Peaje')).toBeInTheDocument();

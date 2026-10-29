@@ -81,13 +81,14 @@ use the device GPS. Production builds do not contain the simulator.
 
 The 50 creatures, the type chart, skills, passives, items and recipes live in
 `packages/shared/src/content/`. The API copies them into the database on every start (or run
-`pnpm --filter @nyrgo/api content:sync`). After changing a creature, regenerate its placeholder model:
+`pnpm --filter @nyrgo/api content:sync`). Each creature's 2D portrait is drawn in
+`apps/web/src/art/` (one function per creature). After changing a drawing, regenerate the files:
 
 ```bash
-pnpm --filter @nyrgo/web models:gen      # writes apps/web/public/creatures/<id>.glb
+pnpm --filter @nyrgo/web art:gen         # writes apps/web/public/creatures/<id>.svg
 ```
 
-A test fails if the committed models no longer match the generator.
+A test fails if the committed portraits no longer match the drawings.
 
 ## Scheduled jobs
 

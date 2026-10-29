@@ -16,10 +16,11 @@ Stated openly so nobody relies on something that is not there.
 - Skills and passives are defined (power, accuracy, effect and value) but nothing applies them until
   the combat engine in milestone 7.
 - The Dex shows every creature, including legendaries. Hiding entries until seen comes with captures.
-- Placeholder 3D models share one silhouette per element; creatures of the same line differ only in
-  tint, size and eye size. Final art replaces them before Phase 4.
-- Placeholder models are about 1.9 MB in total (flat shading without index buffers); fine for now,
-  to be compressed with the final art.
+- Creature portraits are vector art drawn in code: one pose each, no animations or shiny variants.
+  Labels inside a few portraits ("gm", "wen?", "todo OK", "MARGIN", "TOLL") are not translated.
+- Portraits are about 360 KB in total (50 SVG files, 3–12 KB each), not yet minified.
+- The Gas element keeps its yellow colour in the interface while its creatures are drawn as
+  blue-violet burner flames.
 - Retention runs hourly once the API starts with `JOBS_ENABLED=true` (the default). If the API is
   down for long, the next run catches up; there is no separate alert yet if jobs stop running.
 - Movement checks are heuristics. A spoofer moving at walking pace passes them; they only catch jumps,

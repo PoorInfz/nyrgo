@@ -65,8 +65,8 @@ export interface DexCreature {
   starter: boolean;
   evolution: Evolution | null;
   lore: { es: string; en: string };
-  /** Served by the web app itself, under /creatures/. */
-  model: string;
+  /** 2D portrait (SVG) served by the web app itself, under /creatures/. */
+  art: string;
 }
 
 export interface Dex {

@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.5.1 — 2026-10-29 — 2D creature art
+
+Changed
+
+- Creatures are now 2D: 50 original vector portraits (SVG) drawn in code in a monster-collecting
+  style (gradients, cel shading, coloured outlines, elemental glow), one design per creature built
+  from its name and lore; rarity adds gold sparkles. Replaces the 3D placeholders at the owner's
+  request.
+- `GET /v1/dex` returns `art: /creatures/<id>.svg` instead of `model`.
+- Dex: thumbnail on every card and a large portrait on the creature page.
+- New `art:gen` script; tests check that every creature has art, the committed files match the
+  drawings, and each SVG is well-formed, self-contained and uses unique ids.
+
+Removed
+
+- three.js, the GLB writer, the 3D viewer, the 50 `.glb` files (about 1.9 MB) and `models:gen`.
+
+Verified locally on 2026-10-29: 160 tests passing (32 shared, 91 API, 37 web); lint, typecheck,
+format and build clean; in headless Chromium against the real API, all 50 portraits and 50
+thumbnails loaded in the Dex with no console errors and no horizontal overflow at 390 px.
+
 ## 0.5.0 — 2026-10-29 — Phase 1, milestone 5: creature content
 
 Added

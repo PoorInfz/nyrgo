@@ -335,23 +335,32 @@ button.small {
 }
 
 .dex-card {
+  position: relative;
   width: 100%;
-  min-height: 72px;
-  display: grid;
-  grid-template-columns: 12px 1fr;
-  grid-template-rows: auto auto auto;
-  column-gap: 8px;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  text-align: left;
-  padding: 8px 12px;
+  gap: 2px;
+  text-align: center;
+  padding: 8px;
   background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
   font-weight: 500;
 }
 
+.dex-card img {
+  display: block;
+  width: 96px;
+  height: 96px;
+  border-radius: 10px;
+  background: #f4f1fb;
+}
+
 .dex-card .dex-dot {
-  grid-row: 1 / span 3;
+  position: absolute;
+  top: 10px;
+  left: 10px;
   width: 12px;
   height: 12px;
   border-radius: 50%;
@@ -387,17 +396,23 @@ button.small {
   font-size: 13px;
 }
 
-.viewer {
-  height: 240px;
+.portrait {
+  display: grid;
+  place-items: center;
   border-radius: 12px;
-  background: radial-gradient(circle at 50% 60%, #1f2d3b, #0f1720 70%);
-  overflow: hidden;
+  background: radial-gradient(
+    circle at 50% 55%,
+    color-mix(in srgb, var(--el, #94a3b8) 30%, #ffffff),
+    #f4f1fb 72%
+  );
+  padding: 8px;
 }
 
-.viewer canvas {
+.portrait img {
   display: block;
-  width: 100% !important;
-  height: 100% !important;
+  width: min(100%, 256px);
+  height: auto;
+  aspect-ratio: 1;
 }
 
 h3 {
