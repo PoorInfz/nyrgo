@@ -18,17 +18,21 @@ import { captureRoutes } from './modules/capture/routes.js';
 import { battleRoutes } from './modules/battle/routes.js';
 import { economyRoutes } from './modules/economy/routes.js';
 import { adminRoutes } from './modules/admin/routes.js';
+import { walletRoutes } from './modules/wallet/routes.js';
+import { httpNearRpc, type NearRpc } from './modules/wallet/rpc.js';
 
 export interface AppDeps {
   config: AppConfig;
   db: Db;
   /** Overrides the mailer chosen by MAIL_DRIVER (tests pass a MemoryMailer). */
   mailer?: Mailer;
+  /** Overrides the NEAR RPC client (tests pass a fake). */
+  nearRpc?: NearRpc;
 }
 
 const STATE_CHANGING = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
-export async function buildApp({ config, db, mailer }: AppDeps): Promise<FastifyInstance> {
+export async function buildApp({ config, db, mailer, nearRpc }: AppDeps): Promise<FastifyInstance> {
   const app = Fastify({
     logger:
       config.env === 'test'
@@ -121,6 +125,11 @@ export async function buildApp({ config, db, mailer }: AppDeps): Promise<Fastify
   await app.register(contentRoutes);
   // Own plugin scope: the token hook only applies to /admin/v1/*.
   await app.register(adminRoutes, { db, config });
+  await app.register(walletRoutes, {
+    db,
+    config,
+    rpc: nearRpc ?? httpNearRpc(config.near.rpcUrl),
+  });
 
   if (config.devRoutes) {
     app.get('/dev/v1/ping', async () => ({ dev: true }));

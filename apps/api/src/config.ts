@@ -23,6 +23,13 @@ const EnvSchema = Type.Object({
    * `admin`; tokens are 32+ characters. Empty disables the admin API.
    */
   ADMIN_TOKENS: Type.String({ default: '' }),
+  /** NEAR network for wallet links. Mainnet stays closed until the Phase 6 gates. */
+  NEAR_NETWORK: Type.Union([Type.Literal('testnet'), Type.Literal('mainnet')], {
+    default: 'testnet',
+  }),
+  NEAR_RPC_URL: Type.String({ default: 'https://rpc.testnet.near.org' }),
+  /** Who the signed message is for (NEP-413 `recipient`); wallets show it to the player. */
+  NEAR_SIGN_RECIPIENT: Type.String({ minLength: 1, maxLength: 64, default: 'nyrgo' }),
   /** Seeds wild spawns. Anyone holding it can predict where creatures appear. */
   SPAWN_SECRET: Type.String({ minLength: 16, default: 'dev-only-spawn-secret-change-me' }),
 });
@@ -48,6 +55,13 @@ export interface AppConfig {
   jobsEnabled: boolean;
   spawnSecret: string;
   admins: AdminAccount[];
+  near: {
+    network: 'testnet' | 'mainnet';
+    rpcUrl: string;
+    recipient: string;
+    /** Minutes a wallet challenge stays valid. */
+    challengeTtlMin: number;
+  };
 }
 
 export type AdminRole = 'reviewer' | 'admin';
@@ -101,6 +115,14 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
       'SPAWN_SECRET must be a random value of at least 32 characters in production',
     );
   }
+  if (env.NEAR_NETWORK === 'mainnet') {
+    throw new ConfigError(
+      'NEAR_NETWORK=mainnet is closed until the Phase 6 gates (anti-cheat on native clients, MiCA review)',
+    );
+  }
+  if (!/^https:\/\//.test(env.NEAR_RPC_URL) && prod) {
+    throw new ConfigError('NEAR_RPC_URL must use https in production');
+  }
   if (prod && !env.APP_URL.startsWith('https://')) {
     throw new ConfigError('APP_URL must use https in production');
   }
@@ -123,5 +145,11 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
     jobsEnabled: env.JOBS_ENABLED,
     spawnSecret: env.SPAWN_SECRET,
     admins: parseAdmins(env.ADMIN_TOKENS),
+    near: {
+      network: env.NEAR_NETWORK,
+      rpcUrl: env.NEAR_RPC_URL,
+      recipient: env.NEAR_SIGN_RECIPIENT,
+      challengeTtlMin: 5,
+    },
   };
 }

@@ -98,6 +98,7 @@ describe.skipIf(!TEST_DB_URL)('scheduled jobs', () => {
         locationSamplesDeleted: 0,
         sessionsDeleted: 0,
         magicLinksDeleted: 0,
+        walletChallengesDeleted: 0,
         idempotencyKeysDeleted: 0,
         riskSignalsDeleted: 0,
         spawnsDeleted: 0,

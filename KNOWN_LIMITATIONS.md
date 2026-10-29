@@ -9,6 +9,18 @@ Stated openly so nobody relies on something that is not there.
   stay disabled while the client is web-only (master prompt §16). Testnet and simulated rewards are fine.
 - **iOS PWA limits.** No background geolocation, limited push notifications, storage can be evicted.
 
+## NEAR (Phase 3, wallet link)
+
+- **Not yet tried with a real wallet.** The signature check is tested with keys generated in the
+  tests and against signatures made by NEAR's own library (near-api-js 7.4); the wallet picker
+  opens in the browser. Signing with Meteor, Intear or another wallet, and the RPC check against
+  testnet, could not be run here (no access to NEAR from this environment) and need a manual try.
+- Testnet only: `NEAR_NETWORK=mainnet` refuses to start. Linking a wallet unlocks nothing yet;
+  no tokens, NFTs or claims exist.
+- Only ed25519 keys are accepted (secp256k1 keys are rare on NEAR).
+- The game keeps no wallet session: the connector is closed after signing, so the player picks a
+  wallet again every time they link.
+
 ## Current state (Phase 1 complete, milestone 9)
 
 - The Phase 1 game loop works end to end: accounts, map, places with rewards, wild spawns,

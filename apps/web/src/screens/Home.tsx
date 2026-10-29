@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ApiError, type Api, type Profile } from '../api';
 import { EmailForm } from '../components/EmailForm';
+import { NearWallet } from './NearWallet';
 
 export function Home({
   api,
@@ -102,6 +103,8 @@ export function Home({
         </label>
         <button type="submit">{t('save')}</button>
       </form>
+
+      {profile.canUseWeb3 && <NearWallet api={api} />}
 
       <section className="card stack" aria-labelledby="privacy-title">
         <h2 id="privacy-title">{t('privacy')}</h2>

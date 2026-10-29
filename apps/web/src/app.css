@@ -1507,3 +1507,8 @@ button.skill:active:not(:disabled) {
     background-position-x: 50%;
   }
 }
+
+/* A NEAR account id can be long and has no spaces. */
+.account-id {
+  overflow-wrap: anywhere;
+}

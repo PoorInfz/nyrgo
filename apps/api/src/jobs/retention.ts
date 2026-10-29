@@ -21,6 +21,7 @@ export interface RetentionReport {
   locationSamplesDeleted: number;
   sessionsDeleted: number;
   magicLinksDeleted: number;
+  walletChallengesDeleted: number;
   idempotencyKeysDeleted: number;
   riskSignalsDeleted: number;
   spawnsDeleted: number;
@@ -69,6 +70,12 @@ export async function runRetention(db: Db): Promise<RetentionReport> {
       db,
       `DELETE FROM magic_links WHERE id IN (
          SELECT id FROM magic_links WHERE expires_at < now() - interval '1 day' LIMIT ${BATCH})`,
+      [],
+    ),
+    walletChallengesDeleted: await batched(
+      db,
+      `DELETE FROM wallet_challenges WHERE id IN (
+         SELECT id FROM wallet_challenges WHERE expires_at < now() - interval '1 day' LIMIT ${BATCH})`,
       [],
     ),
     idempotencyKeysDeleted: await batched(

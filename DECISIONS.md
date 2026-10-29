@@ -2,6 +2,17 @@
 
 Newest first. Each entry: date, decision, reason, who approved.
 
+## 2026-10-29 — Phase 3, part 1: linking a NEAR account
+
+| #   | Decision                                                                                                                                                                                                   | Why                                                                                              |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| N1  | A player links a NEAR account by signing a server-issued message with their wallet (NEP-413); the API verifies the ed25519 signature and asks an RPC node that the key is a full-access key of the account | Proves control of the account with no transaction, no fee and nothing secret reaching the server |
+| N2  | NEP-413 encoding written in the API (borsh of four primitive types) instead of adding near-api-js to the server; near-api-js is a test dependency that checks compatibility                                | Small, auditable code; the cross-library test catches any drift                                  |
+| N3  | Challenges: 32 random bytes, 5 minutes, one use, bound to the player; consumed in the same transaction that writes the link; purged a day after expiry                                                     | No replay, no race between two tabs                                                              |
+| N4  | One linked account per player and per network; proof of the key moves an account from another player                                                                                                       | A lost guest account must not lock a NEAR account forever                                        |
+| N5  | Adults only (`canUseWeb3`), testnet only (`NEAR_NETWORK=mainnet` refused at start-up)                                                                                                                      | Compliance gates; Phase 6 decides mainnet                                                        |
+| N6  | Client: NEAR Connect (`@hot-labs/near-connect` 0.12) in its own chunk, run only when the player taps "Connect wallet"; no wallet session is kept                                                           | Nothing contacts a wallet or third party unless the player asks                                  |
+
 ## 2026-10-29 — Phase 2: economy simulation and config version 2
 
 Report with all numbers: [docs/economy/README.md](docs/economy/README.md) (regenerate with `pnpm --filter @nyrgo/sim sim`).

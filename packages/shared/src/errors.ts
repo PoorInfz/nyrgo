@@ -32,6 +32,11 @@ export const ERROR_CODES = {
   invalid_action: 422,
   level_required: 403,
   not_ready: 409,
+  web3_restricted: 403,
+  wallet_challenge_invalid: 422,
+  wallet_signature_invalid: 422,
+  wallet_key_not_full_access: 422,
+  wallet_unavailable: 503,
   internal_error: 500,
 } as const;
 

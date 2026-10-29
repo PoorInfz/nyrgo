@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.12.0 — 2026-10-29 — Phase 3, part 1: link a NEAR account (testnet)
+
+Verified locally on 2026-10-29: format, lint, typecheck and build clean; 274 tests passing (64
+shared, 150 API, 55 web, 5 simulation), incl. signatures made by near-api-js; the wallet picker opens in the browser for adults and is absent for minors. Not yet tried
+with a real wallet or against testnet (no access to NEAR from the build environment).
+
+Added
+
+- Profile → NEAR wallet (adults only, testnet): connect a wallet, sign one message, the account is
+  linked. Unlink at any time. No seed phrase, private key or transaction is ever asked for.
+- API `GET/DELETE /v1/me/wallet`, `POST /v1/me/wallet/challenge`, `POST /v1/me/wallet/link`:
+  NEP-413 signature check, full-access key check through NEAR RPC, one-time challenges.
+- Config `NEAR_NETWORK` (testnet only), `NEAR_RPC_URL`, `NEAR_SIGN_RECIPIENT`; migration `wallets`.
+- The data export includes the linked account; account deletion removes it.
+
 ## 0.11.0 — 2026-10-29 — Phase 2: economy simulation, config version 2
 
 Verified locally on 2026-10-29: format, lint, typecheck and build clean; 257 tests passing (64 shared, 137 API, 51 web, 5 simulation); full simulation of 100 players × 4 archetypes × 90 days in about 2 minutes. Not yet checked with real players.

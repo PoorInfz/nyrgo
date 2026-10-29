@@ -214,6 +214,22 @@ export class ApiError extends Error {
   }
 }
 
+/** A NEAR account linked to the player (testnet until the Phase 6 gates). */
+export interface NearLink {
+  accountId: string;
+  network: string;
+  linkedAt: string;
+}
+
+/** What the wallet must sign (NEP-413). The nonce is base64. */
+export interface NearChallenge {
+  message: string;
+  recipient: string;
+  nonce: string;
+  network: 'testnet' | 'mainnet';
+  expiresAt: string;
+}
+
 export function createApi(baseUrl: string) {
   async function call<T>(
     method: string,
@@ -314,6 +330,11 @@ export function createApi(baseUrl: string) {
         'POST',
         `/v1/me/creatures/${encodeURIComponent(creatureId)}/evolve`,
       ),
+    nearStatus: () => call<{ network: string; wallet: NearLink | null }>('GET', '/v1/me/wallet'),
+    nearChallenge: () => call<NearChallenge>('POST', '/v1/me/wallet/challenge'),
+    nearLink: (body: { accountId: string; publicKey: string; signature: string; nonce: string }) =>
+      call<{ wallet: NearLink }>('POST', '/v1/me/wallet/link', body),
+    nearUnlink: () => call<void>('DELETE', '/v1/me/wallet'),
     heal: (creatureId: string, item: string) =>
       call<OwnedCreature>('POST', `/v1/me/creatures/${encodeURIComponent(creatureId)}/heal`, {
         item,

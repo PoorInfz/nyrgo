@@ -93,6 +93,10 @@ describe('signed out', () => {
   });
 });
 
+/** Calls the test is about, leaving out the profile's NEAR wallet check (adults only). */
+const gameCalls = (fetch: { mock: { calls: unknown[][] } }) =>
+  fetch.mock.calls.filter(([url]) => !String(url).endsWith('/v1/me/wallet'));
+
 describe('signed in as guest', () => {
   it('offers to save progress with an email', async () => {
     const fetch = mockApi({
@@ -105,7 +109,7 @@ describe('signed in as guest', () => {
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.test' } });
     fireEvent.click(screen.getByRole('button', { name: 'Enviarme el enlace' }));
     expect(await screen.findByRole('status')).toHaveTextContent('te llegará un enlace');
-    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(gameCalls(fetch)).toHaveLength(2);
   });
 
   it('tells registered players to sign in again before deleting', async () => {
@@ -133,7 +137,7 @@ describe('magic link landing', () => {
     expect(await screen.findByText('Cuenta guardada')).toBeInTheDocument();
     await waitFor(() => expect(window.location.pathname).toBe('/'));
     expect(window.location.search).toBe('');
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(gameCalls(fetch)).toHaveLength(1);
   });
 
   it('explains an expired link', async () => {

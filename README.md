@@ -3,7 +3,7 @@
 Mobile-first geolocation creature-collection RPG with an original IP and optional NEAR integration.
 The full game is playable without a wallet, crypto or purchases.
 
-Status: **Phase 2 (economy simulation) done; Phase 3 (NEAR) not started**. See [CHANGELOG.md](CHANGELOG.md).
+Status: **Phase 3 in progress: NEAR accounts can be linked (testnet)**. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Layout
 

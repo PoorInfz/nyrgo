@@ -90,6 +90,9 @@ export async function accountRoutes(
              FROM location_samples WHERE user_id = $1 ORDER BY created_at`,
         ),
         riskSignals: await q(`SELECT kind, score, created_at FROM risk_signals WHERE user_id = $1`),
+        wallet: await q(
+          `SELECT network, account_id, public_key, linked_at FROM wallet_links WHERE user_id = $1`,
+        ),
       };
       return reply
         .header('content-disposition', 'attachment; filename="nyrgo-data-export.json"')
@@ -132,6 +135,8 @@ export async function accountRoutes(
         for (const sql of [
           `DELETE FROM sessions WHERE user_id = $1`,
           `DELETE FROM magic_links WHERE user_id = $1`,
+          `DELETE FROM wallet_challenges WHERE user_id = $1`,
+          `DELETE FROM wallet_links WHERE user_id = $1`,
           `DELETE FROM location_samples WHERE user_id = $1`,
           `DELETE FROM risk_signals WHERE user_id = $1`,
           `DELETE FROM inventory WHERE user_id = $1`,
