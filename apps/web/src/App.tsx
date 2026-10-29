@@ -4,6 +4,8 @@ import { ApiError, createApi, type Profile } from './api';
 import { Game } from './screens/Game';
 import { Verify } from './screens/Verify';
 import { Welcome } from './screens/Welcome';
+import { Admin } from './screens/Admin';
+import { useOnline } from './online';
 import './app.css';
 
 type View =
@@ -21,6 +23,8 @@ function verifyTokenFromUrl(): string | null {
 export function App({ apiUrl }: { apiUrl: string }) {
   const { t } = useTranslation();
   const api = useMemo(() => createApi(apiUrl), [apiUrl]);
+  const online = useOnline();
+  const isAdmin = typeof window !== 'undefined' && window.location.pathname === '/admin';
   const [view, setView] = useState<View>(() => {
     const token = verifyTokenFromUrl();
     return token ? { name: 'verify', token } : { name: 'loading' };
@@ -46,7 +50,7 @@ export function App({ apiUrl }: { apiUrl: string }) {
   const initialView = useRef(view.name);
   useEffect(() => {
     // The first view is already 'loading' unless we landed on a magic link.
-    if (initialView.current === 'loading') fetchMe();
+    if (initialView.current === 'loading' && window.location.pathname !== '/admin') fetchMe();
   }, [fetchMe]);
 
   const afterVerify = useCallback(
@@ -62,8 +66,14 @@ export function App({ apiUrl }: { apiUrl: string }) {
   return (
     <main className="shell">
       <h1 className="logo">nyrgo</h1>
-      {view.name === 'loading' && <p role="status">{t('loading')}</p>}
-      {view.name === 'offline' && (
+      {!online && (
+        <p className="offline-banner" role="status">
+          {t('offlineBanner')}
+        </p>
+      )}
+      {isAdmin && <Admin apiUrl={apiUrl} />}
+      {!isAdmin && view.name === 'loading' && <p role="status">{t('loading')}</p>}
+      {!isAdmin && view.name === 'offline' && (
         <div className="stack">
           <p role="alert">{t('offline')}</p>
           <button type="button" onClick={load}>
@@ -71,11 +81,20 @@ export function App({ apiUrl }: { apiUrl: string }) {
           </button>
         </div>
       )}
-      {view.name === 'welcome' && (
-        <Welcome api={api} onSignedIn={(profile) => setView({ name: 'home', profile })} />
+      {!isAdmin && view.name === 'welcome' && (
+        <Welcome
+          api={api}
+          onSignedIn={(profile) => {
+            setView({ name: 'home', profile });
+            // warms the offline cache of the profile right after signing in
+            void api.me().catch(() => undefined);
+          }}
+        />
       )}
-      {view.name === 'verify' && <Verify api={api} token={view.token} onDone={afterVerify} />}
-      {view.name === 'home' && (
+      {!isAdmin && view.name === 'verify' && (
+        <Verify api={api} token={view.token} onDone={afterVerify} />
+      )}
+      {!isAdmin && view.name === 'home' && (
         <Game
           api={api}
           profile={view.profile}

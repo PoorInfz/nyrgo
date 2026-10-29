@@ -77,7 +77,11 @@ const routed =
       ? json(200, CONTENT)
       : url.endsWith('/v1/me/missions')
         ? json(200, { day: '2026-10-29', missions: [] })
-        : inner(url, init);
+        : url.endsWith('/v1/me/creatures')
+          ? json(200, { creatures: [] })
+          : url.endsWith('/v1/me/dex')
+            ? json(200, { entries: [] })
+            : inner(url, init);
 
 beforeEach(() => i18n.changeLanguage('es'));
 afterEach(() => {
@@ -109,20 +113,22 @@ describe('Play', () => {
     expect(screen.getByRole('button', { name: 'Visitar' })).toBeInTheDocument();
     expect(screen.getByText('a 230 m')).toBeInTheDocument();
     expect(screen.getByText(/OpenStreetMap/)).toBeInTheDocument();
-    const init = (fetch.mock.calls[0] as unknown as [string, RequestInit])[1];
+    const init = (fetch.mock.calls as unknown as [string, RequestInit][]).find(([u]) =>
+      u.endsWith('/v1/world/nearby'),
+    )![1];
     const body = JSON.parse(String(init.body));
     expect(body).toMatchObject({ lat: 37.8847, lng: -4.7792, accuracy: 5 });
   });
 
   it('does not query the server with an imprecise fix', async () => {
-    const fetch = vi.fn(async () => json(200, NEARBY));
+    const fetch = vi.fn(async (_u: RequestInfo | URL) => json(200, NEARBY));
     vi.stubGlobal('fetch', routed(fetch));
     const m = manualSource();
     render(<Play api={createApi('http://api.test')} source={m.source} showMap={false} />);
     fireEvent.click(screen.getByRole('button', { name: 'Activar ubicación' }));
     await m.fix({ accuracy: 120 });
-    expect(screen.getByRole('status')).toHaveTextContent('Señal GPS débil (120 m)');
-    expect(fetch).not.toHaveBeenCalled();
+    expect(screen.getByText(/Señal GPS débil \(120 m\)/)).toBeInTheDocument();
+    expect(fetch.mock.calls.some(([u]) => String(u).endsWith('/v1/world/nearby'))).toBe(false);
   });
 
   it('warns at vehicle speeds', async () => {

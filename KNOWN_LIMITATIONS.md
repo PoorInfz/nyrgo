@@ -9,10 +9,21 @@ Stated openly so nobody relies on something that is not there.
   stay disabled while the client is web-only (master prompt §16). Testnet and simulated rewards are fine.
 - **iOS PWA limits.** No background geolocation, limited push notifications, storage can be evicted.
 
-## Current state (Phase 1, milestone 8)
+## Current state (Phase 1 complete, milestone 9)
 
 - The Phase 1 game loop works end to end: accounts, map, places with rewards, wild spawns,
-  encounters, captures, battles, collection, evolution, shop, crafting, daily missions and the Dex.
+  encounters, captures, battles, collection, evolution, shop, crafting, daily missions, the Dex,
+  a first-game guide, an admin panel for review cases and reported places, and offline reading.
+- **Not yet tried on a real phone.** Everything was verified in headless Chromium at 390 px;
+  touch, real GPS, battery, iOS Safari quirks and the install prompt are untested.
+- Offline covers reading (Dex, collection, portraits, profile) once the app has been opened
+  online at least once after install; playing needs the server. Only the production build has
+  the service worker (`pnpm build` + `vite preview`), not `pnpm dev`.
+- Battle effects are CSS over static portraits (lunge, shake, bursts); there are no attack or
+  walking sprite sheets. Real animation needs frames from the artist.
+- The admin panel has no pagination or search and lists at most 50 cases and 200 places.
+- Accessibility was checked with axe on every screen (no violations) plus keyboard focus on tab
+  changes; a review with a screen reader on a phone is still to do.
 - The economy numbers (loot, prices, rewards, caps, cooldowns) are the approved starting
   assumptions. The Phase 2 simulation has not checked the faucet/sink balance yet.
 - A 5-minute cooldown per place means a player standing between two places can collect every few

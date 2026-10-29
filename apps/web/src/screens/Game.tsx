@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Api, Profile } from '../api';
 import { Home } from './Home';
@@ -31,6 +31,16 @@ export function Game({
 }) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>('play');
+  const panel = useRef<HTMLDivElement>(null);
+  const first = useRef(true);
+  // Moving focus into the new panel lets keyboard and screen-reader users follow the change.
+  useEffect(() => {
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    panel.current?.focus();
+  }, [tab]);
 
   return (
     <div className="stack">
@@ -48,16 +58,18 @@ export function Game({
           </button>
         ))}
       </nav>
-      {/* Play stays mounted while the profile is open so GPS and the map are not restarted. */}
-      <div hidden={tab !== 'play'}>
-        <Play api={api} />
+      <div ref={panel} tabIndex={-1} role="tabpanel" aria-label={t(LABELS[tab])} className="panel">
+        {/* Play stays mounted while the profile is open so GPS and the map are not restarted. */}
+        <div hidden={tab !== 'play'}>
+          <Play api={api} />
+        </div>
+        {tab === 'collection' && <Collection api={api} />}
+        {tab === 'bag' && <Bag api={api} />}
+        {tab === 'dex' && <DexScreen api={api} />}
+        {tab === 'profile' && (
+          <Home api={api} profile={profile} onChange={onChange} onSignedOut={onSignedOut} />
+        )}
       </div>
-      {tab === 'collection' && <Collection api={api} />}
-      {tab === 'bag' && <Bag api={api} />}
-      {tab === 'dex' && <DexScreen api={api} />}
-      {tab === 'profile' && (
-        <Home api={api} profile={profile} onChange={onChange} onSignedOut={onSignedOut} />
-      )}
     </div>
   );
 }

@@ -17,6 +17,8 @@ export interface AuthContext {
 declare module 'fastify' {
   interface FastifyRequest {
     auth: AuthContext | null;
+    /** Set by the admin routes' hook from a bearer token; never from a player session. */
+    admin?: import('../../config.js').AdminAccount;
   }
 }
 

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { type CSSProperties, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { effectiveness, type BattleEvent } from '@nyrgo/shared';
 import {
@@ -12,6 +12,22 @@ import {
 import { thumbUrl } from '../content';
 
 type Lang = 'es' | 'en';
+
+/** One visual effect on a fighter while a turn plays back. */
+interface Fx {
+  side: 'player' | 'foe';
+  kind: 'attack' | 'hit' | 'crit' | 'miss' | 'heal' | 'faint' | 'passive';
+  /** Element colour of the move being used or received. */
+  color: string;
+}
+
+/** Playback speed: 0 skips every pause and effect (reduced motion, tests). */
+function motion(): number {
+  if (import.meta.env.MODE === 'test') return 0;
+  return (globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false) ? 0 : 1;
+}
+
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 function newKey(): string {
   return (
@@ -50,6 +66,10 @@ export function Battle({
   const { t, i18n } = useTranslation();
   const lang: Lang = i18n.language.startsWith('en') ? 'en' : 'es';
   const [b, setB] = useState(start);
+  /** What is on screen: lags behind `b` while a turn plays back event by event. */
+  const [shown, setShown] = useState(start);
+  const [fx, setFx] = useState<{ seq: number; effect: Fx } | null>(null);
+  const speed = useMemo(() => motion(), []);
   const [log, setLog] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -115,7 +135,7 @@ export function Battle({
       const next = await api.battleTurn(b.id, action, pendingKey.current);
       pendingKey.current = null;
       setB(next);
-      setLog((l) => [...l, ...next.events.map(describe).filter((x): x is string => !!x)]);
+      await playback(next);
     } catch (err) {
       if (!(err instanceof ApiError && err.code === 'network')) pendingKey.current = null;
       const code = err instanceof ApiError ? err.code : 'other';
@@ -123,6 +143,65 @@ export function Battle({
     } finally {
       setBusy(false);
     }
+  }
+
+  /** Shows the turn's events one by one: effect, HP change and log line together. */
+  async function playback(next: BattleView) {
+    let hp = { player: shown.player.hp, foe: shown.foe.hp };
+    let color = '#ffffff';
+    let seq = 0;
+    const show = (f: Fx | null, ms: number) => {
+      setFx(f ? { seq: ++seq, effect: f } : null);
+      return speed ? sleep(ms * speed) : Promise.resolve();
+    };
+    const apply = (side: 'player' | 'foe', value: number) => {
+      hp = { ...hp, [side]: value };
+      setShown((s) => ({ ...s, [side]: { ...s[side], hp: value } }));
+    };
+    for (const e of next.events) {
+      const line = describe(e);
+      if (line) setLog((l) => [...l, line]);
+      switch (e.type) {
+        case 'move':
+          color = dex.elements.find((x) => x.id === skill(e.skill).element)?.color ?? color;
+          await show({ side: e.side, kind: 'attack', color }, 380);
+          break;
+        case 'hit': {
+          const target = e.side === 'player' ? 'foe' : 'player';
+          await show({ side: target, kind: e.crit ? 'crit' : 'hit', color }, 120);
+          apply(target, e.hpLeft);
+          await sleep(speed * 420);
+          break;
+        }
+        case 'miss':
+          await show({ side: e.side === 'player' ? 'foe' : 'player', kind: 'miss', color }, 380);
+          break;
+        case 'dodge':
+          await show({ side: e.side, kind: 'miss', color }, 380);
+          break;
+        case 'heal':
+          apply(e.side, Math.min(next[e.side].maxHp, hp[e.side] + e.amount));
+          await show({ side: e.side, kind: 'heal', color: '#4ade80' }, 450);
+          break;
+        case 'recoil':
+        case 'tax':
+          apply(e.side, Math.max(0, hp[e.side] - e.amount));
+          await show({ side: e.side, kind: 'hit', color: '#f87171' }, 380);
+          break;
+        case 'faint':
+          await show({ side: e.side, kind: 'faint', color }, 650);
+          break;
+        case 'passive':
+        case 'resist':
+        case 'survive':
+          await show({ side: e.side, kind: 'passive', color: '#fbbf24' }, 350);
+          break;
+        default:
+          await show(null, 150);
+      }
+    }
+    setFx(null);
+    setShown(next);
   }
 
   const patches = Object.entries(b.items).filter(([, n]) => n > 0);
@@ -135,25 +214,37 @@ export function Battle({
       <div className="fighter foe">
         <div className="fighter-info">
           <strong>{foe.name}</strong>{' '}
-          <span className="muted">{t('levelShort', { level: b.foe.level })}</span>
+          <span className="muted">{t('levelShort', { level: shown.foe.level })}</span>
           <HpBar
-            side={b.foe}
-            label={t('battle.hpOf', { who: who('foe'), hp: b.foe.hp, max: b.foe.maxHp })}
+            side={shown.foe}
+            label={t('battle.hpOf', { who: who('foe'), hp: shown.foe.hp, max: shown.foe.maxHp })}
           />
         </div>
-        <img src={thumbUrl(foe.id)} alt="" width={120} height={174} />
+        <Sprite
+          id={foe.id}
+          fx={fx?.effect.side === 'foe' ? fx : null}
+          fainted={shown.foe.hp <= 0}
+        />
       </div>
       <div className="fighter mine">
-        <img src={thumbUrl(me.id)} alt="" width={120} height={174} />
+        <Sprite
+          id={me.id}
+          fx={fx?.effect.side === 'player' ? fx : null}
+          fainted={shown.player.hp <= 0}
+        />
         <div className="fighter-info">
           <strong>{me.name}</strong>{' '}
-          <span className="muted">{t('levelShort', { level: b.player.level })}</span>
+          <span className="muted">{t('levelShort', { level: shown.player.level })}</span>
           <HpBar
-            side={b.player}
-            label={t('battle.hpOf', { who: who('player'), hp: b.player.hp, max: b.player.maxHp })}
+            side={shown.player}
+            label={t('battle.hpOf', {
+              who: who('player'),
+              hp: shown.player.hp,
+              max: shown.player.maxHp,
+            })}
           />
           <span className="muted small">
-            {b.player.hp} / {b.player.maxHp}
+            {shown.player.hp} / {shown.player.maxHp}
           </span>
         </div>
       </div>
@@ -239,5 +330,29 @@ export function Battle({
         </>
       )}
     </section>
+  );
+}
+
+/** A fighter's picture with the current effect layered on top. */
+function Sprite({
+  id,
+  fx,
+  fainted,
+}: {
+  id: string;
+  fx: { seq: number; effect: Fx } | null;
+  fainted: boolean;
+}) {
+  return (
+    <div
+      className={`sprite${fainted ? ' fainted' : ''}`}
+      data-fx={fx?.effect.kind}
+      style={{ '--fx': fx?.effect.color ?? 'transparent' } as CSSProperties}
+      // a new key restarts the CSS animation even when the same effect repeats
+      key={fx ? fx.seq : 'idle'}
+    >
+      <img src={thumbUrl(id)} alt="" width={120} height={174} />
+      <span className="fx-layer" aria-hidden="true" />
+    </div>
   );
 }

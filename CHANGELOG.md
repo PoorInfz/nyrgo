@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.9.0 — 2026-10-29 — Phase 1, milestone 9: tutorial, admin, offline, accessibility
+
+Verified locally on 2026-10-29: format, lint, typecheck and build clean; 245 tests passing (61 shared, 136 API, 48 web); axe-core reports no violations on 12 screens; production build works offline after the first visit. Not yet tested on a real phone.
+
+Added
+
+- First-game guide on the map screen: five steps ticked from the player's real progress.
+- Admin API (`/admin/v1`): review cases with their signals, close with a decision and reason
+  (suspend = admin role, signs the player out), restore accounts, reported places (hide or
+  restore), audit log; `ADMIN_TOKENS` config. Admin panel at `/admin` in the web app.
+- Offline: service worker caches the app shell, creature art, the Dex and the player's profile,
+  collection and progress; an offline banner.
+- Battle playback: turns are shown event by event with effects on the portraits and HP bars
+  that drain step by step; off under reduced motion.
+- Accessibility: axe over every screen (no violations), the map as a labelled region, focus
+  moves into the panel on tab changes, screen-reader text for done steps.
+
+Changed
+
+- Element colours: Gas purple, Airdrop cyan, Moon indigo (to match the painted art); a test
+  keeps all ten apart.
+
 ## 0.8.1 — 2026-10-29 — Painted creature art
 
 Changed

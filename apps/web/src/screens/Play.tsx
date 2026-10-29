@@ -4,6 +4,7 @@ import { ApiError, type Api, type Nearby, type NearbyCreature } from '../api';
 import { thumbUrl, useContent } from '../content';
 import { Encounter } from './Encounter';
 import { Missions } from './Missions';
+import { FirstSteps } from './FirstSteps';
 import {
   browserSource,
   simulatedSource,
@@ -206,6 +207,12 @@ export function Play({
         </Suspense>
       )}
 
+      <FirstSteps
+        api={api}
+        locationOn={status.kind === 'ok'}
+        visited={visited.size > 0}
+        refresh={progressTick}
+      />
       <Missions api={api} refresh={progressTick} />
 
       <section className="card" aria-labelledby="creatures-title">

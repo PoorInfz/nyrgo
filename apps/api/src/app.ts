@@ -17,6 +17,7 @@ import { contentRoutes } from './modules/content/routes.js';
 import { captureRoutes } from './modules/capture/routes.js';
 import { battleRoutes } from './modules/battle/routes.js';
 import { economyRoutes } from './modules/economy/routes.js';
+import { adminRoutes } from './modules/admin/routes.js';
 
 export interface AppDeps {
   config: AppConfig;
@@ -118,6 +119,8 @@ export async function buildApp({ config, db, mailer }: AppDeps): Promise<Fastify
   await app.register(battleRoutes, { db });
   await app.register(economyRoutes, { db });
   await app.register(contentRoutes);
+  // Own plugin scope: the token hook only applies to /admin/v1/*.
+  await app.register(adminRoutes, { db, config });
 
   if (config.devRoutes) {
     app.get('/dev/v1/ping', async () => ({ dev: true }));

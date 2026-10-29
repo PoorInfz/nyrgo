@@ -889,3 +889,251 @@ button.pick img {
 .item-list .row.tight {
   margin-left: auto;
 }
+
+/* ---------------------------------------------------------------- battle effects */
+
+.sprite {
+  position: relative;
+  width: 120px;
+  height: 174px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--surface-2);
+  transition:
+    opacity 0.6s ease,
+    filter 0.6s ease;
+}
+
+.sprite img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: idle-bob 2.6s ease-in-out infinite;
+}
+
+.fighter.foe .sprite img {
+  animation-delay: -1.3s;
+}
+
+.fx-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(circle at 50% 45%, var(--fx) 0%, transparent 65%);
+}
+
+.sprite[data-fx='attack'] {
+  animation: lunge 0.38s ease-out;
+}
+.fighter.foe .sprite[data-fx='attack'] {
+  animation-name: lunge-foe;
+}
+.sprite[data-fx='attack'] .fx-layer {
+  animation: charge 0.38s ease-out;
+}
+
+.sprite[data-fx='hit'],
+.sprite[data-fx='crit'] {
+  animation: shake 0.42s ease-out;
+}
+.sprite[data-fx='hit'] .fx-layer,
+.sprite[data-fx='crit'] .fx-layer {
+  animation: burst 0.5s ease-out;
+}
+.sprite[data-fx='crit'] .fx-layer {
+  background:
+    radial-gradient(circle at 50% 45%, #ffffff 0%, transparent 30%),
+    radial-gradient(circle at 50% 45%, var(--fx) 0%, transparent 70%);
+}
+
+.sprite[data-fx='miss'] {
+  animation: sidestep 0.38s ease-in-out;
+}
+
+.sprite[data-fx='heal'] .fx-layer {
+  animation: glow 0.5s ease-out;
+}
+
+.sprite[data-fx='passive'] .fx-layer {
+  animation: glow 0.35s ease-out;
+}
+
+.sprite[data-fx='faint'],
+.sprite.fainted {
+  opacity: 0.35;
+  filter: grayscale(1);
+}
+.sprite[data-fx='faint'] {
+  animation: faint 0.65s ease-in forwards;
+}
+
+@keyframes idle-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+@keyframes lunge {
+  0% {
+    transform: translate(0, 0);
+  }
+  40% {
+    transform: translate(18px, -10px) scale(1.05);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+@keyframes lunge-foe {
+  0% {
+    transform: translate(0, 0);
+  }
+  40% {
+    transform: translate(-18px, 10px) scale(1.05);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+@keyframes charge {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-8px);
+  }
+  40% {
+    transform: translateX(7px);
+  }
+  60% {
+    transform: translateX(-5px);
+  }
+  80% {
+    transform: translateX(3px);
+  }
+}
+@keyframes burst {
+  0% {
+    opacity: 0.95;
+    transform: scale(0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+@keyframes sidestep {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(14px);
+  }
+}
+@keyframes glow {
+  0% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes faint {
+  to {
+    transform: translateY(24px) rotate(6deg);
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sprite,
+  .sprite img,
+  .fx-layer {
+    animation: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------- milestone 9 */
+
+.offline-banner {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #3b2f12;
+  color: #fde68a;
+  font-size: 14px;
+}
+
+.steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.steps li {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+}
+
+.steps .check {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  color: var(--accent-ink);
+}
+
+.steps li.done .check {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.steps li.done span:last-child {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.admin-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-item a {
+  color: var(--accent);
+}
+
+.panel:focus {
+  outline: none;
+}

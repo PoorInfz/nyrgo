@@ -242,3 +242,17 @@ describe('skills, items and recipes', () => {
     }
   });
 });
+
+describe('element colours', () => {
+  it('are distinct enough to tell apart in the interface', () => {
+    const rgb = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+    for (const a of ELEMENTS) {
+      for (const b of ELEMENTS) {
+        if (a >= b) continue;
+        const [x, y] = [rgb(ELEMENT_INFO[a].color), rgb(ELEMENT_INFO[b].color)];
+        const d = Math.hypot(x[0]! - y[0]!, x[1]! - y[1]!, x[2]! - y[2]!);
+        expect(d, `${a} vs ${b}`).toBeGreaterThan(55);
+      }
+    }
+  });
+});

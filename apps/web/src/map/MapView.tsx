@@ -189,5 +189,7 @@ export default function MapView({
     }
   }, [ready, fix]);
 
-  return <div ref={container} className="map" role="img" aria-label={label} />;
+  // A region, not an image: the map holds controls and creature markers. The lists beside it
+  // are the accessible equivalent of what it shows.
+  return <div ref={container} className="map" role="region" aria-label={label} />;
 }

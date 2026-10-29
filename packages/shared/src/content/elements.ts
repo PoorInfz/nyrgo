@@ -6,10 +6,10 @@ export const ELEMENT_INFO: Record<Element, { es: string; en: string; color: stri
   fire: { es: 'Quema', en: 'Burn', color: '#f97316' },
   nature: { es: 'Farming', en: 'Yield', color: '#4ade80' },
   earth: { es: 'Minado', en: 'Mining', color: '#a8a29e' },
-  electric: { es: 'Gas', en: 'Gas', color: '#facc15' },
-  wind: { es: 'Airdrop', en: 'Airdrop', color: '#a5f3fc' },
+  electric: { es: 'Gas', en: 'Gas', color: '#c084fc' }, // the painted Gas creatures are purple
+  wind: { es: 'Airdrop', en: 'Airdrop', color: '#67e8f9' },
   ice: { es: 'Frío', en: 'Cold', color: '#bfdbfe' },
-  cosmic: { es: 'Luna', en: 'Moon', color: '#c4b5fd' },
+  cosmic: { es: 'Luna', en: 'Moon', color: '#818cf8' },
   light: { es: 'Oráculo', en: 'Oracle', color: '#fde68a' },
   shadow: { es: 'FUD', en: 'FUD', color: '#7c3aed' },
 };

@@ -18,6 +18,11 @@ const EnvSchema = Type.Object({
   MAGIC_LINK_TTL_MIN: Type.Integer({ minimum: 5, maximum: 60, default: 15 }),
   REAUTH_WINDOW_MIN: Type.Integer({ minimum: 1, maximum: 60, default: 15 }),
   JOBS_ENABLED: Type.Boolean({ default: true }),
+  /**
+   * Admin access tokens: `name:role:token` entries separated by commas; role is `reviewer` or
+   * `admin`; tokens are 32+ characters. Empty disables the admin API.
+   */
+  ADMIN_TOKENS: Type.String({ default: '' }),
   /** Seeds wild spawns. Anyone holding it can predict where creatures appear. */
   SPAWN_SECRET: Type.String({ minLength: 16, default: 'dev-only-spawn-secret-change-me' }),
 });
@@ -42,6 +47,30 @@ export interface AppConfig {
   /** Run scheduled jobs (retention, risk decay) in this process. */
   jobsEnabled: boolean;
   spawnSecret: string;
+  admins: AdminAccount[];
+}
+
+export type AdminRole = 'reviewer' | 'admin';
+export interface AdminAccount {
+  name: string;
+  role: AdminRole;
+  token: string;
+}
+
+function parseAdmins(raw: string): AdminAccount[] {
+  return raw
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((entry) => {
+      const [name, role, token] = entry.split(':');
+      if (!name || !token || (role !== 'reviewer' && role !== 'admin') || token.length < 32) {
+        throw new ConfigError(
+          'ADMIN_TOKENS entries must be name:role:token with role reviewer|admin and a token of 32+ characters',
+        );
+      }
+      return { name, role, token };
+    });
 }
 
 export class ConfigError extends Error {}
@@ -93,5 +122,6 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
     secureCookies: prod,
     jobsEnabled: env.JOBS_ENABLED,
     spawnSecret: env.SPAWN_SECRET,
+    admins: parseAdmins(env.ADMIN_TOKENS),
   };
 }
