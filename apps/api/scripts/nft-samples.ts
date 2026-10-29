@@ -75,7 +75,12 @@ for (const [name, cards] of rows) {
   const h = 293;
   const cols = 10;
   const sheet = await sharp({
-    create: { width: w * cols, height: h * Math.ceil(pngs.length / cols), channels: 4, background: '#e2f8ff' },
+    create: {
+      width: w * cols,
+      height: h * Math.ceil(pngs.length / cols),
+      channels: 4,
+      background: '#e2f8ff',
+    },
   })
     .composite(
       await Promise.all(
