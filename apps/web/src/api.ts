@@ -1,4 +1,15 @@
-import type { AgeBand, ErrorCode } from '@nyrgo/shared';
+import type {
+  AgeBand,
+  Element,
+  ErrorCode,
+  Evolution,
+  ItemDef,
+  Passive,
+  Rarity,
+  RecipeDef,
+  Skill,
+  Stats,
+} from '@nyrgo/shared';
 import type { LocationFix } from './geo/location';
 import type { MapPoi } from './map/style';
 
@@ -30,6 +41,41 @@ export interface Nearby {
   interactionRadiusM: number;
   attribution: string;
   pois: MapPoi[];
+}
+
+export interface DexElement {
+  id: Element;
+  name: { es: string; en: string };
+  color: string;
+  strongAgainst: Element[];
+  weakAgainst: Element[];
+}
+
+export interface DexCreature {
+  id: string;
+  dex: number;
+  name: string;
+  element: Element;
+  rarity: Rarity;
+  stage: number;
+  stats: Stats;
+  skills: string[];
+  passive: Passive;
+  wild: boolean;
+  starter: boolean;
+  evolution: Evolution | null;
+  lore: { es: string; en: string };
+  /** Served by the web app itself, under /creatures/. */
+  model: string;
+}
+
+export interface Dex {
+  version: number;
+  elements: DexElement[];
+  skills: Skill[];
+  creatures: DexCreature[];
+  items: ItemDef[];
+  recipes: RecipeDef[];
 }
 
 export type PoiReportReason = 'unsafe' | 'private' | 'inaccessible' | 'other';
@@ -84,6 +130,7 @@ export function createApi(baseUrl: string) {
         speed: fix.speed,
         timestamp: Math.round(fix.timestamp),
       }),
+    dex: () => call<Dex>('GET', '/v1/dex'),
     reportPoi: (id: string, reason: PoiReportReason) =>
       call<{ received: true }>('POST', `/v1/pois/${encodeURIComponent(id)}/report`, { reason }),
   };

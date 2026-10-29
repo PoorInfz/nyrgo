@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.5.0 — 2026-10-29 — Phase 1, milestone 5: creature content
+
+Added
+
+- The approved universe: 50 original creatures (16 evolution lines, 8 standalones), 10 elements
+  with crypto display names, a balanced 2-strong / 2-weak type chart, 40 skills, 26 passives,
+  11 items (capture vaults, patches, revive, evolution materials, a lure) and 5 recipes.
+- Rules that derive stats, skills, capture difficulty and evolution costs; the 30-day HODL
+  evolution (Paperpaw → Diamondpaw).
+- Content tests: counts, chain validity, rising stats, existing references, starters, and a
+  banned-word guard against real brands, coins, people and owned memes.
+- Migration `content` and an idempotent `content:sync` run at API start; `GET /v1/dex` (public,
+  ETag-cached).
+- Dependency-free GLB writer and 50 generated low-poly placeholder models; three.js turntable
+  viewer that respects reduced motion.
+- Web: Dex tab with element filter and creature pages (3D model, stats, skills, passive,
+  match-ups, evolution links); Spanish and English.
+
+Fixed during verification
+
+- Epic ring and ice crystals dipped below the ground; figures are now rested on y = 0.
+- Gwisp was described as a blue flame while Gas is yellow.
+
+Verified locally on 2026-10-29: 159 tests passing (32 shared, 91 API, 36 web); all five migrations
+down and up again; every one of the 50 models rendered in headless Chromium from the Dex with no
+console errors; creature page checked at 390 px.
+
 ## 0.4.0 — 2026-10-29 — Phase 1, milestone 4: movement checks and data retention
 
 Added

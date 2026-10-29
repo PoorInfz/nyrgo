@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next';
 import type { Api, Profile } from '../api';
 import { Home } from './Home';
 import { Play } from './Play';
+import { DexScreen } from './DexScreen';
 
-type Tab = 'play' | 'profile';
+type Tab = 'play' | 'dex' | 'profile';
 
 /** Signed-in shell: the map to play, and the profile with account and privacy controls. */
 export function Game({
@@ -24,7 +25,7 @@ export function Game({
   return (
     <div className="stack">
       <nav className="tabs" role="tablist" aria-label={t('tabsLabel')}>
-        {(['play', 'profile'] as const).map((id) => (
+        {(['play', 'dex', 'profile'] as const).map((id) => (
           <button
             key={id}
             type="button"
@@ -33,7 +34,7 @@ export function Game({
             className={tab === id ? 'tab active' : 'tab'}
             onClick={() => setTab(id)}
           >
-            {t(id === 'play' ? 'tabPlay' : 'tabProfile')}
+            {t(id === 'play' ? 'tabPlay' : id === 'dex' ? 'tabDex' : 'tabProfile')}
           </button>
         ))}
       </nav>
@@ -41,6 +42,7 @@ export function Game({
       <div hidden={tab !== 'play'}>
         <Play api={api} />
       </div>
+      {tab === 'dex' && <DexScreen api={api} />}
       {tab === 'profile' && (
         <Home api={api} profile={profile} onChange={onChange} onSignedOut={onSignedOut} />
       )}

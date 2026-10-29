@@ -3,7 +3,7 @@
 Mobile-first geolocation creature-collection RPG with an original IP and optional NEAR integration.
 The full game is playable without a wallet, crypto or purchases.
 
-Status: **Phase 1, milestone 4 (movement checks and data retention)**. See [CHANGELOG.md](CHANGELOG.md).
+Status: **Phase 1, milestone 5 (creature content)**. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Layout
 
@@ -76,6 +76,18 @@ echo "VITE_PMTILES_URL=/tiles/cordoba.pmtiles" >> .env
 In development (`pnpm dev`) the game uses a simulator instead of real GPS: teleport to landmarks,
 walk preset routes at 5, 15 or 50 km/h, or force a poor 120 m fix. Add `?realgps` to the URL to
 use the device GPS. Production builds do not contain the simulator.
+
+## Creature content
+
+The 50 creatures, the type chart, skills, passives, items and recipes live in
+`packages/shared/src/content/`. The API copies them into the database on every start (or run
+`pnpm --filter @nyrgo/api content:sync`). After changing a creature, regenerate its placeholder model:
+
+```bash
+pnpm --filter @nyrgo/web models:gen      # writes apps/web/public/creatures/<id>.glb
+```
+
+A test fails if the committed models no longer match the generator.
 
 ## Scheduled jobs
 

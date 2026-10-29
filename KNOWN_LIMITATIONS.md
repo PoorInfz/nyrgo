@@ -9,10 +9,17 @@ Stated openly so nobody relies on something that is not there.
   stay disabled while the client is web-only (master prompt §16). Testnet and simulated rewards are fine.
 - **iOS PWA limits.** No background geolocation, limited push notifications, storage can be evicted.
 
-## Current state (Phase 1, milestone 4)
+## Current state (Phase 1, milestone 5)
 
-- Accounts, the map and nearby places work. No creatures, captures, battles or Gold faucets yet
-  (milestones 5–8).
+- Accounts, the map, nearby places and the creature encyclopedia work. Creatures do not spawn or
+  get captured yet (milestone 6); no battles or Gold faucets yet (milestones 7–8).
+- Skills and passives are defined (power, accuracy, effect and value) but nothing applies them until
+  the combat engine in milestone 7.
+- The Dex shows every creature, including legendaries. Hiding entries until seen comes with captures.
+- Placeholder 3D models share one silhouette per element; creatures of the same line differ only in
+  tint, size and eye size. Final art replaces them before Phase 4.
+- Placeholder models are about 1.9 MB in total (flat shading without index buffers); fine for now,
+  to be compressed with the final art.
 - Retention runs hourly once the API starts with `JOBS_ENABLED=true` (the default). If the API is
   down for long, the next run catches up; there is no separate alert yet if jobs stop running.
 - Movement checks are heuristics. A spoofer moving at walking pace passes them; they only catch jumps,

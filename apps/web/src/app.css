@@ -199,7 +199,7 @@ button.danger {
 
 .tabs {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 4px;
   background: var(--surface);
   border-radius: 12px;
@@ -312,4 +312,141 @@ button.small {
   width: 10px;
   height: 10px;
   border-radius: 50%;
+}
+
+/* ---------------------------------------------------------------- dex */
+
+.chips button[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.chips button {
+  border: 1px solid transparent;
+}
+
+.dex-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.dex-card {
+  width: 100%;
+  min-height: 72px;
+  display: grid;
+  grid-template-columns: 12px 1fr;
+  grid-template-rows: auto auto auto;
+  column-gap: 8px;
+  align-items: center;
+  text-align: left;
+  padding: 8px 12px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-weight: 500;
+}
+
+.dex-card .dex-dot {
+  grid-row: 1 / span 3;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.dex-name {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.rarity {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.rarity-rare {
+  color: #60a5fa;
+}
+.rarity-epic {
+  color: #c084fc;
+}
+.rarity-legendary,
+.rarity-mythic {
+  color: var(--gold);
+}
+
+.chip {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: #0f1720;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.viewer {
+  height: 240px;
+  border-radius: 12px;
+  background: radial-gradient(circle at 50% 60%, #1f2d3b, #0f1720 70%);
+  overflow: hidden;
+}
+
+.viewer canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.bars {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bars div {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.bars dt {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.bars dd {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bar {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--accent);
+}
+
+.bars .value {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.plain {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
