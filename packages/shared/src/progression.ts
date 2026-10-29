@@ -42,3 +42,41 @@ export function captureFactor(difficulty: number, level: number): number {
   const l = Math.max(0.6, 1 - (Math.max(1, level) - 1) * 0.01);
   return d * l;
 }
+
+export const MAX_CREATURE_LEVEL = 50;
+
+/** Total XP a creature needs for a level: 0, 40, 120, 240, … (20·L·(L−1)). */
+export function creatureXpForLevel(level: number): number {
+  const l = Math.max(1, Math.min(MAX_CREATURE_LEVEL, Math.floor(level)));
+  return 20 * l * (l - 1);
+}
+
+export function creatureLevelForXp(xp: number): number {
+  let level = 1;
+  while (level < MAX_CREATURE_LEVEL && xp >= creatureXpForLevel(level + 1)) level++;
+  return level;
+}
+
+/** XP a creature earns for wearing out a wild creature of `foeLevel`. */
+export function battleXp(foeLevel: number): number {
+  return 20 + foeLevel * 6;
+}
+
+/**
+ * Creatures recover outside battle: this fraction of their maximum HP every `minutes`, even
+ * from zero, so nobody is stuck without a shop.
+ */
+export const REST_HEAL = { fraction: 0.1, minutes: 5 } as const;
+
+export function restedHp(stored: number, max: number, minutesSince: number): number {
+  const steps = Math.floor(Math.max(0, minutesSince) / REST_HEAL.minutes);
+  return Math.min(max, stored + Math.ceil(steps * REST_HEAL.fraction * max));
+}
+
+/**
+ * Capture bonus for a creature worn down in battle: ×1 at full HP up to ×2 at zero.
+ */
+export function weaknessFactor(hp: number, max: number): number {
+  if (max <= 0) return 1;
+  return 1 + (1 - Math.min(1, Math.max(0, hp / max)));
+}

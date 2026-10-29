@@ -9,18 +9,21 @@ Stated openly so nobody relies on something that is not there.
   stay disabled while the client is web-only (master prompt §16). Testnet and simulated rewards are fine.
 - **iOS PWA limits.** No background geolocation, limited push notifications, storage can be evicted.
 
-## Current state (Phase 1, milestone 6)
+## Current state (Phase 1, milestone 7)
 
-- Accounts, the map, nearby places, the Dex, wild spawns, encounters, captures, the collection and
-  the starter pick work. No battles, POI rewards, shop or missions yet (milestones 7–8), so the only
-  way to get more vaults today is the starter kit.
+- Accounts, the map, nearby places, the Dex, wild spawns, encounters, captures, the collection,
+  the starter pick and battles against wild creatures work. No POI rewards, shop or missions yet
+  (milestone 8), so the only way to get more vaults and patches today is the starter kit.
+- Battles are 1v1 with one creature each and no switching; no trainer (NPC) battles and no PvP.
+- Battle numbers (damage scale, type weight, XP, rewards) come from a quick simulation in the tests,
+  not from the Phase 2 economy simulation.
+- Evolution is defined but not available yet: creatures level up but nothing evolves them.
 - Spawn rules (slots per biome, rarity weights, levels, flee chance) are starting assumptions; the
   economy simulation (Phase 2) has not tuned them.
 - The throw's timing score is reported by the client. A modified client can always send 1; the
   effect is capped at +25 % of the chance (decision S7).
 - "Seen" is recorded when an encounter opens, so the Dex stays hidden until a player walks to a
   creature. Creatures shown on the map but never approached stay "???".
-- Creature levels do not change after capture yet (no XP for creatures until combat).
 - Portraits in the map markers and lists are loaded one file per creature; no sprite sheet yet.
 - Skills and passives are defined (power, accuracy, effect and value) but nothing applies them until
   the combat engine in milestone 7.

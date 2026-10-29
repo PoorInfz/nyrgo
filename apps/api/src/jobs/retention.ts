@@ -25,6 +25,7 @@ export interface RetentionReport {
   riskSignalsDeleted: number;
   spawnsDeleted: number;
   spawnGenerationsDeleted: number;
+  battlesDeleted: number;
 }
 
 async function batched(db: Db, sql: string, params: unknown[]): Promise<number> {
@@ -87,6 +88,12 @@ export async function runRetention(db: Db): Promise<RetentionReport> {
       db,
       `DELETE FROM spawns WHERE id IN (
          SELECT id FROM spawns WHERE expires_at < now() - make_interval(days => $1) LIMIT ${BATCH})`,
+      [SPAWN_RETENTION_D],
+    ),
+    battlesDeleted: await batched(
+      db,
+      `DELETE FROM battles WHERE id IN (
+         SELECT id FROM battles WHERE created_at < now() - make_interval(days => $1) LIMIT ${BATCH})`,
       [SPAWN_RETENTION_D],
     ),
     spawnGenerationsDeleted: await batched(

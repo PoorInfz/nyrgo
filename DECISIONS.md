@@ -2,6 +2,20 @@
 
 Newest first. Each entry: date, decision, reason, who approved.
 
+## 2026-10-29 — Milestone 7: battles
+
+| #   | Decision                                                                                                                                      | Reason                                                                                                   |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| B1  | One combat engine in `@nyrgo/shared`, pure and deterministic; the server runs it with a secret seed per battle and turn and stores every turn | One set of rules, replayable for disputes, nothing to trust on the client                                |
+| B2  | Damage = power × atk/def × 0.13 × (1 + level/25) × type^0.5 × 1.2 same element × crit 1.5 (6 %) × 0.85–1                                      | Simulated at ~4.5–5.5 turns between equal creatures at levels 5–40                                       |
+| B3  | The type chart keeps ×2 / ×0.5 but battles apply its square root (×1.41 / ×0.71)                                                              | At full strength a 1v1 without switching was decided by type alone (99–100 %); now ~8 levels overturn it |
+| B4  | Battles are a way to wear a wild creature down, not to defeat it: a win leaves it at 0 HP and up to twice as easy to capture                  | Fits "storing in a vault"; combat and capture reinforce each other                                       |
+| B5  | One rewarded win per encounter; player reward 150 XP and 25 Gold up to 20 wins per day; the creature always gains 20 + 6 × foe level XP       | No farming one spawn; levelling still works after the cap                                                |
+| B6  | Owned creatures keep their HP between battles and recover 10 % of max HP every 5 minutes, even from 0; patches heal in and out of battle      | Nobody gets stuck without a shop                                                                         |
+| B7  | Creature XP curve 20·L·(L−1), max level 50; a level-up raises current HP by the growth of max HP                                              | Simple, tunable later                                                                                    |
+| B8  | The wild creature fights with middle individual values (7) and picks its best move 70 % of the time                                           | Predictable enough to plan, not trivial                                                                  |
+| B9  | Every passive's effect is implemented; stat passives name their stat in content (`stat`)                                                      | Content and rules can no longer drift                                                                    |
+
 ## 2026-10-29 — Milestone 6: spawns, encounters and captures
 
 | #   | Decision                                                                                                                                                  | Reason                                                                   |

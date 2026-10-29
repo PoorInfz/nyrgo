@@ -102,6 +102,7 @@ describe.skipIf(!TEST_DB_URL)('scheduled jobs', () => {
         riskSignalsDeleted: 0,
         spawnsDeleted: 0,
         spawnGenerationsDeleted: 0,
+        battlesDeleted: 0,
       });
     });
   });

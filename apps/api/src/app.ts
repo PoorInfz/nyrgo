@@ -15,6 +15,7 @@ import { healthRoutes } from './routes/health.js';
 import { worldRoutes } from './modules/world/routes.js';
 import { contentRoutes } from './modules/content/routes.js';
 import { captureRoutes } from './modules/capture/routes.js';
+import { battleRoutes } from './modules/battle/routes.js';
 
 export interface AppDeps {
   config: AppConfig;
@@ -113,6 +114,7 @@ export async function buildApp({ config, db, mailer }: AppDeps): Promise<Fastify
   await app.register(accountRoutes, { db, config });
   await app.register(worldRoutes, { db, spawnSecret: config.spawnSecret });
   await app.register(captureRoutes, { db });
+  await app.register(battleRoutes, { db });
   await app.register(contentRoutes);
 
   if (config.devRoutes) {

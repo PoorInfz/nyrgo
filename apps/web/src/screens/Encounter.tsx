@@ -3,11 +3,14 @@ import { useTranslation } from 'react-i18next';
 import {
   ApiError,
   type Api,
+  type BattleView,
   type CaptureResult,
   type Encounter as Enc,
   type NearbyCreature,
+  type OwnedCreature,
 } from '../api';
 import { artUrl, useContent } from '../content';
+import { Battle } from './Battle';
 
 /** Seconds for one shrink of the timing ring (kept in sync with the CSS animation). */
 export const RING_PERIOD_MS = 1400;
@@ -49,6 +52,9 @@ export function Encounter({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CaptureResult | null>(null);
+  /** Choosing who battles (list of the player's creatures), then the battle itself. */
+  const [picking, setPicking] = useState<OwnedCreature[] | null>(null);
+  const [battle, setBattle] = useState<BattleView | null>(null);
   const pendingKey = useRef<string | null>(null);
   const ringStart = useRef(0);
   const still = useMemo(() => reducedMotion(), []);
@@ -117,6 +123,65 @@ export function Encounter({
   }
 
   const over = enc?.status === 'caught' || enc?.status === 'fled';
+
+  async function choose() {
+    setError(null);
+    try {
+      setPicking((await api.myCreatures()).creatures);
+    } catch (err) {
+      setError(errorText(err));
+    }
+  }
+
+  async function fightWith(creature: string) {
+    if (!enc) return;
+    setBusy(true);
+    setError(null);
+    try {
+      setBattle(await api.startBattle(enc.id, creature));
+      setPicking(null);
+    } catch (err) {
+      setError(errorText(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (battle && dex) {
+    return (
+      <Battle
+        api={api}
+        dex={dex}
+        start={battle}
+        onEnd={(final) => {
+          setBattle(null);
+          setResult(null);
+          // the wild creature keeps the HP the battle left it with
+          setEnc((e) =>
+            e
+              ? {
+                  ...e,
+                  foeHp: final.foe.hp,
+                  foeMaxHp: final.foe.maxHp,
+                  worn: e.worn || final.result === 'win',
+                }
+              : e,
+          );
+          // patches used in battle came out of the same inventory
+          setEnc((e) =>
+            e
+              ? {
+                  ...e,
+                  inventory: e.inventory.map((i) =>
+                    i.id in final.items ? { ...i, qty: final.items[i.id]! } : i,
+                  ),
+                }
+              : e,
+          );
+        }}
+      />
+    );
+  }
   const noVaults = enc !== null && VAULTS.every((v) => qty(v) === 0);
 
   return (
@@ -136,6 +201,15 @@ export function Encounter({
         />
       </div>
       {def && <p>{def.lore[lang]}</p>}
+      {enc && !over && enc.foeHp !== null && enc.foeMaxHp !== null && (
+        <p className="notice">
+          {enc.foeHp === 0
+            ? t('foeWorn', { name })
+            : enc.foeHp < enc.foeMaxHp
+              ? t('foeHurt', { name, hp: enc.foeHp, max: enc.foeMaxHp })
+              : null}
+        </p>
+      )}
 
       {result && (
         <div role="status" className={`result result-${result.result}`}>
@@ -187,6 +261,40 @@ export function Encounter({
             </>
           )}
         </>
+      )}
+      {enc && !over && !enc.worn && enc.foeHp !== 0 && !picking && (
+        <button type="button" className="secondary" disabled={busy} onClick={choose}>
+          {t('fight')}
+        </button>
+      )}
+      {picking && (
+        <fieldset className="vaults">
+          <legend>{t('chooseFighter')}</legend>
+          {picking.filter((c) => c.hp > 0).length === 0 && <p>{t('noFighters')}</p>}
+          {picking.map((c) => {
+            const d = dex?.creatures.find((x) => x.id === c.creatureId);
+            return (
+              <button
+                key={c.id}
+                type="button"
+                className="pick"
+                disabled={busy || c.hp <= 0}
+                onClick={() => fightWith(c.id)}
+              >
+                <img src={artUrl(c.creatureId)} alt="" width={40} height={40} />
+                <span>
+                  {d?.name ?? c.creatureId} · {t('levelShort', { level: c.level })}
+                </span>
+                <span className="muted small">
+                  {c.hp > 0 ? t('hpLine', { hp: c.hp, max: c.maxHp }) : t('resting')}
+                </span>
+              </button>
+            );
+          })}
+          <button type="button" className="link" onClick={() => setPicking(null)}>
+            {t('cancel')}
+          </button>
+        </fieldset>
       )}
       <button type="button" className={over ? '' : 'secondary'} onClick={() => onClose(over)}>
         {over ? t('backToMap') : t('run')}

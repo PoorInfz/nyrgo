@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.7.0 — 2026-10-29 — Phase 1, milestone 7: battles
+
+Added
+
+- Combat engine in `@nyrgo/shared`: speed order, accuracy, damage with the type chart and the
+  same-element bonus, critical hits, all 18 passive effects, patches, withdrawing, and a wild
+  opponent that usually picks its best move. Pure and deterministic; a shared seeded PRNG.
+- Battles in the API: `POST /v1/encounters/:id/battle`, `POST /v1/battles/:id/turn` (secret seed
+  per battle and turn, `Idempotency-Key`), `GET /v1/battles/:id`; heal outside battle with
+  `POST /v1/me/creatures/:id/heal`.
+- A win wears the wild creature out (up to ×2 capture chance), gives the creature XP and levels,
+  and pays the player within the daily caps; a loss leaves the creature exhausted until it rests.
+- Creatures recover 10 % HP every 5 minutes; current and maximum HP in the collection.
+- Migration `battles` (battle state and turns, encounter HP, recovery clock, creature XP curve).
+- Web: "Battle" from an encounter with a creature picker, battle screen (HP bars, skills with a
+  strong/weak hint, patches, withdraw, a readable log), worn-out notice before throwing, HP and
+  healing in the collection; Spanish and English.
+
+Changed
+
+- Captured creatures start with the XP of their level; battle damage applies the type chart's
+  square root (decision B3).
+
+Fixed during verification
+
+- Vault choices showed the radio button above its label (since milestone 6).
+
+Verified locally on 2026-10-29: 221 tests passing (52 shared, 123 API, 46 web); lint, typecheck,
+format and build clean;
+migrations down and up again; in headless Chromium against the real API at 390 px: starter
+picked, battle won against a wild creature, worn-out creature captured at 95 %, collection
+updated, no console errors, no horizontal overflow.
+
 ## 0.6.0 — 2026-10-29 — Phase 1, milestone 6: spawns, encounters and captures
 
 Added

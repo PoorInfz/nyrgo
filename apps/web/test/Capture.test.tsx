@@ -16,6 +16,8 @@ import i18n from '../src/i18n';
 import { createApi, type CaptureResult, type Dex, type Encounter as Enc } from '../src/api';
 import { Encounter } from '../src/screens/Encounter';
 import { Collection } from '../src/screens/Collection';
+import { Battle } from '../src/screens/Battle';
+import type { BattleView } from '../src/api';
 
 const DEX: Dex = {
   version: CONTENT_VERSION,
@@ -60,6 +62,9 @@ const ENC: Enc = {
     { id: 'patch', qty: 3 },
     { id: 'vault-basic', qty: 2 },
   ],
+  foeHp: null,
+  foeMaxHp: null,
+  worn: false,
 };
 
 const reward = { xp: 100, gold: 10, level: 2, leveledUp: true, goldCapped: 0 };
@@ -222,6 +227,8 @@ describe('Collection', () => {
           ivs: { hp: 1, atk: 2, def: 3, spd: 4 },
           stats: { hp: 60, atk: 30, def: 30, spd: 40 },
           hp: 60,
+          maxHp: 60,
+          xp: 400,
           acquiredVia: 'starter',
           acquiredAt: '2026-10-29T10:00:00.000Z',
         };
@@ -250,5 +257,139 @@ describe('Collection', () => {
       .map((c) => c as unknown as [string, RequestInit])
       .find(([u]) => u.endsWith('/v1/me/starter'))!;
     expect(JSON.parse(String(post[1].body))).toEqual({ creatureId: 'dropling' });
+  });
+});
+
+const BATTLE: BattleView = {
+  id: '44444444-4444-4444-8444-444444444444',
+  turn: 0,
+  result: null,
+  player: {
+    creatureId: 'gwisp',
+    level: 8,
+    hp: 40,
+    maxHp: 40,
+    skills: ['base-fee', 'priority-tip'],
+    passive: 'gas-fee',
+    mods: { atk: 1, def: 1, spd: 1 },
+  },
+  foe: {
+    creatureId: 'dropling',
+    level: 6,
+    hp: 35,
+    maxHp: 35,
+    skills: ['gift-shower', 'claim-rush'],
+    passive: 'lucky-drop',
+    mods: { atk: 1, def: 1, spd: 1.1 },
+  },
+  items: { patch: 2 },
+  events: [{ type: 'passive', side: 'foe', passive: 'lucky-drop', stat: 'spd', amount: 0.1 }],
+};
+
+describe('Battle', () => {
+  it('shows both creatures, hints the type match-up and tells each turn', async () => {
+    const after: BattleView = {
+      ...BATTLE,
+      turn: 1,
+      foe: { ...BATTLE.foe, hp: 20 },
+      player: { ...BATTLE.player, hp: 31 },
+      events: [
+        { type: 'move', side: 'player', skill: 'base-fee' },
+        { type: 'hit', side: 'player', damage: 15, effectiveness: 2, crit: false, hpLeft: 20 },
+        { type: 'move', side: 'foe', skill: 'gift-shower' },
+        { type: 'hit', side: 'foe', damage: 9, effectiveness: 0.5, crit: false, hpLeft: 31 },
+      ],
+    };
+    const fetch = serve(() => json(200, after));
+    render(
+      <Battle
+        api={createApi('http://api.test')}
+        dex={DEX}
+        start={BATTLE}
+        onEnd={() => undefined}
+      />,
+    );
+    expect(screen.getByRole('heading', { name: 'Combate contra Dropling' })).toBeInTheDocument();
+    expect(screen.getByText('Dropling salvaje: Regalo inesperado.')).toBeInTheDocument();
+    // Gas is strong against Airdrop
+    expect(screen.getByRole('button', { name: /Tarifa base.*fuerte/ })).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: 'Vida de Dropling salvaje: 35 de 35' }),
+    ).toBeInTheDocument();
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Tarifa base/ }));
+    });
+    expect(await screen.findByText('Tu Gwisp usa Tarifa base.')).toBeInTheDocument();
+    expect(screen.getByText('15 de daño. ¡Le da justo en su punto débil!')).toBeInTheDocument();
+    expect(screen.getByText('9 de daño. Apenas le hace efecto…')).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: 'Vida de Dropling salvaje: 20 de 35' }),
+    ).toBeInTheDocument();
+    const [url, init] = fetch.mock.calls
+      .map((c) => c as unknown as [string, RequestInit])
+      .find(([u]) => u.includes('/turn'))!;
+    expect(url).toBe(`http://api.test/v1/battles/${BATTLE.id}/turn`);
+    expect(JSON.parse(String(init.body))).toEqual({ action: { kind: 'skill', skill: 'base-fee' } });
+    expect((init.headers as Record<string, string>)['idempotency-key']).toBeTruthy();
+  });
+
+  it('reports the end of the battle with XP and rewards', async () => {
+    const won: BattleView = {
+      ...BATTLE,
+      turn: 3,
+      result: 'win',
+      foe: { ...BATTLE.foe, hp: 0 },
+      events: [{ type: 'faint', side: 'foe' }],
+      creatureXp: { level: 9, leveledUp: true, xp: 56 },
+      reward: { xp: 150, gold: 25, level: 2, leveledUp: false, goldCapped: 0 },
+    };
+    serve(() => json(200, won));
+    const onEnd = vi.fn();
+    render(<Battle api={createApi('http://api.test')} dex={DEX} start={BATTLE} onEnd={onEnd} />);
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Tarifa base/ }));
+    });
+    expect(await screen.findByText(/Has agotado a Dropling/)).toBeInTheDocument();
+    expect(screen.getByText('Gwisp gana 56 XP. ¡Gwisp sube a nivel 9!')).toBeInTheDocument();
+    expect(screen.getByText('+150 XP · +25 Gold')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Tarifa base/ })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
+    expect(onEnd).toHaveBeenCalledWith(won);
+  });
+
+  it('heals with a patch and withdraws', async () => {
+    let call = 0;
+    const fetch = serve(() =>
+      json(
+        200,
+        call++ === 0
+          ? { ...BATTLE, turn: 1, items: { patch: 1 }, events: [] }
+          : { ...BATTLE, turn: 2, result: 'fled', events: [{ type: 'flee', success: true }] },
+      ),
+    );
+    render(
+      <Battle
+        api={createApi('http://api.test')}
+        dex={DEX}
+        start={{ ...BATTLE, player: { ...BATTLE.player, hp: 10 } }}
+        onEnd={() => undefined}
+      />,
+    );
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Parche (2)' }));
+    });
+    expect(await screen.findByRole('button', { name: 'Parche (1)' })).toBeInTheDocument();
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Retirarse' }));
+    });
+    expect(await screen.findByText('Te retiras del combate.')).toBeInTheDocument();
+    const bodies = fetch.mock.calls
+      .map((c) => c as unknown as [string, RequestInit])
+      .filter(([u]) => u.includes('/turn'))
+      .map(([, init]) => JSON.parse(String(init.body)));
+    expect(bodies).toEqual([
+      { action: { kind: 'item', item: 'patch' } },
+      { action: { kind: 'flee' } },
+    ]);
   });
 });

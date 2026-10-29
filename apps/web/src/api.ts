@@ -1,5 +1,6 @@
 import type {
   AgeBand,
+  BattleEvent,
   Element,
   ErrorCode,
   Evolution,
@@ -71,12 +72,44 @@ export interface Encounter {
   attempts: number;
   expiresAt: string;
   inventory: InventoryItem[];
+  /** Null until a battle has started; 0 once worn out (easiest to capture). */
+  foeHp: number | null;
+  foeMaxHp: number | null;
+  worn: boolean;
 }
+
+export interface BattleSide {
+  creatureId: string;
+  level: number;
+  hp: number;
+  maxHp: number;
+  skills: string[];
+  passive: string;
+  mods: { atk: number; def: number; spd: number };
+}
+
+export interface BattleView {
+  id: string;
+  turn: number;
+  result: null | 'win' | 'loss' | 'fled';
+  player: BattleSide;
+  foe: BattleSide;
+  items: Record<string, number>;
+  events: BattleEvent[];
+  reward?: CaptureResult['reward'] | null;
+  creatureXp?: { level: number; leveledUp: boolean; xp: number };
+}
+
+export type BattleAction =
+  { kind: 'skill'; skill: string } | { kind: 'item'; item: string } | { kind: 'flee' };
 
 export interface OwnedCreature {
   id: string;
   creatureId: string;
   level: number;
+  xp: number;
+  /** Current HP, including what it recovered while resting. */
+  maxHp: number;
   ivs: Stats;
   stats: Stats;
   hp: number;
@@ -213,6 +246,22 @@ export function createApi(baseUrl: string) {
     myDex: () => call<{ entries: DexEntry[] }>('GET', '/v1/me/dex'),
     pickStarter: (creatureId: string) =>
       call<OwnedCreature>('POST', '/v1/me/starter', { creatureId }),
+    startBattle: (encounterId: string, creature: string) =>
+      call<BattleView>('POST', `/v1/encounters/${encodeURIComponent(encounterId)}/battle`, {
+        creature,
+      }),
+    /** `key` must stay the same when retrying the same turn. */
+    battleTurn: (battleId: string, action: BattleAction, key: string) =>
+      call<BattleView>(
+        'POST',
+        `/v1/battles/${encodeURIComponent(battleId)}/turn`,
+        { action },
+        { 'idempotency-key': key },
+      ),
+    heal: (creatureId: string, item: string) =>
+      call<OwnedCreature>('POST', `/v1/me/creatures/${encodeURIComponent(creatureId)}/heal`, {
+        item,
+      }),
   };
 }
 

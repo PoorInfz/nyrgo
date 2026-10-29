@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Api, OwnedCreature } from '../api';
+import { ApiError, type Api, type OwnedCreature } from '../api';
 import { artUrl, useContent } from '../content';
 
 type Lang = 'es' | 'en';
@@ -13,6 +13,7 @@ export function Collection({ api }: { api: Api }) {
   const [mine, setMine] = useState<OwnedCreature[] | null>(null);
   const [error, setError] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const reload = useCallback(
     () =>
@@ -31,6 +32,20 @@ export function Collection({ api }: { api: Api }) {
 
   const byId = new Map(dex.creatures.map((c) => [c.id, c]));
   const elements = new Map(dex.elements.map((e) => [e.id, e]));
+
+  async function heal(id: string) {
+    setBusy(true);
+    setNotice(null);
+    try {
+      const healed = await api.heal(id, 'patch');
+      setMine((all) => all?.map((m) => (m.id === id ? { ...m, hp: healed.hp } : m)) ?? all);
+    } catch (err) {
+      const code = err instanceof ApiError ? err.code : 'other';
+      setNotice(t(`errors.${code}`, { defaultValue: t('errors.other') }));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function pick(id: string, name: string) {
     if (!window.confirm(t('starterConfirm', { name }))) return;
@@ -73,6 +88,7 @@ export function Collection({ api }: { api: Api }) {
     <section className="stack" aria-labelledby="col-title">
       <h2 id="col-title">{t('collectionTitle')}</h2>
       <p className="muted">{t('collectionCount', { count: mine.length })}</p>
+      {notice && <p role="alert">{notice}</p>}
       <ul className="dex-grid">
         {mine.map((m) => {
           const def = byId.get(m.creatureId);
@@ -84,10 +100,26 @@ export function Collection({ api }: { api: Api }) {
                 <span className="muted">
                   {t('levelShort', { level: m.level })} · {t(`caughtVia.${m.acquiredVia}`)}
                 </span>
+                <div className="hp" role="img" aria-label={t('hpLine', { hp: m.hp, max: m.maxHp })}>
+                  <span
+                    className={m.hp / m.maxHp <= 0.25 ? 'hp-fill low' : 'hp-fill'}
+                    style={{ width: `${Math.round((m.hp / m.maxHp) * 100)}%` }}
+                  />
+                </div>
                 <span className="muted small">
-                  {t('stat.hp')} {m.stats.hp} · {t('stat.atk')} {m.stats.atk} · {t('stat.def')}{' '}
-                  {m.stats.def} · {t('stat.spd')} {m.stats.spd}
+                  {t('hpLine', { hp: m.hp, max: m.maxHp })} · {t('stat.atk')} {m.stats.atk} ·{' '}
+                  {t('stat.def')} {m.stats.def} · {t('stat.spd')} {m.stats.spd}
                 </span>
+                {m.hp < m.maxHp && (
+                  <button
+                    type="button"
+                    className="secondary small"
+                    disabled={busy}
+                    onClick={() => heal(m.id)}
+                  >
+                    {t('healWith', { item: dex.items.find((i) => i.id === 'patch')!.name[lang] })}
+                  </button>
+                )}
               </div>
             </li>
           );

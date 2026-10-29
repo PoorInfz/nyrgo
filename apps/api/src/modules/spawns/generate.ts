@@ -1,6 +1,7 @@
 import { createHash, createHmac } from 'node:crypto';
 import {
   CREATURES,
+  sfc32,
   type Biome,
   type CreatureDef,
   type Rarity,
@@ -31,23 +32,7 @@ export interface SpawnCandidate {
   lng: number;
 }
 
-/** Small fast PRNG (sfc32) seeded from four 32-bit words. Returns floats in [0, 1). */
-export function sfc32(a: number, b: number, c: number, d: number): () => number {
-  return () => {
-    a >>>= 0;
-    b >>>= 0;
-    c >>>= 0;
-    d >>>= 0;
-    let t = (a + b) | 0;
-    a = b ^ (b >>> 9);
-    b = (c + (c << 3)) | 0;
-    c = (c << 21) | (c >>> 11);
-    d = (d + 1) | 0;
-    t = (t + d) | 0;
-    c = (c + t) | 0;
-    return (t >>> 0) / 4294967296;
-  };
-}
+export { sfc32 };
 
 /**
  * Each cell refreshes at its own offset inside the lifetime, so the map does not change all

@@ -78,7 +78,9 @@ export async function accountRoutes(
         captureAttempts: await q(
           `SELECT spawn_id, item_id, chance, roll, success, created_at FROM capture_attempts WHERE user_id = $1`,
         ),
-        battles: await q(`SELECT id, kind, result, created_at FROM battles WHERE user_id = $1`),
+        battles: await q(
+          `SELECT id, kind, result, turn, turns, created_at, finished_at FROM battles WHERE user_id = $1 ORDER BY created_at`,
+        ),
         locationSamples: await q(
           `SELECT h3_r9::text AS h3_cell, ST_Y(geom::geometry) AS lat, ST_X(geom::geometry) AS lng,
                   accuracy_m, speed_ms, created_at

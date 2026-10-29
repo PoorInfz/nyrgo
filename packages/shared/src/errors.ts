@@ -26,6 +26,10 @@ export const ERROR_CODES = {
   creature_fled: 410,
   out_of_items: 409,
   starter_taken: 409,
+  creature_exhausted: 409,
+  battle_active: 409,
+  already_won: 409,
+  invalid_action: 422,
   internal_error: 500,
 } as const;
 

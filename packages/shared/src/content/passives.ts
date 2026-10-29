@@ -25,6 +25,8 @@ export interface Passive {
     | 'wait_speed';
   /** Effect strength: a fraction (0.1 = 10 %) or a count, depending on the effect. */
   value: number;
+  /** Which stat `stat_bonus` raises or `enemy_debuff` lowers. */
+  stat?: 'atk' | 'def' | 'spd' | 'all';
   name: { es: string; en: string };
   text: { es: string; en: string };
 }
@@ -227,5 +229,20 @@ export const PASSIVES: Passive[] = [
     ['Verified', 'Its attacks never miss.'],
   ),
 ];
+
+/** The stat each stat-changing passive affects (matches its description). */
+const STAT_OF: Record<string, NonNullable<Passive['stat']>> = {
+  'whale-weight': 'def',
+  'chain-armor': 'def',
+  'bull-charge': 'atk',
+  genesis: 'all',
+  'fud-aura': 'atk',
+  'bear-hug': 'spd',
+  phisher: 'def',
+};
+for (const p of PASSIVES) {
+  const stat = STAT_OF[p.id];
+  if (stat) p.stat = stat;
+}
 
 export const PASSIVES_BY_ID: ReadonlyMap<string, Passive> = new Map(PASSIVES.map((p) => [p.id, p]));

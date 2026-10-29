@@ -10,6 +10,8 @@ import {
   STARTERS,
   captureChance,
   captureFactor,
+  creatureXpForLevel,
+  weaknessFactor,
   instanceStats,
   type Ivs,
   type Rarity,
@@ -20,6 +22,7 @@ import { idempotent, readIdempotencyKey } from '../../http/idempotency.js';
 import { requireAuth } from '../auth/sessions.js';
 import { requireInteractable } from '../anticheat/movement.js';
 import { grantReward } from '../progress/rewards.js';
+import { listOwned } from '../creatures/owned.js';
 
 const IdParams = Type.Object({ id: Type.String({ format: 'uuid' }) });
 type IdParams = Static<typeof IdParams>;
@@ -92,9 +95,9 @@ async function addCreature(
   const ivs = rollIvs();
   const stats = instanceStats(def.stats, level, ivs);
   const { rows } = await c.query<{ id: string; acquired_at: Date }>(
-    `INSERT INTO creature_instances (definition_id, owner_id, level, ivs, hp_current, acquired_via, acquired_ref)
-     VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, acquired_at`,
-    [creatureId, userId, level, ivs, stats.hp, via, ref],
+    `INSERT INTO creature_instances (definition_id, owner_id, level, xp, ivs, hp_current, acquired_via, acquired_ref)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, acquired_at`,
+    [creatureId, userId, level, creatureXpForLevel(level), ivs, stats.hp, via, ref],
   );
   return {
     id: rows[0]!.id,
@@ -109,7 +112,11 @@ async function addCreature(
 }
 
 /** Distance from the player's latest precise fix to a spawn. */
-async function distanceToSpawn(c: PoolClient, userId: string, spawnId: string): Promise<number> {
+export async function distanceToSpawn(
+  c: PoolClient,
+  userId: string,
+  spawnId: string,
+): Promise<number> {
   const { rows } = await c.query<{ d: number | null }>(
     `SELECT ST_Distance(s.geom, l.geom) AS d
        FROM spawns s,
@@ -125,7 +132,7 @@ async function distanceToSpawn(c: PoolClient, userId: string, spawnId: string): 
   return d;
 }
 
-function assertInRange(d: number) {
+export function assertInRange(d: number) {
   const r = DEFAULT_CONFIG.world.interactionRadiusM;
   if (d > r)
     throw new HttpProblem(
@@ -169,8 +176,11 @@ export async function captureRoutes(app: FastifyInstance, { db }: { db: Db }) {
           status: string;
           attempts: number;
           expires_at: Date;
+          foe_hp: number | null;
+          foe_max_hp: number | null;
+          won_at: Date | null;
         }>(
-          `SELECT id, status, attempts, expires_at FROM encounters WHERE user_id = $1 AND spawn_id = $2 FOR UPDATE`,
+          `SELECT id, status, attempts, expires_at, foe_hp, foe_max_hp, won_at FROM encounters WHERE user_id = $1 AND spawn_id = $2 FOR UPDATE`,
           [auth.userId, req.params.id],
         );
         const existing = prior[0];
@@ -192,10 +202,13 @@ export async function captureRoutes(app: FastifyInstance, { db }: { db: Db }) {
             status: string;
             attempts: number;
             expires_at: Date;
+            foe_hp: number | null;
+            foe_max_hp: number | null;
+            won_at: Date | null;
           }>(
             `INSERT INTO encounters (user_id, spawn_id, expires_at)
              VALUES ($1, $2, $3::timestamptz + make_interval(mins => $4))
-             RETURNING id, status, attempts, expires_at`,
+             RETURNING id, status, attempts, expires_at, foe_hp, foe_max_hp, won_at`,
             [auth.userId, req.params.id, spawn.expires_at, cap.encounterGraceMin],
           );
           enc = ins.rows[0]!;
@@ -211,6 +224,10 @@ export async function captureRoutes(app: FastifyInstance, { db }: { db: Db }) {
           status: enc.status,
           attempts: enc.attempts,
           expiresAt: enc.expires_at.toISOString(),
+          /** Null until a battle has started; 0 once worn out (easiest to capture). */
+          foeHp: enc.foe_hp,
+          foeMaxHp: enc.foe_max_hp,
+          worn: enc.won_at !== null,
           inventory: await loadInventory(c, auth.userId),
         };
       });
@@ -242,9 +259,13 @@ export async function captureRoutes(app: FastifyInstance, { db }: { db: Db }) {
             open: boolean;
             definition_id: string;
             level: number;
+            foe_hp: number | null;
+            foe_max_hp: number | null;
+            fighting: boolean;
           }>(
             `SELECT e.id, e.user_id, e.spawn_id, e.status, e.attempts, e.expires_at > now() AS open,
-                    s.definition_id, s.level
+                    s.definition_id, s.level, e.foe_hp, e.foe_max_hp,
+                    EXISTS (SELECT 1 FROM battles b WHERE b.encounter_id = e.id AND b.result IS NULL) AS fighting
                FROM encounters e JOIN spawns s ON s.id = e.spawn_id
               WHERE e.id = $1 FOR UPDATE OF e`,
             [req.params.id],
@@ -257,6 +278,7 @@ export async function captureRoutes(app: FastifyInstance, { db }: { db: Db }) {
           if (enc.status === 'fled')
             throw new HttpProblem('creature_fled', 'This creature ran away');
           if (!enc.open) throw new HttpProblem('spawn_expired', 'This creature has gone');
+          if (enc.fighting) throw new HttpProblem('battle_active', 'Finish the battle first');
 
           await requireInteractable(c, auth.userId);
           assertInRange(await distanceToSpawn(c, auth.userId, enc.spawn_id));
@@ -275,7 +297,11 @@ export async function captureRoutes(app: FastifyInstance, { db }: { db: Db }) {
             cap,
             def.rarity,
             item.effects.captureMultiplier ?? 1,
-            captureFactor(def.captureDifficulty, enc.level),
+            // a creature worn down in battle is up to twice as easy to store
+            captureFactor(def.captureDifficulty, enc.level) *
+              (enc.foe_hp === null || enc.foe_max_hp === null
+                ? 1
+                : weaknessFactor(enc.foe_hp, enc.foe_max_hp)),
             req.body.skill,
           );
           const r = roll();
@@ -339,34 +365,7 @@ export async function captureRoutes(app: FastifyInstance, { db }: { db: Db }) {
 
   app.get('/v1/me/creatures', async (req) => {
     const auth = requireAuth(req);
-    const { rows } = await db.query<{
-      id: string;
-      definition_id: string;
-      level: number;
-      ivs: Ivs;
-      hp_current: number;
-      acquired_via: string;
-      acquired_at: Date;
-    }>(
-      `SELECT id, definition_id, level, ivs, hp_current, acquired_via, acquired_at
-         FROM creature_instances WHERE owner_id = $1 ORDER BY acquired_at DESC, id`,
-      [auth.userId],
-    );
-    return {
-      creatures: rows.map((r) => {
-        const stats = instanceStats(CREATURES_BY_ID.get(r.definition_id)!.stats, r.level, r.ivs);
-        return {
-          id: r.id,
-          creatureId: r.definition_id,
-          level: r.level,
-          ivs: r.ivs,
-          stats,
-          hp: r.hp_current,
-          acquiredVia: r.acquired_via,
-          acquiredAt: r.acquired_at.toISOString(),
-        };
-      }),
-    };
+    return { creatures: await listOwned(db, auth.userId) };
   });
 
   /** Which creatures this player has seen and caught. */
