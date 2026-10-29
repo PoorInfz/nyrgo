@@ -53,22 +53,28 @@ body {
   gap: 14px;
 }
 
-/* The title is set like a game logo: white letters, ink outline, a red drop. */
-.logo {
-  margin: 0;
-  align-self: center;
+/* The owner's header banner: full width at the top, flush with the screen edges. Large on the
+   welcome screen; a band centred on the logo while playing. */
+.hero {
+  margin: calc(-1 * max(16px, env(safe-area-inset-top))) -16px 0;
   line-height: 0;
 }
 
-.logo img {
+.hero img {
   display: block;
-  width: auto;
-  height: 92px;
-  filter: drop-shadow(0 4px 0 rgb(6 34 43 / 30%));
+  width: 100%;
+  height: 118px;
+  object-fit: cover;
+  object-position: 50% 80%;
+  border-bottom: 3px solid var(--ink);
+  border-radius: 0 0 20px 20px;
+  box-shadow: 0 4px 0 rgb(6 34 43 / 30%);
 }
 
-.logo.big img {
-  height: min(78vw, 330px);
+.hero.big img {
+  height: auto;
+  aspect-ratio: 8 / 3;
+  object-position: 50% 50%;
 }
 
 h2 {

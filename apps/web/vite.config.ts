@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['logo.webp', 'icon-192.png', 'apple-touch-icon.png'],
+      includeAssets: ['header-800.webp', 'icon-192.png', 'apple-touch-icon.png'],
       manifest: {
         name: 'nyrGo!',
         short_name: 'nyrGo!',

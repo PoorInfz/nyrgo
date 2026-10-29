@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.12.1 — 2026-10-29 — Header banner
+
+Changed
+
+- The owner's nyrGo! header banner replaces the logo at the top of the app: whole on the welcome
+  screen, a band centred on the logo while playing (`tools/make-logo.py` makes 800 and 1600 px
+  WebP versions).
+
 ## 0.12.0 — 2026-10-29 — Phase 3, part 1: link a NEAR account (testnet)
 
 Verified locally on 2026-10-29: format, lint, typecheck and build clean; 274 tests passing (64

@@ -2,10 +2,12 @@
 """
 Cuts the nyrGo! logo out of its white background and writes the web and app-icon sizes.
 
-Input:  art/brand/logo-original.png  (the owner's logo on white, 1254 x 1254)
+Input:  art/brand/logo-original.png    (the owner's logo on white, 1254 x 1254)
+        art/brand/header-original.png  (the owner's header banner, 2000 x 750)
 Output: apps/web/public/logo.webp          640 px, transparent, for the header
         apps/web/public/icon-192.png, icon-512.png   app icons (logo on a mint disc)
         apps/web/public/apple-touch-icon.png         180 px
+        apps/web/public/header-800.webp, header-1600.webp   the header banner, two widths
 Run from the repo root: python3 tools/make-logo.py   (needs Pillow, numpy, scipy)
 """
 from pathlib import Path
@@ -54,7 +56,12 @@ def main():
         small = logo.resize((s, round(logo.height * s / logo.width)), Image.LANCZOS)
         icon.alpha_composite(small, ((size - small.width) // 2, (size - small.height) // 2))
         icon.save(PUB / name, optimize=True)
-    print("logo and icons written")
+    header = Image.open(ROOT / "art" / "brand" / "header-original.png").convert("RGB")
+    for w in (800, 1600):
+        header.resize((w, round(header.height * w / header.width)), Image.LANCZOS).save(
+            PUB / f"header-{w}.webp", "WEBP", quality=80, method=6
+        )
+    print("logo, icons and header written")
 
 
 if __name__ == "__main__":
