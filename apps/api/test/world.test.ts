@@ -101,7 +101,9 @@ describe.skipIf(!TEST_DB_URL)('world data and nearby', () => {
     });
 
     it('keeps landmarks on bridges even though they sit over water', async () => {
-      const res = await nearby(37.8764, -4.7775);
+      // A fresh player: the shared one was just ~1 km away, which would count as a jump.
+      const fresh = await createGuest(t.app);
+      const res = await nearby(37.8764, -4.7775, 10, fresh.token);
       const bridge = res.json().pois.find((p: { name: string }) => p.name === 'Puente de Prueba');
       expect(bridge).toBeDefined();
       expect(bridge.inRange).toBe(true);

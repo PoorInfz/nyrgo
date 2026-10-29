@@ -126,6 +126,9 @@ export async function accountRoutes(
           `DELETE FROM creature_instances WHERE owner_id = $1`,
           `DELETE FROM mission_progress WHERE user_id = $1`,
           `DELETE FROM idempotency_keys WHERE user_id = $1`,
+          `DELETE FROM player_movement WHERE user_id = $1`,
+          `DELETE FROM review_cases WHERE user_id = $1`,
+          `DELETE FROM poi_reports WHERE user_id = $1`,
         ]) {
           await c.query(sql, [id]);
         }

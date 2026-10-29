@@ -17,6 +17,7 @@ const EnvSchema = Type.Object({
   SESSION_TTL_DAYS: Type.Integer({ minimum: 1, maximum: 90, default: 30 }),
   MAGIC_LINK_TTL_MIN: Type.Integer({ minimum: 5, maximum: 60, default: 15 }),
   REAUTH_WINDOW_MIN: Type.Integer({ minimum: 1, maximum: 60, default: 15 }),
+  JOBS_ENABLED: Type.Boolean({ default: true }),
 });
 
 export type Env = Static<typeof EnvSchema>;
@@ -36,6 +37,8 @@ export interface AppConfig {
   reauthWindowMin: number;
   /** Cookies get the Secure flag outside development and test. */
   secureCookies: boolean;
+  /** Run scheduled jobs (retention, risk decay) in this process. */
+  jobsEnabled: boolean;
 }
 
 export class ConfigError extends Error {}
@@ -80,5 +83,6 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
     magicLinkTtlMin: env.MAGIC_LINK_TTL_MIN,
     reauthWindowMin: env.REAUTH_WINDOW_MIN,
     secureCookies: prod,
+    jobsEnabled: env.JOBS_ENABLED,
   };
 }

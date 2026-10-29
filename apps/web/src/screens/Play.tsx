@@ -47,6 +47,8 @@ export function Play({
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
   const [fix, setFix] = useState<LocationFix | null>(null);
   const [nearby, setNearby] = useState<Nearby | null>(null);
+  /** Minutes left in a server cooldown, computed when the answer arrives (not during render). */
+  const [cooldownMin, setCooldownMin] = useState<number | null>(null);
   const last = useRef<{ fix: LocationFix; at: number } | null>(null);
   const [active, setActive] = useState(false);
 
@@ -67,6 +69,10 @@ export function Play({
           .nearby(f)
           .then((n) => {
             setNearby(n);
+            const until = n.movement.reason === 'teleport_cooldown' ? n.movement.lockedUntil : null;
+            setCooldownMin(
+              until ? Math.max(1, Math.ceil((Date.parse(until) - Date.now()) / 60_000)) : null,
+            );
             setStatus({ kind: 'ok' });
           })
           .catch((err) => {
@@ -103,7 +109,8 @@ export function Play({
     );
   }
 
-  const driving = fix ? looksLikeDriving(fix) : false;
+  // Either the device says it is moving fast or the server measured it between fixes.
+  const driving = (fix ? looksLikeDriving(fix) : false) || nearby?.movement.reason === 'speed';
 
   return (
     <div className="stack">
@@ -118,6 +125,11 @@ export function Play({
         </p>
       )}
       {status.kind === 'locating' && <p role="status">{t('locating')}</p>}
+      {cooldownMin !== null && (
+        <p className="notice" role="status">
+          {t('cooldownNotice', { min: cooldownMin })}
+        </p>
+      )}
       {status.kind === 'weak' && (
         <p role="status">{t('weakSignal', { m: Math.round(status.accuracy) })}</p>
       )}

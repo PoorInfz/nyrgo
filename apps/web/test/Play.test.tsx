@@ -36,6 +36,7 @@ function manualSource() {
 
 const NEARBY: Nearby = {
   cell: '89391d0034fffff',
+  movement: { speedKmh: 4, interactable: true, reason: null, lockedUntil: null },
   visibleRadiusM: 300,
   interactionRadiusM: 40,
   attribution: '© OpenStreetMap contributors (ODbL)',
@@ -147,5 +148,45 @@ describe('Play', () => {
     });
     expect(screen.queryByText('Templo Romano')).not.toBeInTheDocument();
     expect(fetch).toHaveBeenCalledWith('http://api.test/v1/pois/p2/report', expect.anything());
+  });
+
+  it('explains a server-side cooldown after a location jump', async () => {
+    const lockedUntil = new Date(Date.now() + 4.5 * 60_000).toISOString();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        json(200, {
+          ...NEARBY,
+          movement: {
+            speedKmh: 600,
+            interactable: false,
+            reason: 'teleport_cooldown',
+            lockedUntil,
+          },
+        }),
+      ),
+    );
+    const m = manualSource();
+    render(<Play api={createApi('http://api.test')} source={m.source} showMap={false} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Activar ubicación' }));
+    await m.fix();
+    expect(await screen.findByText(/las interacciones vuelven en 5 min/)).toBeInTheDocument();
+  });
+
+  it('shows the driving warning when the server measured vehicle speed', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        json(200, {
+          ...NEARBY,
+          movement: { speedKmh: 48, interactable: false, reason: 'speed', lockedUntil: null },
+        }),
+      ),
+    );
+    const m = manualSource();
+    render(<Play api={createApi('http://api.test')} source={m.source} showMap={false} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Activar ubicación' }));
+    await m.fix({ speed: null });
+    expect(await screen.findByRole('alert')).toHaveTextContent('No juegues mientras conduces');
   });
 });

@@ -20,6 +20,8 @@ Production values come from the secret manager, never from committed files.
 | `MAGIC_LINK_TTL_MIN` | no       | `15`                    | Sign-in link lifetime, 5–60                                                                                      |
 | `REAUTH_WINDOW_MIN`  | no       | `15`                    | How recent a sign-in must be to delete a registered account, 1–60                                                |
 
+| `JOBS_ENABLED` | no | `true` | Run scheduled jobs (retention hourly, risk decay nightly) in this process |
+
 Session cookies get the `Secure` flag automatically when `NODE_ENV=production`.
 
 ## World import (scripts)

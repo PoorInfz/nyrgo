@@ -58,6 +58,8 @@ export const resources = {
         'No conseguimos tu ubicación. Sal a un sitio abierto e inténtalo de nuevo.',
       weakSignal: 'Señal GPS débil ({{m}} m). Esperando más precisión…',
       drivingWarning: 'Parece que vas en vehículo. No juegues mientras conduces.',
+      cooldownNotice:
+        'Tu ubicación ha cambiado de golpe. Por seguridad, las interacciones vuelven en {{min}} min.',
       mapLabel: 'Mapa con tu posición y los lugares cercanos',
       nearbyTitle: 'Lugares cercanos',
       nearbyEmpty: 'No hay lugares a tu alrededor. Prueba a caminar hacia una plaza o un parque.',
@@ -123,6 +125,8 @@ export const resources = {
       locationUnavailable: 'We could not get your location. Step outside and try again.',
       weakSignal: 'Weak GPS signal ({{m}} m). Waiting for a better fix…',
       drivingWarning: 'Looks like you are in a vehicle. Never play while driving.',
+      cooldownNotice:
+        'Your location jumped suddenly. To be safe, interactions come back in {{min}} min.',
       mapLabel: 'Map with your position and nearby places',
       nearbyTitle: 'Nearby places',
       nearbyEmpty: 'Nothing around you yet. Try walking towards a square or a park.',

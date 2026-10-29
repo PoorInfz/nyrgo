@@ -16,8 +16,16 @@ export interface Profile {
   createdAt: string;
 }
 
+export interface Movement {
+  speedKmh: number | null;
+  interactable: boolean;
+  reason: 'speed' | 'teleport_cooldown' | null;
+  lockedUntil: string | null;
+}
+
 export interface Nearby {
   cell: string;
+  movement: Movement;
   visibleRadiusM: number;
   interactionRadiusM: number;
   attribution: string;

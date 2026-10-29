@@ -21,6 +21,7 @@ export const ERROR_CODES = {
   invalid_token: 400,
   email_taken: 409,
   bad_origin: 403,
+  location_required: 428,
   internal_error: 500,
 } as const;
 

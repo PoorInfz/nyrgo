@@ -61,11 +61,35 @@ export interface CaptureConfig {
   skillBonus: number;
 }
 
+/**
+ * Server-side movement checks. They only ever pause interactions or raise risk for human
+ * review; nothing here bans a player (master prompt §16: no bans on a single anomaly).
+ */
+export interface AntiCheatConfig {
+  /** Implied speed above this between two fixes counts as a jump, not travel. */
+  teleportSpeedKmh: number;
+  /** ...but only when the jump is at least this far (short GPS glitches are ignored). */
+  teleportMinDistanceM: number;
+  /** Interactions stay paused this long after a jump. */
+  teleportLockMin: number;
+  /** Fixes closer in time than this are too noisy to derive a speed from. */
+  minSpeedIntervalS: number;
+  /** Client clock further than this from the server clock is a (weak) signal. */
+  clockSkewToleranceS: number;
+  /** Identical accuracy on this many consecutive fixes suggests a mock location app. */
+  constantAccuracyRun: number;
+  /** Risk score at which an account is queued for manual review. */
+  reviewThreshold: number;
+  /** Signals lose half their weight every this many hours. */
+  riskHalfLifeH: number;
+}
+
 export interface GameConfig {
   version: number;
   world: WorldConfig;
   economy: EconomyConfig;
   capture: CaptureConfig;
+  antiCheat: AntiCheatConfig;
 }
 
 export const DEFAULT_CONFIG: GameConfig = {
@@ -98,6 +122,16 @@ export const DEFAULT_CONFIG: GameConfig = {
       levelUpGoldPerLevel: 20,
     },
     faucetSinkBand: { min: 0.9, max: 1.2 },
+  },
+  antiCheat: {
+    teleportSpeedKmh: 150,
+    teleportMinDistanceM: 500,
+    teleportLockMin: 5,
+    minSpeedIntervalS: 2,
+    clockSkewToleranceS: 120,
+    constantAccuracyRun: 20,
+    reviewThreshold: 70,
+    riskHalfLifeH: 72,
   },
   capture: {
     baseChance: {

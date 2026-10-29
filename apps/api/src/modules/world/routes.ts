@@ -5,6 +5,7 @@ import type { Db } from '../../db.js';
 import { withTx } from '../../db.js';
 import { HttpProblem } from '../../http/problem.js';
 import { requireAuth } from '../auth/sessions.js';
+import { recordFix } from '../anticheat/movement.js';
 
 export const LocationSample = Type.Object(
   {
@@ -47,7 +48,7 @@ export async function worldRoutes(app: FastifyInstance, { db }: { db: Db }) {
     },
     async (req) => {
       const auth = requireAuth(req);
-      const { lat, lng, accuracy, speed } = req.body;
+      const { lat, lng, accuracy, speed, timestamp } = req.body;
       if (accuracy > cfg.requiredAccuracyM) {
         throw new HttpProblem(
           'accuracy_too_low',
@@ -56,14 +57,20 @@ export async function worldRoutes(app: FastifyInstance, { db }: { db: Db }) {
         );
       }
 
-      const point = `ST_SetSRID(ST_MakePoint($2, $1), 4326)`;
-      const { rows: cellRows } = await db.query<{ cell: string }>(
-        `INSERT INTO location_samples (user_id, h3_r9, geom, accuracy_m, speed_ms)
-         VALUES ($3, h3_lat_lng_to_cell(${point}, $4), ${point}::geography, $5, $6)
-         RETURNING h3_r9::text AS cell`,
-        [lat, lng, auth.userId, cfg.spawnH3Resolution, accuracy, speed ?? null],
-      );
+      // One fix at a time per player, so two parallel requests cannot both compare against
+      // the same previous sample.
+      const fix = await withTx(db, async (c) => {
+        await c.query(`SELECT pg_advisory_xact_lock(hashtext($1))`, [auth.userId]);
+        return recordFix(c, auth.userId, {
+          lat,
+          lng,
+          accuracy,
+          speed: speed ?? null,
+          clientTs: timestamp,
+        });
+      });
 
+      const point = `ST_SetSRID(ST_MakePoint($2, $1), 4326)`;
       const { rows } = await db.query<{
         id: string;
         name: string | null;
@@ -86,7 +93,8 @@ export async function worldRoutes(app: FastifyInstance, { db }: { db: Db }) {
       );
 
       return {
-        cell: cellRows[0]!.cell,
+        cell: fix.cell,
+        movement: fix.movement,
         visibleRadiusM: cfg.visibleRadiusM,
         interactionRadiusM: cfg.interactionRadiusM,
         attribution: OSM_ATTRIBUTION,
@@ -98,7 +106,8 @@ export async function worldRoutes(app: FastifyInstance, { db }: { db: Db }) {
           lat: r.lat,
           lng: r.lng,
           distanceM: Math.round(r.distance_m),
-          inRange: r.distance_m <= cfg.interactionRadiusM,
+          // Close enough AND allowed to interact right now (walking pace, no cooldown).
+          inRange: r.distance_m <= cfg.interactionRadiusM && fix.movement.interactable,
         })),
       };
     },

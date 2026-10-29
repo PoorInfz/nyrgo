@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.4.0 — 2026-10-29 — Phase 1, milestone 4: movement checks and data retention
+
+Added
+
+- Server-side movement checks on every location fix: speed from server time with accuracy margins,
+  pause above 30 km/h, 5-minute cooldown after a jump, weak signals for jumps, impossible speeds,
+  clock skew and constant accuracy.
+- Risk score with a 72-hour half-life, a review case at 70 for a human, and no automatic bans.
+- `requireInteractable()` guard for the gameplay actions coming next.
+- `/v1/world/nearby` now returns the movement verdict; places are only "in range" when the player
+  may interact.
+- pg-boss job queue in the API process: hourly retention and nightly risk decay; `jobs:run` CLI.
+- Migration `anticheat`: `player_movement`, `review_cases`, `risk_score()`, retention indexes.
+- Web: cooldown notice after a jump; driving warning also when the server measured the speed.
+
+Changed
+
+- Account deletion also removes movement state, review cases and POI reports.
+- New error code `location_required` (428) when an action needs a recent fix.
+
+Verified locally on 2026-10-29: 125 tests passing (12 shared, 86 API, 27 web); the teleport cooldown and
+signal observed in headless Chromium against the real API (2 places in range before the jump,
+0 after, notice shown, one 15-point signal stored); jobs scheduled at API start; `jobs:run retention`
+executed against PostgreSQL.
+
 ## 0.3.0 — 2026-10-29 — Phase 1, milestone 3: map and world data
 
 Added

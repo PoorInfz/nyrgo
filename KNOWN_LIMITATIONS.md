@@ -9,12 +9,18 @@ Stated openly so nobody relies on something that is not there.
   stay disabled while the client is web-only (master prompt §16). Testnet and simulated rewards are fine.
 - **iOS PWA limits.** No background geolocation, limited push notifications, storage can be evicted.
 
-## Current state (Phase 1, milestone 3)
+## Current state (Phase 1, milestone 4)
 
 - Accounts, the map and nearby places work. No creatures, captures, battles or Gold faucets yet
   (milestones 5–8).
-- **Location samples are stored but not yet purged.** Each nearby query stores the player's point;
-  the 24-hour / 30-day retention job arrives with milestone 4. Do not run a public test before then.
+- Retention runs hourly once the API starts with `JOBS_ENABLED=true` (the default). If the API is
+  down for long, the next run catches up; there is no separate alert yet if jobs stop running.
+- Movement checks are heuristics. A spoofer moving at walking pace passes them; they only catch jumps,
+  clock tampering and some mock-location apps. This is why real-value rewards stay off (see Platform).
+- Honest players can hit a 5-minute pause after leaving a tunnel or getting off a fast train.
+- The dev GPS simulator reports a constant 5 m accuracy, so dev accounts collect `constant_accuracy`
+  signals. Expected; they never restrict anything.
+- Review cases open automatically, but the admin screen to work them arrives with the dashboard.
 - **Real Córdoba data has not been imported from this build environment**, which cannot reach
   Overpass. The importer is tested against a synthetic sample in Overpass format; the first real run
   (`world:import`) should be followed by a manual look at the exclusion zones.
