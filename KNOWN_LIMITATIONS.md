@@ -91,3 +91,6 @@ Stated openly so nobody relies on something that is not there.
 ## Data
 
 - OpenStreetMap coverage and tagging vary by street; exclusion zones for Córdoba will need manual review.
+- The nyrGo! logo and the creature art are the owner's; their rights still need confirming before
+  launch. App icons are generated from the logo and are busy at small sizes; a simplified mark
+  would read better on a home screen.

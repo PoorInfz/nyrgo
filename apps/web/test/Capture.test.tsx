@@ -110,8 +110,8 @@ describe('Encounter', () => {
 
     expect(await screen.findByRole('heading', { name: '¡Shrimpie salvaje!' })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'Ilustración de Shrimpie' })).toHaveAttribute(
-      'src',
-      '/creatures/shrimpie.webp',
+      'data-creature',
+      'shrimpie',
     );
     expect(await screen.findByRole('radio', { name: 'Bóveda básica (2)' })).toBeChecked();
     expect(screen.getByRole('radio', { name: 'Bóveda fría (0)' })).toBeDisabled();

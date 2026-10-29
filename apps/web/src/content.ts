@@ -43,5 +43,7 @@ export const thumbUrl = (creatureId: string) => `/creatures/${creatureId}-thumb.
 /** Battle sprite sheets cut from the painted portrait: 6 idle frames, 5 attack frames. */
 export const spriteUrl = (creatureId: string, sheet: 'idle' | 'attack') =>
   `/sprites/${creatureId}-${sheet}.webp`;
+/** The creature cut out of its painting, small: Dex, collection and silhouettes. */
+export const cutUrl = (creatureId: string) => `/sprites/${creatureId}-cut.webp`;
 /** The 8-frame effect played over a fighter hit by a move of this element. */
 export const fxUrl = (element: string) => `/fx/${element}.webp`;

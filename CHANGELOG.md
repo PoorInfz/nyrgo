@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.10.0 — 2026-10-29 — Game interface and the nyrGo! logo
+
+Verified locally on 2026-10-29: format, lint, typecheck and build clean; 248 tests passing (61 shared, 136 API, 51 web); axe-core reports no violations on 12 screens; screenshots of every screen reviewed at 390 x 844. Not yet tested on a real phone.
+
+Changed
+
+- New look built on the owner's nyrGo! logo (`art/brand/`, cut out by `tools/make-logo.py`):
+  mint green with a deep green-black ink outline, painted sky and meadow, purple accent; the
+  Fredoka typeface, bundled with the app (no third-party font request).
+- Game interface: white windows with an ink outline and hard shadow, chunky buttons that sink
+  when pressed, a bottom menu with drawn icons, the logo in the header (large on the welcome
+  screen).
+- Battle as a game scene: wild creature top right and yours bottom left, each on a glowing ring,
+  status boxes facing them, a framed text box with the two newest lines, the four moves in their
+  element's colour with strong and weak hints.
+- Encounters show the wild creature animated on its ring, with the timing ring over it.
+- Dex and collection show the creatures cut out on sky and meadow; creatures not seen yet show
+  as silhouettes.
+- App name nyrGo!, PNG app icons from the logo, light theme colours.
+
+Fixed
+
+- A battle's result appeared before the last turn had finished playing.
+
 ## 0.9.1 — 2026-10-29 — Battle sprites and element effects
 
 Verified locally on 2026-10-29: format, lint, typecheck and build clean; 248 tests passing (61 shared, 136 API, 51 web); in the browser a battle plays idle, attack and element-effect sheets with every sheet served (200). Not yet tested on a real phone.

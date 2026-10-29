@@ -65,7 +65,9 @@ export function App({ apiUrl }: { apiUrl: string }) {
 
   return (
     <main className="shell">
-      <h1 className="logo">nyrgo</h1>
+      <h1 className={view.name === 'welcome' && !isAdmin ? 'logo big' : 'logo'}>
+        <img src="/logo.webp" alt="nyrGo!" width={640} height={653} />
+      </h1>
       {!online && (
         <p className="offline-banner" role="status">
           {t('offlineBanner')}

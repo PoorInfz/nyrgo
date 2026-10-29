@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CREATURES_BY_ID, evolutionBlock, type Evolution } from '@nyrgo/shared';
 import { ApiError, type Api, type OwnedCreature } from '../api';
-import { thumbUrl, useContent } from '../content';
+import { cutUrl, useContent } from '../content';
 
 type Lang = 'es' | 'en';
 
@@ -117,7 +117,9 @@ export function Collection({ api }: { api: Api }) {
           return (
             <li key={m.id}>
               <div className="dex-card owned">
-                <img src={thumbUrl(m.creatureId)} alt="" width={96} height={130} />
+                <span className="pic">
+                  <img src={cutUrl(m.creatureId)} alt="" width={112} height={128} />
+                </span>
                 <span className="dex-name">{def?.name ?? m.creatureId}</span>
                 <span className="muted">
                   {t('levelShort', { level: m.level })} · {t(`caughtVia.${m.acquiredVia}`)}

@@ -7,17 +7,20 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['icon.svg'],
+      includeAssets: ['logo.webp', 'icon-192.png', 'apple-touch-icon.png'],
       manifest: {
-        name: 'nyrgo',
-        short_name: 'nyrgo',
+        name: 'nyrGo!',
+        short_name: 'nyrGo!',
         description: 'Explore, discover and collect original creatures in the real world.',
         lang: 'es',
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#0f1720',
-        theme_color: '#0f1720',
-        icons: [{ src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' }],
+        background_color: '#e2f8ff',
+        theme_color: '#3fb0ee',
+        icons: [
+          { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+        ],
       },
       workbox: {
         // Never cache gameplay API responses in the service worker: state is server-authoritative.

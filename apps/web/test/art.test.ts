@@ -39,13 +39,21 @@ describe('battle sprites', () => {
   const fx = join(process.cwd(), 'public', 'fx');
 
   it('ships an idle and an attack sheet for every creature, and nothing else', () => {
-    const expected = CREATURES.flatMap((c) => [`${c.id}-attack.webp`, `${c.id}-idle.webp`]).sort();
+    const expected = CREATURES.flatMap((c) => [
+      `${c.id}-attack.webp`,
+      `${c.id}-cut.webp`,
+      `${c.id}-idle.webp`,
+    ]).sort();
     expect(readdirSync(sprites).sort()).toEqual(expected);
   });
 
   it('lays the frames out as the battle styles expect, on a transparent background', () => {
     for (const f of readdirSync(sprites)) {
       const bytes = readFileSync(join(sprites, f));
+      if (f.endsWith('-cut.webp')) {
+        expect(webpInfo(bytes), f).toEqual({ alpha: true, width: 112, height: 128 });
+        continue;
+      }
       const frames = f.endsWith('-idle.webp') ? 6 : 5;
       expect(webpInfo(bytes), f).toEqual({ alpha: true, width: 224 * frames, height: 256 });
       expect(bytes.length, f).toBeLessThan(120_000);

@@ -20,7 +20,7 @@ export function buildStyle(opts: {
   const background: StyleSpecification = {
     version: 8,
     sources: {},
-    layers: [{ id: 'background', type: 'background', paint: { 'background-color': '#0f1720' } }],
+    layers: [{ id: 'background', type: 'background', paint: { 'background-color': '#d8f5e6' } }],
   };
   // Without a basemap nothing needs fonts or icons, so no third-party request is made at all.
   if (!opts.pmtilesUrl) return background;

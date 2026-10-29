@@ -9,6 +9,8 @@ Input:  apps/web/public/creatures/<id>.webp   the painted portrait (see slice-ar
 Output: apps/web/public/sprites/<id>-idle.webp    6 frames in a row, looping breath and sway
         apps/web/public/sprites/<id>-attack.webp  5 frames in a row: crouch, rise, strike,
                                                   impact, recover
+        apps/web/public/sprites/<id>-cut.webp     the cut-out at rest, 112 x 128, for the Dex
+                                                  and collection (and its silhouette)
 
 The frames are the painted creature itself, deformed like a puppet around its feet: no new
 poses are drawn, so the art stays the artist's. Run from the repo root:
@@ -159,7 +161,11 @@ def main() -> int:
                 path, "WEBP", quality=QUALITY, method=6, alpha_quality=90
             )
             total += path.stat().st_size
-    print(f"wrote {len(ids) * 2} sheets, {total / 1024:.0f} KB, to {OUT}")
+        cut = to_image([warp(canvas, anchor, **IDLE[0])]).resize((FRAME_W // 2, FRAME_H // 2), Image.LANCZOS)
+        path = OUT / f"{cid}-cut.webp"
+        cut.save(path, "WEBP", quality=82, method=6, alpha_quality=90)
+        total += path.stat().st_size
+    print(f"wrote {len(ids) * 3} files, {total / 1024:.0f} KB, to {OUT}")
     return 0
 
 

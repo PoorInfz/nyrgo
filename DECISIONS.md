@@ -15,6 +15,7 @@ Newest first. Each entry: date, decision, reason, who approved.
 | P7  | Gas is purple (`#c084fc`), Airdrop cyan (`#67e8f9`), Moon indigo (`#818cf8`); a test keeps every pair of element colours apart                                                                                                                                | The painted art set the colours                                                                          |
 | P8  | The map container is a labelled region (not an image); tab changes move focus into the panel; axe (WCAG 2.1 AA + best practice) runs over every screen in the browser check                                                                                   | Accessibility pass                                                                                       |
 | P9  | Battle sprites are cut from the painted portraits and animated as puppets (6 idle, 5 attack frames); element hits play an 8-frame code-drawn effect                                                                                                           | Movement now, with the owner's art; drawn poses can replace the sheets without code changes              |
+| P10 | The interface follows the owner's nyrGo! logo: mint, deep green-black ink, sky, meadow, purple accent; game windows and chunky buttons; battle and encounter as a scene; silhouettes for unseen creatures. Genre conventions only, no Pokémon assets, names or type | The owner asked for a Pokémon-like game feel in the logo's colours |
 
 ## 2026-10-29 — Milestone 8: economy
 

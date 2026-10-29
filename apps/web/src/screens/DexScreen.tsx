@@ -2,6 +2,7 @@ import { type CSSProperties, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Element } from '@nyrgo/shared';
 import type { Api, Dex, DexCreature, DexEntry } from '../api';
+import { cutUrl } from '../content';
 
 type Lang = 'es' | 'en';
 
@@ -180,14 +181,16 @@ export function DexScreen({ api }: { api: Api }) {
             return (
               <li key={c.id}>
                 <div className="dex-card unknown" aria-label={`${number} ${t('unknownCreature')}`}>
-                  <img
-                    src={c.thumb}
-                    alt=""
-                    width={96}
-                    height={140}
-                    loading="lazy"
-                    decoding="async"
-                  />
+                  <span className="pic">
+                    <img
+                      src={cutUrl(c.id)}
+                      alt=""
+                      width={112}
+                      height={128}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </span>
                   <span className="muted">{number}</span>
                   <span className="dex-name">{t('unknown')}</span>
                 </div>
@@ -197,7 +200,16 @@ export function DexScreen({ api }: { api: Api }) {
           return (
             <li key={c.id}>
               <button type="button" className="dex-card" onClick={() => setOpenId(c.id)}>
-                <img src={c.thumb} alt="" width={96} height={140} loading="lazy" decoding="async" />
+                <span className="pic">
+                  <img
+                    src={cutUrl(c.id)}
+                    alt=""
+                    width={112}
+                    height={128}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </span>
                 <span className="dex-dot" style={{ background: elements.get(c.element)!.color }} />
                 {entry.caughtCount > 0 && (
                   <span className="caught-mark" title={t('caughtMark')}>

@@ -225,54 +225,74 @@ export function Battle({
 
   return (
     <section className="card stack battle" aria-labelledby="battle-title">
-      <h2 id="battle-title">{t('battle.title', { name: foe.name })}</h2>
+      <h2 id="battle-title" className="sr-only">
+        {t('battle.title', { name: foe.name })}
+      </h2>
 
-      <div className="fighter foe">
-        <div className="fighter-info">
-          <strong>{foe.name}</strong>{' '}
-          <span className="muted">{t('levelShort', { level: shown.foe.level })}</span>
-          <HpBar
-            side={shown.foe}
-            label={t('battle.hpOf', { who: who('foe'), hp: shown.foe.hp, max: shown.foe.maxHp })}
-          />
+      <div className="scene battle-scene">
+        <div className="hud foe">
+          <p className="hud-name">
+            <strong>{foe.name}</strong>
+            <span>{t('levelShort', { level: shown.foe.level })}</span>
+          </p>
+          <div className="hud-hp">
+            <b aria-hidden="true">{t('battle.hpTag')}</b>
+            <HpBar
+              side={shown.foe}
+              label={t('battle.hpOf', { who: who('foe'), hp: shown.foe.hp, max: shown.foe.maxHp })}
+            />
+          </div>
         </div>
-        <Sprite
-          id={foe.id}
-          fx={fx?.effect.side === 'foe' ? fx : null}
-          fainted={shown.foe.hp <= 0}
-        />
-      </div>
-      <div className="fighter mine">
-        <Sprite
-          id={me.id}
-          fx={fx?.effect.side === 'player' ? fx : null}
-          fainted={shown.player.hp <= 0}
-        />
-        <div className="fighter-info">
-          <strong>{me.name}</strong>{' '}
-          <span className="muted">{t('levelShort', { level: shown.player.level })}</span>
-          <HpBar
-            side={shown.player}
-            label={t('battle.hpOf', {
-              who: who('player'),
-              hp: shown.player.hp,
-              max: shown.player.maxHp,
-            })}
+        <div className="fighter foe">
+          <Sprite
+            id={foe.id}
+            fx={fx?.effect.side === 'foe' ? fx : null}
+            fainted={shown.foe.hp <= 0}
           />
-          <span className="muted small">
+          <span className="platform" aria-hidden="true" />
+        </div>
+        <div className="fighter mine">
+          <Sprite
+            id={me.id}
+            fx={fx?.effect.side === 'player' ? fx : null}
+            fainted={shown.player.hp <= 0}
+          />
+          <span className="platform" aria-hidden="true" />
+        </div>
+        <div className="hud mine">
+          <p className="hud-name">
+            <strong>{me.name}</strong>
+            <span>{t('levelShort', { level: shown.player.level })}</span>
+          </p>
+          <div className="hud-hp">
+            <b aria-hidden="true">{t('battle.hpTag')}</b>
+            <HpBar
+              side={shown.player}
+              label={t('battle.hpOf', {
+                who: who('player'),
+                hp: shown.player.hp,
+                max: shown.player.maxHp,
+              })}
+            />
+          </div>
+          <span className="hud-num">
             {shown.player.hp} / {shown.player.maxHp}
           </span>
         </div>
       </div>
 
-      <ol className="battle-log" aria-live="polite" aria-label={t('battle.log')}>
-        {lines.slice(-6).map((line, i) => (
-          <li key={lines.length - 6 + i}>{line}</li>
-        ))}
-      </ol>
+      <div className="dialog">
+        <ol className="battle-log" aria-live="polite" aria-label={t('battle.log')}>
+          {lines.length === 0 && <li>{t('battle.prompt', { name: me.name })}</li>}
+          {lines.slice(-6).map((line, i) => (
+            <li key={lines.length - 6 + i}>{line}</li>
+          ))}
+        </ol>
+      </div>
       {error && <p role="alert">{error}</p>}
 
-      {b.result ? (
+      {/* the result shows once the last turn has finished playing */}
+      {shown.result ? (
         <div role="status" className={`result result-${b.result === 'win' ? 'caught' : b.result}`}>
           <p>
             <strong>{t(`battle.result.${b.result}`, { name: foe.name })}</strong>
@@ -304,16 +324,15 @@ export function Battle({
                   className="skill"
                   disabled={busy}
                   onClick={() => act({ kind: 'skill', skill: id })}
-                  style={{ borderColor: el.color }}
+                  style={{ '--el': el.color } as CSSProperties}
                 >
                   <span className="skill-name">{s.name[lang]}</span>
-                  <span className="muted small">
+                  <span className="skill-meta">
                     {el.name[lang]} · {t('power')} {s.power}
-                    {eff > 1
-                      ? ` · ${t('battle.strongHint')}`
-                      : eff < 1
-                        ? ` · ${t('battle.weakHint')}`
-                        : ''}
+                    {eff > 1 && (
+                      <span className="hint-strong">{` · ${t('battle.strongHint')}`}</span>
+                    )}
+                    {eff < 1 && <span className="hint-weak">{` · ${t('battle.weakHint')}`}</span>}
                   </span>
                 </button>
               );
@@ -353,7 +372,7 @@ export function Battle({
  * A fighter: its sprite sheet (idle loop, or the attack frames while it strikes), the element
  * effect of a move that lands on it, and a glow layer for charge, heal and passives.
  */
-function Sprite({
+export function Sprite({
   id,
   fx,
   fainted,

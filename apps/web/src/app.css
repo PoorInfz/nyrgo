@@ -1,22 +1,33 @@
+/*
+ * nyrGo! — a creature-collecting game. The look follows the owner's logo: mint-green letters
+ * with a deep green-black outline, a holographic mint ring, painted sky and meadow, and the
+ * purple of its mascot as the accent. Windows are white with an ink outline and a hard drop
+ * shadow; buttons are chunky and sink when pressed.
+ */
 :root {
-  --bg: #0f1720;
-  --surface: #17222e;
-  --surface-2: #1f2d3b;
-  --border: #2c3d4f;
-  --text: #e6edf3;
-  --muted: #9fb0c0;
-  --accent: #5eead4;
-  --accent-ink: #062a26;
-  --gold: #fbbf24;
-  --danger: #f87171;
-  color-scheme: dark;
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    sans-serif;
-  line-height: 1.45;
+  --ink: #06222b;
+  --ink-soft: #3b5962;
+  --paper: #fbfffd;
+  --paper-2: #e6faf1;
+  --line: #b5ecd6;
+  --sky-1: #3fb0ee;
+  --sky-2: #9be0fb;
+  --sky-3: #e2f8ff;
+  --mint: #43f289;
+  --mint-2: #22c96b;
+  --glow: #92fde8;
+  --purple: #9b4ff5;
+  --purple-2: #ead9ff;
+  --sun: #ffcf4d;
+  --red: #ef4a5b;
+  --meadow-1: #c6f2a6;
+  --meadow-2: #7fd36c;
+  --frame: 0 4px 0 rgb(6 34 43 / 35%);
+  color-scheme: light;
+  font-family: 'Fredoka Variable', 'Fredoka', ui-rounded, system-ui, sans-serif;
+  font-weight: 450;
+  line-height: 1.4;
+  color: var(--ink);
 }
 
 * {
@@ -25,30 +36,51 @@
 
 body {
   margin: 0;
-  background: var(--bg);
-  color: var(--text);
+  min-height: 100dvh;
+  background:
+    radial-gradient(ellipse 80% 40% at 20% 0%, rgb(255 255 255 / 55%), transparent 70%),
+    linear-gradient(180deg, var(--sky-1) 0%, var(--sky-2) 45%, var(--sky-3) 100%) fixed;
+  color: var(--ink);
 }
 
 .shell {
   min-height: 100dvh;
   max-width: 480px;
   margin: 0 auto;
-  padding: max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+  padding: max(16px, env(safe-area-inset-top)) 16px calc(104px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
+/* The title is set like a game logo: white letters, ink outline, a red drop. */
 .logo {
-  margin: 8px 0 0;
-  font-size: 40px;
-  letter-spacing: -0.02em;
-  color: var(--accent);
+  margin: 0;
+  align-self: center;
+  line-height: 0;
+}
+
+.logo img {
+  display: block;
+  width: auto;
+  height: 92px;
+  filter: drop-shadow(0 4px 0 rgb(6 34 43 / 30%));
+}
+
+.logo.big img {
+  height: min(78vw, 330px);
 }
 
 h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: 20px;
+  font-weight: 650;
+}
+
+h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 650;
 }
 
 p {
@@ -63,402 +95,25 @@ p {
 
 .row {
   display: flex;
-  gap: 12px;
-}
-
-.row > * {
-  flex: 1;
-  min-width: 0;
-}
-
-select {
-  width: 100%;
-}
-
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 16px;
-}
-
-.tagline {
-  font-size: 18px;
-}
-
-.muted {
-  color: var(--muted);
-  font-size: 14px;
-}
-
-.safety {
-  padding: 12px 16px;
-  background: var(--surface);
-  border-radius: 12px;
-  color: var(--muted);
-  font-size: 14px;
-}
-
-label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 14px;
-  color: var(--muted);
-}
-
-input,
-select {
-  font: inherit;
-  font-size: 16px; /* avoids iOS zoom on focus */
-  color: var(--text);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px;
-  min-height: 48px;
-}
-
-button {
-  font: inherit;
-  font-weight: 600;
-  min-height: 48px;
-  border-radius: 12px;
-  border: 0;
-  padding: 0 16px;
-  background: var(--accent);
-  color: var(--accent-ink);
-  cursor: pointer;
-}
-
-button:disabled {
-  opacity: 0.6;
-  cursor: progress;
-}
-
-button.link {
-  background: none;
-  color: var(--accent);
-  font-weight: 500;
-}
-
-button.danger {
-  background: none;
-  color: var(--danger);
-  border: 1px solid var(--danger);
-}
-
-:focus-visible {
-  outline: 3px solid var(--gold);
-  outline-offset: 2px;
-}
-
-[role='alert'] {
-  color: var(--danger);
-}
-
-.badge {
-  display: inline-block;
-  font-size: 12px;
-  color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.name {
-  font-size: 24px;
-  margin: 4px 0 12px;
-  overflow-wrap: anywhere;
-}
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin: 0;
-}
-
-.stats div {
-  background: var(--surface-2);
-  border-radius: 10px;
-  padding: 8px 12px;
-}
-
-.stats dt {
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.stats dd {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 700;
-}
-
-/* ---------------------------------------------------------------- game shell */
-
-.tabs {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 4px;
-  background: var(--surface);
-  border-radius: 12px;
-  padding: 4px;
-}
-
-.tab {
-  background: none;
-  color: var(--muted);
-  padding: 0 4px;
-  font-size: 15px;
-  overflow-wrap: anywhere;
-}
-
-.tab.active {
-  background: var(--surface-2);
-  color: var(--text);
-}
-
-.map {
-  height: min(55dvh, 520px);
-  border-radius: 16px;
-  overflow: hidden;
-  background: var(--surface);
-}
-
-.warning {
-  padding: 12px 16px;
-  border-radius: 12px;
-  background: #3b1d1d;
-  color: #fecaca;
-  font-weight: 600;
-}
-
-.notice {
-  padding: 12px 16px;
-  border-radius: 12px;
-  background: #3a2f12;
-  color: #fde68a;
-}
-
-.poi-list {
-  list-style: none;
-  margin: 12px 0 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.poi-list li {
-  display: grid;
-  grid-template-columns: 12px 1fr auto auto;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.poi-list li[data-in-range='true'] .poi-name {
-  color: var(--accent);
-  font-weight: 600;
-}
-
-.biome-historic {
-  background: #fbbf24;
-}
-.biome-culture {
-  background: #c084fc;
-}
-.biome-park {
-  background: #4ade80;
-}
-.biome-urban {
-  background: #60a5fa;
-}
-
-button.small {
-  min-height: 40px;
-  padding: 0 8px;
-  font-size: 13px;
-}
-
-.attribution {
-  margin-top: 12px;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-/* ---------------------------------------------------------------- dev tools */
-
-.devtools summary {
-  cursor: pointer;
-  color: var(--gold);
-  font-weight: 600;
-  margin-bottom: 12px;
-}
-
-.chips {
-  display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.chips button {
-  min-height: 40px;
-  font-size: 13px;
-  background: var(--surface-2);
-  color: var(--text);
+.row > * {
+  min-width: 0;
 }
 
-.poi-list .dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
+.row > button {
+  flex: 1 1 140px;
 }
 
-/* ---------------------------------------------------------------- dex */
-
-.chips button[aria-pressed='true'] {
-  background: var(--accent);
-  color: var(--accent-ink);
+.row.tight {
+  flex-wrap: nowrap;
+  gap: 6px;
 }
 
-.chips button {
-  border: 1px solid transparent;
-}
-
-.dex-grid {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.dex-card {
-  position: relative;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  text-align: center;
-  padding: 8px;
-  background: var(--surface);
-  color: var(--text);
-  border: 1px solid var(--border);
-  font-weight: 500;
-}
-
-.dex-card img {
-  display: block;
-  width: 96px;
-  height: 140px;
-  object-fit: cover;
-  border-radius: 10px;
-  background: var(--surface-2);
-}
-
-.dex-card .dex-dot {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-}
-
-.dex-name {
-  font-weight: 700;
-  overflow-wrap: anywhere;
-}
-
-.rarity {
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.rarity-rare {
-  color: #60a5fa;
-}
-.rarity-epic {
-  color: #c084fc;
-}
-.rarity-legendary,
-.rarity-mythic {
-  color: var(--gold);
-}
-
-.chip {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 999px;
-  color: #0f1720;
-  font-weight: 700;
-  font-size: 13px;
-}
-
-.portrait {
-  display: grid;
-  place-items: center;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 2px solid color-mix(in srgb, var(--el, #94a3b8) 60%, transparent);
-}
-
-.portrait img {
-  display: block;
-  width: auto;
-  max-width: 100%;
-  height: auto;
-  max-height: 52dvh;
-  aspect-ratio: 306 / 445;
-  margin: 0 auto;
-  position: relative;
-}
-
-h3 {
-  margin: 0;
-  font-size: 16px;
-}
-
-.bars {
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.bars div {
-  display: grid;
-  grid-template-columns: 80px 1fr;
-  align-items: center;
-  gap: 8px;
-}
-
-.bars dt {
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.bars dd {
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.bar {
-  height: 8px;
-  border-radius: 4px;
-  background: var(--accent);
-}
-
-.bars .value {
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
+.row.tight > button {
+  flex: none;
 }
 
 .plain {
@@ -470,7 +125,95 @@ h3 {
   gap: 8px;
 }
 
-/* ---------------------------------------------------------------- milestone 6: creatures */
+/* ---------------------------------------------------------------- windows */
+
+/* A game window: paper, an ink outline, a pale inner ring and a hard drop shadow. */
+.card {
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow:
+    inset 0 0 0 3px var(--paper),
+    inset 0 0 0 5px var(--line),
+    var(--frame);
+}
+
+.muted {
+  color: var(--ink-soft);
+  font-size: 15px;
+}
+
+.small {
+  font-size: 13.5px;
+}
+
+.tagline {
+  font-size: 19px;
+  font-weight: 550;
+}
+
+.safety {
+  padding: 12px 14px;
+  background: var(--paper-2);
+  border: 2px dashed var(--line);
+  border-radius: 12px;
+  color: var(--ink-soft);
+  font-size: 14.5px;
+}
+
+.warning {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fde4e1;
+  border: 3px solid var(--red);
+  color: #7d1a13;
+  font-weight: 600;
+}
+
+.notice {
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #fff3d6;
+  border: 2px solid var(--sun);
+  color: #5c3d06;
+}
+
+.offline-banner {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #fff3d6;
+  border: 3px solid var(--ink);
+  color: #5c3d06;
+  font-size: 14.5px;
+  box-shadow: var(--frame);
+}
+
+[role='alert'] {
+  color: #a3241b;
+  font-weight: 550;
+}
+
+.badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  background: var(--ink);
+  color: #fff;
+}
+
+.chip {
+  display: inline-block;
+  padding: 2px 12px;
+  border-radius: 999px;
+  border: 2px solid var(--ink);
+  color: var(--ink);
+  font-weight: 650;
+  font-size: 14px;
+}
 
 .sr-only {
   position: absolute;
@@ -484,68 +227,270 @@ h3 {
   border: 0;
 }
 
+/* ---------------------------------------------------------------- forms and buttons */
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 550;
+  color: var(--ink);
+}
+
+input,
+select {
+  font: inherit;
+  font-size: 16px; /* avoids iOS zoom on focus */
+  color: var(--ink);
+  background: #fff;
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  padding: 10px 12px;
+  min-height: 48px;
+  width: 100%;
+}
+
+/* A chunky game button that sinks when pressed. */
+button {
+  font: inherit;
+  font-weight: 600;
+  font-size: 16px;
+  min-height: 48px;
+  border-radius: 14px;
+  border: 3px solid var(--ink);
+  padding: 0 16px;
+  background: var(--mint);
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow:
+    inset 0 -4px 0 rgb(0 0 0 / 18%),
+    0 4px 0 var(--ink);
+  transition:
+    transform 0.06s ease,
+    box-shadow 0.06s ease;
+}
+
+button:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow:
+    inset 0 -2px 0 rgb(0 0 0 / 18%),
+    0 1px 0 var(--ink);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: 0 2px 0 var(--ink);
+}
+
 button.secondary {
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow:
+    inset 0 -4px 0 var(--line),
+    0 4px 0 var(--ink);
+}
+
+button.danger {
+  background: #d6283b;
+  color: #fff;
+}
+
+button.link {
   background: none;
-  color: var(--text);
-  border: 1px solid var(--border);
+  border: 0;
+  box-shadow: none;
+  color: #0a6b3a;
+  font-weight: 600;
+  padding: 0 4px;
+  min-height: 40px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  align-self: flex-start;
 }
 
 button.small {
   min-height: 40px;
   padding: 0 12px;
+  font-size: 14px;
+  border-radius: 12px;
 }
 
-.small {
-  font-size: 13px;
+:focus-visible {
+  outline: 4px solid var(--purple);
+  outline-offset: 3px;
 }
 
+.panel:focus {
+  outline: none;
+}
+
+/* ---------------------------------------------------------------- bottom menu */
+
+.tabs {
+  position: fixed;
+  z-index: 20;
+  left: 50%;
+  bottom: 0;
+  width: min(480px, 100%);
+  translate: -50% 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-bottom: 0;
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -4px 0 rgb(6 34 43 / 18%);
+}
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 58px;
+  padding: 4px 2px;
+  background: transparent;
+  color: var(--ink-soft);
+  border: 3px solid transparent;
+  box-shadow: none;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab svg {
+  width: 26px;
+  height: 26px;
+  flex: none;
+}
+
+.tab.active {
+  background: var(--mint);
+  color: var(--ink);
+  border-color: var(--ink);
+  box-shadow:
+    inset 0 -3px 0 rgb(0 0 0 / 20%),
+    0 3px 0 var(--ink);
+}
+
+.tab span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------------------------------------------------------------- map */
+
+.map {
+  height: min(52dvh, 500px);
+  border-radius: 16px;
+  overflow: hidden;
+  background: #cfe6c4;
+  border: 3px solid var(--ink);
+  box-shadow: var(--frame);
+}
+
+.attribution {
+  margin-top: 12px;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+.poi-list,
 .creature-list {
   list-style: none;
   margin: 12px 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
+}
+
+.poi-list li {
+  display: grid;
+  grid-template-columns: 14px 1fr auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--paper-2);
+  border-radius: 12px;
+}
+
+.poi-list .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
 }
 
 .creature-list li {
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) auto;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--border);
+  padding: 6px 8px;
+  background: var(--paper-2);
+  border-radius: 14px;
 }
 
 .creature-list img {
-  width: 48px;
-  height: 70px;
+  width: 52px;
+  height: 52px;
   object-fit: cover;
-  border-radius: 10px;
-  background: var(--surface-2);
+  object-position: 50% 30%;
+  border-radius: 50%;
+  border: 3px solid var(--ink);
+  background: var(--sky-2);
 }
 
+.poi-list li[data-in-range='true'],
+.creature-list li[data-in-range='true'] {
+  background: #fff3d6;
+  box-shadow: inset 0 0 0 3px var(--sun);
+}
+
+.poi-list li[data-in-range='true'] .poi-name,
 .creature-list li[data-in-range='true'] .poi-name {
-  color: var(--accent);
-  font-weight: 600;
+  font-weight: 650;
+}
+
+.biome-historic {
+  background: #e3a43a;
+}
+.biome-culture {
+  background: var(--purple);
+}
+.biome-park {
+  background: #3e9e62;
+}
+.biome-urban {
+  background: var(--sky-1);
 }
 
 .creature-marker {
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   min-height: 0;
   padding: 0;
   overflow: hidden;
   border-radius: 50%;
-  background: var(--surface-2);
-  border: 3px solid var(--border);
-  box-shadow: 0 2px 6px rgb(0 0 0 / 45%);
+  background: var(--sky-2);
+  border: 3px solid var(--ink);
+  box-shadow: 0 3px 0 var(--ink);
 }
 
 .creature-marker[data-in-range='true'] {
-  border-color: var(--accent);
-  width: 52px;
-  height: 52px;
+  border-color: var(--sun);
+  outline: 3px solid var(--ink);
+  width: 54px;
+  height: 54px;
 }
 
 .creature-marker img {
@@ -556,15 +501,178 @@ button.small {
   display: block;
 }
 
-.encounter-stage {
-  position: relative;
+/* ---------------------------------------------------------------- dev tools */
+
+.devtools summary {
+  cursor: pointer;
+  color: #7a4c00;
+  font-weight: 650;
+  margin-bottom: 12px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chips button {
+  min-height: 40px;
+  font-size: 14px;
+  padding: 0 12px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 3px 0 var(--ink);
+}
+
+.chips button[aria-pressed='true'] {
+  background: var(--mint);
+  color: var(--ink);
+}
+
+/* ---------------------------------------------------------------- dex and collection */
+
+.dex-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: grid;
-  place-items: center;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+/* An entry card: the creature on a sky window, its number on a tab, name below. */
+.dex-card {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+  padding: 8px 8px 12px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 3px solid var(--ink);
   border-radius: 16px;
+  box-shadow: var(--frame);
+  font-weight: 500;
+  font-size: 15px;
+  min-height: 0;
+}
+
+button.dex-card {
+  box-shadow:
+    inset 0 -4px 0 var(--line),
+    0 4px 0 var(--ink);
+}
+
+/* The creature, cut out, standing on a little patch of sky and meadow. */
+.dex-card .pic {
+  display: block;
+  width: 100%;
+  height: 132px;
+  padding: 6px 6px 2px;
+  border-radius: 10px;
+  border: 2px solid var(--ink);
+  background: linear-gradient(180deg, var(--sky-2) 0 62%, var(--meadow-1) 62% 100%);
+  margin-bottom: 4px;
+}
+
+.dex-card .pic img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: 50% 100%;
+  transform: scale(1.25);
+  transform-origin: 50% 96%;
+}
+
+.dex-card .pic {
   overflow: hidden;
 }
 
-.encounter-stage img {
+.dex-card .dex-dot {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+}
+
+.dex-name {
+  font-weight: 650;
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+
+.rarity {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.rarity-rare {
+  color: #0a7fb8;
+}
+.rarity-epic {
+  color: #6d28c9;
+}
+.rarity-legendary,
+.rarity-mythic {
+  color: #7a4c00;
+}
+
+/* Not seen yet: only the silhouette, dark against the sky. */
+.dex-card.unknown img {
+  filter: brightness(0) opacity(0.78);
+}
+
+.dex-card.unknown,
+.dex-card.owned {
+  cursor: default;
+}
+
+.caught-mark {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--mint-2);
+  border: 2px solid var(--ink);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.dex-card.owned .hp {
+  margin: 4px 0;
+}
+
+.name {
+  font-size: 30px;
+  font-weight: 700;
+  margin: 2px 0 8px;
+  overflow-wrap: anywhere;
+}
+
+.portrait {
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 3px solid var(--ink);
+  box-shadow: inset 0 0 0 4px color-mix(in srgb, var(--el, #94a3b8) 70%, white);
+}
+
+.portrait img {
   display: block;
   width: auto;
   max-width: 100%;
@@ -572,16 +680,269 @@ button.small {
   max-height: 52dvh;
   aspect-ratio: 306 / 445;
   margin: 0 auto;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 0;
+}
+
+.stats div {
+  background: var(--paper-2);
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+
+.stats dt {
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.stats dd {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.bars {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bars div {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.bars dt {
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+.bars dd {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bar {
+  height: 12px;
+  border-radius: 6px;
+  background: var(--mint-2);
+  border: 2px solid var(--ink);
+}
+
+.bars .value {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.starter {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.starter img {
+  border-radius: 12px;
+  border: 3px solid var(--ink);
+  width: 100%;
+  height: auto;
+  aspect-ratio: 306 / 445;
+  object-fit: cover;
+}
+
+.gold-line {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--ink);
+  background: #ffe7a8;
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+}
+
+.item-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.item-list li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--paper-2);
+  border-radius: 12px;
+}
+
+.item-list li > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-weight: 550;
+}
+
+.item-list .row.tight {
+  margin-left: auto;
+}
+
+.recipe,
+.mission,
+.admin-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  background: var(--paper-2);
+  border-radius: 12px;
+}
+
+.recipe > button,
+.mission > button {
+  align-self: flex-start;
+}
+
+.admin-item a {
+  color: #0a6b3a;
+}
+
+/* ---------------------------------------------------------------- first steps */
+
+.steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.steps li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.steps .check {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid var(--ink);
+  background: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.steps li.done .check {
+  background: var(--mint-2);
+}
+
+.steps li.done span:last-child {
+  color: var(--ink-soft);
+  text-decoration: line-through;
+}
+
+/* ---------------------------------------------------------------- the scene */
+
+/*
+ * Battles and encounters happen on a stage: painted sky over a meadow, each creature standing
+ * on a holographic mint ring like the one around the logo.
+ */
+.scene {
   position: relative;
+  border: 3px solid var(--ink);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: var(--frame);
+  background:
+    radial-gradient(ellipse 60% 22% at 78% 18%, rgb(255 255 255 / 70%), transparent 70%),
+    radial-gradient(ellipse 45% 16% at 22% 30%, rgb(255 255 255 / 55%), transparent 70%),
+    linear-gradient(
+      180deg,
+      var(--sky-1) 0%,
+      var(--sky-2) 46%,
+      #def9c4 46%,
+      var(--meadow-1) 60%,
+      var(--meadow-2) 100%
+    );
+}
+
+/* A holographic ring: mint wedges and rings, glowing like the logo's emblem, in perspective. */
+.platform {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 112%;
+  aspect-ratio: 3.2;
+  translate: -50% 38%;
+  border-radius: 50%;
+  border: 3px solid var(--ink);
+  background:
+    radial-gradient(closest-side, #f4fffa 0 26%, var(--mint) 27% 33%, transparent 34%),
+    radial-gradient(closest-side, transparent 0 58%, var(--mint-2) 59% 63%, transparent 64%),
+    repeating-conic-gradient(from 7.5deg, #b7fbe3 0 15deg, #f4fffa 15deg 30deg);
+  box-shadow:
+    inset 0 0 0 5px #f4fffa,
+    inset 0 0 0 9px var(--mint),
+    0 0 18px 4px rgb(146 253 232 / 85%),
+    0 6px 0 rgb(6 34 43 / 22%);
+}
+
+/* ---------------------------------------------------------------- encounter */
+
+.encounter-scene {
+  height: min(48dvh, 380px);
+  display: grid;
+  place-items: end center;
+  padding-bottom: 12%;
+}
+
+.encounter-scene .spot {
+  position: relative;
+  width: min(62%, 230px);
+}
+
+.encounter-scene .sprite {
+  z-index: 1;
 }
 
 /* The timing ring shrinks over the creature; pressing when it is small scores higher. */
 .ring {
   position: absolute;
-  width: min(70%, 260px);
+  z-index: 2;
+  left: 50%;
+  top: 46%;
+  width: min(70%, 240px);
   aspect-ratio: 1;
+  translate: -50% -50%;
   border-radius: 50%;
-  border: 6px solid var(--gold);
+  border: 6px solid var(--sun);
+  box-shadow:
+    0 0 0 3px var(--ink),
+    inset 0 0 0 3px var(--ink);
   animation: ring-shrink 1.4s linear infinite;
   pointer-events: none;
 }
@@ -594,7 +955,7 @@ button.small {
 @keyframes ring-shrink {
   from {
     transform: scale(1);
-    opacity: 0.4;
+    opacity: 0.45;
   }
   to {
     transform: scale(0.2);
@@ -603,153 +964,278 @@ button.small {
 }
 
 .vaults {
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 8px 12px;
+  margin: 0;
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  padding: 8px 12px 10px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
+  background: var(--paper-2);
+}
+
+.vaults legend {
+  padding: 0 6px;
+  font-weight: 650;
 }
 
 .vault {
   display: flex;
   flex-direction: row;
   align-items: center;
-  color: var(--text);
-  font-size: 15px;
-  gap: 8px;
-  min-height: 40px;
+  font-size: 16px;
+  gap: 10px;
+  min-height: 42px;
 }
 
 .vault.empty {
-  color: var(--muted);
+  color: var(--ink-soft);
+}
+
+.vault input {
+  width: 22px;
+  height: 22px;
+  min-height: 0;
+  margin: 0;
+  flex: none;
+  accent-color: var(--mint);
+}
+
+button.pick {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 10px;
+  align-items: center;
+  text-align: left;
+  background: var(--paper);
+  color: var(--ink);
+  padding: 6px 10px;
+  box-shadow:
+    inset 0 -4px 0 var(--line),
+    0 4px 0 var(--ink);
+}
+
+button.pick img {
+  grid-row: 1 / span 2;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  object-fit: cover;
+  object-position: 50% 30%;
+  background: var(--sky-2);
 }
 
 .result {
-  border-radius: 12px;
-  padding: 8px 12px;
-  background: var(--surface-2);
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  box-shadow: var(--frame);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.result p {
-  margin: 4px 0;
+.result-caught,
+.result-win {
+  background: #e3f5e8;
 }
 
-.result-caught strong {
-  color: var(--accent);
+.result-caught strong,
+.result-win strong {
+  color: #1d6a3c;
+  font-size: 18px;
 }
 
-.dex-card.unknown img {
-  filter: grayscale(1) brightness(0.25) blur(3px);
+/* ---------------------------------------------------------------- battle */
+
+.battle {
+  padding: 12px;
 }
 
-.dex-card.unknown {
-  cursor: default;
-}
-
-.caught-mark {
-  position: absolute;
-  top: 6px;
-  right: 10px;
-  color: var(--accent);
-  font-weight: 800;
-}
-
-.dex-card.owned {
-  cursor: default;
-}
-
-.starter {
+.battle-scene {
   display: grid;
-  grid-template-columns: 120px minmax(0, 1fr);
-  gap: 12px;
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas:
+    'hud-foe spot-foe'
+    'spot-mine hud-mine';
+  align-items: end;
+  gap: 4px 6px;
+  padding: 12px 10px 18px;
 }
 
-.starter img {
-  border-radius: 12px;
+.fighter {
+  position: relative;
+  padding-bottom: 10%;
+}
+
+.fighter.foe {
+  grid-area: spot-foe;
+  width: 88%;
+  justify-self: center;
+}
+
+.fighter.mine {
+  grid-area: spot-mine;
   width: 100%;
-  height: auto;
-  aspect-ratio: 306 / 445;
-  object-fit: cover;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .ring {
-    animation: none;
-    transform: scale(0.6);
-  }
+.fighter .sprite {
+  z-index: 1;
 }
 
-/* ---------------------------------------------------------------- milestone 7: battles */
+/* A status box: name, level and a health bar, with one cut corner like a game HUD. */
+.hud {
+  position: relative;
+  z-index: 2;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-radius: 14px 4px 14px 4px;
+  padding: 6px 10px 8px;
+  box-shadow: var(--frame);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.hud.foe {
+  grid-area: hud-foe;
+  align-self: start;
+  margin-top: 6px;
+}
+
+.hud.mine {
+  grid-area: hud-mine;
+  align-self: center;
+  border-radius: 4px 14px 4px 14px;
+}
+
+.hud-name {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 6px;
+  font-weight: 650;
+  font-size: 15.5px;
+  min-width: 0;
+}
+
+.hud-name strong {
+  font-weight: 650;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hud-name span {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  flex: none;
+}
+
+.hud-hp {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+}
+
+.hud-hp b {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 0 5px;
+  border-radius: 6px;
+  background: var(--sun);
+  color: var(--ink);
+}
+
+.hud-num {
+  text-align: right;
+  font-size: 14px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
 
 .hp {
   width: 100%;
-  height: 10px;
+  height: 12px;
   border-radius: 999px;
-  background: var(--surface-2);
+  background: #d6deea;
   overflow: hidden;
-  border: 1px solid var(--border);
+  border: 2px solid var(--ink);
 }
 
 .hp-fill {
   display: block;
   height: 100%;
-  background: #4ade80;
+  background: var(--mint-2);
+  box-shadow: inset 0 3px 0 rgb(255 255 255 / 35%);
   transition: width 0.4s ease;
 }
 
 .hp-fill.mid {
-  background: var(--gold);
+  background: var(--sun);
 }
 
 .hp-fill.low {
-  background: var(--danger);
+  background: var(--red);
 }
 
-.fighter {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 150px;
-  align-items: center;
-  gap: 12px;
-}
-
-.fighter.mine {
-  grid-template-columns: 150px minmax(0, 1fr);
-}
-
-.fighter img {
-  width: 100%;
-  height: 174px;
-  object-fit: cover;
+/*
+ * The text box: a white window inside a mint frame whose rays fan out from below, like the
+ * glow behind the logo.
+ */
+.dialog {
+  border: 3px solid var(--ink);
   border-radius: 16px;
-  background: var(--surface-2);
-}
-
-.fighter-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
+  padding: 7px;
+  background: repeating-conic-gradient(
+    from -90deg at 50% 110%,
+    var(--mint) 0 5deg,
+    #e9fff5 5deg 10deg
+  );
+  box-shadow: var(--frame);
 }
 
 .battle-log {
   list-style: none;
   margin: 0;
-  padding: 8px 12px;
-  border-radius: 12px;
-  background: var(--surface-2);
-  min-height: 7.5em;
-  font-size: 14px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 3px solid var(--ink);
+  background: var(--paper);
+  min-height: 4.4em;
+  font-size: 17px;
+  font-weight: 500;
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
   gap: 2px;
 }
 
+/* Only the two newest lines show; the full turn stays in the list for screen readers. */
+.battle-log li:not(:nth-last-child(-n + 2)) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.battle-log li:nth-last-child(2) {
+  color: var(--ink-soft);
+  font-size: 15px;
+}
+
+/* The command menu: four moves in their element's colour, then the other actions. */
 .skills {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
 }
 
 button.skill {
@@ -757,143 +1243,50 @@ button.skill {
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  gap: 2px;
-  padding: 8px 10px;
+  gap: 1px;
+  min-height: 64px;
+  padding: 8px 10px 10px 18px;
   text-align: left;
-  background: var(--surface-2);
-  color: var(--text);
-  border: 2px solid var(--border);
+  background: color-mix(in srgb, var(--el, #94a3b8) 32%, white);
+  color: var(--ink);
+  box-shadow:
+    inset 8px 0 0 var(--el, #94a3b8),
+    inset 0 -4px 0 rgb(6 34 43 / 15%),
+    0 4px 0 var(--ink);
+}
+
+button.skill:active:not(:disabled) {
+  box-shadow:
+    inset 8px 0 0 var(--el, #94a3b8),
+    0 1px 0 var(--ink);
 }
 
 .skill-name {
-  font-weight: 700;
+  font-weight: 650;
+  font-size: 16.5px;
   overflow-wrap: anywhere;
 }
 
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.row > button {
-  flex: 1 1 140px;
-}
-
-button.pick {
-  display: grid;
-  grid-template-columns: 40px minmax(0, 1fr);
-  grid-template-rows: auto auto;
-  column-gap: 10px;
-  align-items: center;
-  text-align: left;
-  background: var(--surface-2);
-  color: var(--text);
-  border: 1px solid var(--border);
-  padding: 6px 10px;
-}
-
-button.pick img {
-  grid-row: 1 / span 2;
-  border-radius: 8px;
-  object-fit: cover;
-}
-
-.dex-card.owned .hp {
-  margin: 4px 0;
-}
-
-.vault input {
-  width: auto;
-  min-height: 0;
-  margin: 0;
-  flex: none;
-  accent-color: var(--accent);
-}
-
-/* ---------------------------------------------------------------- milestone 8: economy */
-
-.tabs {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-}
-
-.tab {
+.skill-meta {
   font-size: 13px;
-  padding: 0 2px;
+  font-weight: 550;
+  color: var(--ink-soft);
 }
 
-.gold-line {
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--gold);
-  margin: 0;
+.skill-meta .hint-strong {
+  color: #1d6a3c;
+  font-weight: 650;
 }
 
-.item-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
+.skill-meta .hint-weak {
+  color: #a3132a;
+  font-weight: 650;
 }
 
-.item-list li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--border);
-}
+/* ---------------------------------------------------------------- battle sprites */
 
-.item-list li > span:first-child {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
-.row.tight {
-  flex-wrap: nowrap;
-  gap: 6px;
-}
-
-.row.tight > button {
-  flex: none;
-}
-
-.recipe,
-.mission {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border);
-}
-
-.recipe > button,
-.mission > button {
-  align-self: flex-start;
-}
-
-.tab {
-  font-size: 12.5px;
-  white-space: nowrap;
-  overflow-wrap: normal;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.item-list li {
-  flex-wrap: wrap;
-}
-
-.item-list .row.tight {
-  margin-left: auto;
-}
-
-/* ---------------------------------------------------------------- battle effects */
-
-/* A fighter is its cut-out sprite sheet standing on a shadow. Sheets are N frames in a row;
-   steps(N, jump-none) walks background-position from the first frame (0 %) to the last (100 %). */
+/* A fighter is its cut-out sprite sheet. Sheets are N frames in a row; steps(N, jump-none)
+   walks background-position from the first frame (0 %) to the last (100 %). */
 .sprite {
   position: relative;
   width: 100%;
@@ -901,17 +1294,6 @@ button.pick img {
   transition:
     opacity 0.6s ease,
     filter 0.6s ease;
-}
-
-.sprite::before {
-  content: '';
-  position: absolute;
-  left: 18%;
-  right: 18%;
-  bottom: 2%;
-  height: 9%;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, rgb(0 0 0 / 45%), transparent);
 }
 
 .sprite .body {
@@ -937,7 +1319,6 @@ button.pick img {
   pointer-events: none;
   opacity: 0;
   background: radial-gradient(circle at 50% 45%, var(--fx) 0%, transparent 65%);
-  mix-blend-mode: screen;
 }
 
 /* The element effect of the move that landed, centred on the fighter and a bit larger. */
@@ -1022,7 +1403,7 @@ button.pick img {
     transform: translate(0, 0);
   }
   40% {
-    transform: translate(18px, -10px) scale(1.05);
+    transform: translate(28px, -18px) scale(1.05);
   }
   100% {
     transform: translate(0, 0);
@@ -1033,7 +1414,7 @@ button.pick img {
     transform: translate(0, 0);
   }
   40% {
-    transform: translate(-18px, 10px) scale(1.05);
+    transform: translate(-28px, 18px) scale(1.05);
   }
   100% {
     transform: translate(0, 0);
@@ -1106,11 +1487,17 @@ button.pick img {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  button,
+  .ring,
   .sprite,
   .sprite .body,
   .fx-layer,
   .fx-sheet {
     animation: none !important;
+    transition: none !important;
+  }
+  .ring {
+    transform: scale(0.6);
   }
   .fx-sheet {
     display: none;
@@ -1119,68 +1506,4 @@ button.pick img {
   .sprite[data-fx='attack'] .body {
     background-position-x: 50%;
   }
-}
-
-/* ---------------------------------------------------------------- milestone 9 */
-
-.offline-banner {
-  margin: 0;
-  padding: 8px 12px;
-  border-radius: 10px;
-  background: #3b2f12;
-  color: #fde68a;
-  font-size: 14px;
-}
-
-.steps {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.steps li {
-  display: grid;
-  grid-template-columns: 26px minmax(0, 1fr);
-  gap: 8px;
-  align-items: center;
-}
-
-.steps .check {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 2px solid var(--border);
-  display: grid;
-  place-items: center;
-  font-weight: 800;
-  color: var(--accent-ink);
-}
-
-.steps li.done .check {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-
-.steps li.done span:last-child {
-  color: var(--muted);
-  text-decoration: line-through;
-}
-
-.admin-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border);
-}
-
-.admin-item a {
-  color: var(--accent);
-}
-
-.panel:focus {
-  outline: none;
 }

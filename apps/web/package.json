@@ -11,6 +11,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@fontsource-variable/fredoka": "^5.3.0",
     "@nyrgo/shared": "workspace:*",
     "@protomaps/basemaps": "^5.7.2",
     "i18next": "^26.5.11",

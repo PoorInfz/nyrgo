@@ -9,8 +9,8 @@ import {
   type NearbyCreature,
   type OwnedCreature,
 } from '../api';
-import { artUrl, thumbUrl, useContent } from '../content';
-import { Battle } from './Battle';
+import { thumbUrl, useContent } from '../content';
+import { Battle, Sprite } from './Battle';
 
 /** Seconds for one shrink of the timing ring (kept in sync with the CSS animation). */
 export const RING_PERIOD_MS = 1400;
@@ -191,14 +191,17 @@ export function Encounter({
         {t('levelShort', { level: spawn.level })}
         {def ? ` · ${t(`rarity.${def.rarity}`)}` : ''}
       </p>
-      <div className="encounter-stage">
+      <div className="scene encounter-scene">
+        <div
+          className="spot"
+          role="img"
+          aria-label={t('artLabel', { name })}
+          data-creature={spawn.creatureId}
+        >
+          <Sprite id={spawn.creatureId} fx={null} fainted={false} />
+          <span className="platform" aria-hidden="true" />
+        </div>
         {!over && enc && <span className={still ? 'ring still' : 'ring'} aria-hidden="true" />}
-        <img
-          src={artUrl(spawn.creatureId)}
-          alt={t('artLabel', { name })}
-          width={384}
-          height={558}
-        />
       </div>
       {def && <p>{def.lore[lang]}</p>}
       {enc && !over && enc.foeHp !== null && enc.foeMaxHp !== null && (
