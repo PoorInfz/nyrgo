@@ -31,7 +31,8 @@ const DEX: Dex = {
   creatures: CREATURES.map((c) => ({
     ...c,
     passive: PASSIVES_BY_ID.get(c.passive)!,
-    art: `/creatures/${c.id}.svg`,
+    art: `/creatures/${c.id}.webp`,
+    thumb: `/creatures/${c.id}-thumb.webp`,
   })),
   items: ITEMS,
   recipes: RECIPES,

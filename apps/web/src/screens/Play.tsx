@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ApiError, type Api, type Nearby, type NearbyCreature } from '../api';
-import { artUrl, useContent } from '../content';
+import { thumbUrl, useContent } from '../content';
 import { Encounter } from './Encounter';
 import { Missions } from './Missions';
 import {
@@ -216,7 +216,7 @@ export function Play({
             const name = names.get(c.creatureId) ?? c.creatureId;
             return (
               <li key={c.id} data-in-range={c.inRange}>
-                <img src={artUrl(c.creatureId)} alt="" width={48} height={48} />
+                <img src={thumbUrl(c.creatureId)} alt="" width={48} height={70} />
                 <span className="poi-name">
                   {name} <span className="muted">{t('levelShort', { level: c.level })}</span>
                 </span>

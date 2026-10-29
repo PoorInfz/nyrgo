@@ -32,7 +32,8 @@ const DEX: Dex = {
   creatures: CREATURES.map((c) => ({
     ...c,
     passive: PASSIVES_BY_ID.get(c.passive)!,
-    art: `/creatures/${c.id}.svg`,
+    art: `/creatures/${c.id}.webp`,
+    thumb: `/creatures/${c.id}-thumb.webp`,
   })),
   items: ITEMS,
   recipes: RECIPES,
@@ -110,7 +111,7 @@ describe('Encounter', () => {
     expect(await screen.findByRole('heading', { name: '¡Shrimpie salvaje!' })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'Ilustración de Shrimpie' })).toHaveAttribute(
       'src',
-      '/creatures/shrimpie.svg',
+      '/creatures/shrimpie.webp',
     );
     expect(await screen.findByRole('radio', { name: 'Bóveda básica (2)' })).toBeChecked();
     expect(screen.getByRole('radio', { name: 'Bóveda fría (0)' })).toBeDisabled();

@@ -81,14 +81,15 @@ use the device GPS. Production builds do not contain the simulator.
 
 The 50 creatures, the type chart, skills, passives, items and recipes live in
 `packages/shared/src/content/`. The API copies them into the database on every start (or run
-`pnpm --filter @nyrgo/api content:sync`). Each creature's 2D portrait is drawn in
-`apps/web/src/art/` (one function per creature). After changing a drawing, regenerate the files:
+`pnpm --filter @nyrgo/api content:sync`). The creature portraits come from the painted sheets in
+`art/sheets/` (five sheets of ten, in Dex order). After replacing a sheet, cut them again:
 
 ```bash
-pnpm --filter @nyrgo/web art:gen         # writes apps/web/public/creatures/<id>.svg
+pip install pillow
+python3 tools/slice-art.py               # writes apps/web/public/creatures/<id>.webp and <id>-thumb.webp
 ```
 
-A test fails if the committed portraits no longer match the drawings.
+A test fails if a creature has no portrait or thumbnail.
 
 ## Scheduled jobs
 

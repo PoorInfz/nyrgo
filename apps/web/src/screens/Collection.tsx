@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CREATURES_BY_ID, evolutionBlock, type Evolution } from '@nyrgo/shared';
 import { ApiError, type Api, type OwnedCreature } from '../api';
-import { artUrl, useContent } from '../content';
+import { thumbUrl, useContent } from '../content';
 
 type Lang = 'es' | 'en';
 
@@ -86,7 +86,7 @@ export function Collection({ api }: { api: Api }) {
         <ul className="plain stack">
           {starters.map((c) => (
             <li key={c.id} className="card starter">
-              <img src={c.art} alt="" width={120} height={120} />
+              <img src={c.art} alt="" width={120} height={174} />
               <div className="stack">
                 <h3>{c.name}</h3>
                 <p>
@@ -117,7 +117,7 @@ export function Collection({ api }: { api: Api }) {
           return (
             <li key={m.id}>
               <div className="dex-card owned">
-                <img src={artUrl(m.creatureId)} alt="" width={96} height={96} />
+                <img src={thumbUrl(m.creatureId)} alt="" width={96} height={130} />
                 <span className="dex-name">{def?.name ?? m.creatureId}</span>
                 <span className="muted">
                   {t('levelShort', { level: m.level })} · {t(`caughtVia.${m.acquiredVia}`)}

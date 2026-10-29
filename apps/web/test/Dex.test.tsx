@@ -30,7 +30,8 @@ const DEX: Dex = {
   creatures: CREATURES.map((c) => ({
     ...c,
     passive: PASSIVES_BY_ID.get(c.passive)!,
-    art: `/creatures/${c.id}.svg`,
+    art: `/creatures/${c.id}.webp`,
+    thumb: `/creatures/${c.id}-thumb.webp`,
   })),
   items: ITEMS,
   recipes: RECIPES,
@@ -84,7 +85,7 @@ describe('Dex', () => {
     expect(within(page).getByText(/#001 · Común · Inicial/)).toBeInTheDocument();
     expect(within(page).getByRole('img', { name: 'Ilustración de Gwisp' })).toHaveAttribute(
       'src',
-      '/creatures/gwisp.svg',
+      '/creatures/gwisp.webp',
     );
     expect(within(page).getByText(/cobra un peaje/)).toBeInTheDocument();
     expect(within(page).getByText('Tarifa base')).toBeInTheDocument();

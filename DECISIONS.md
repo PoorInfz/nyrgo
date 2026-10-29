@@ -47,18 +47,18 @@ Newest first. Each entry: date, decision, reason, who approved.
 
 ## 2026-10-29 — Milestone 5: creature content (approved by the owner)
 
-| #   | Decision                                                                                                                                                       | Reason                                                                          |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| C1  | Theme: satire of crypto and NFT culture; villains are scams, heroes are safe habits ("nyrgo — Universo de criaturas", approved 2026-10-29)                     | Owner choice; keeps the game from reading as financial promotion to 14+ players |
-| C2  | 50 creatures: 16 / 12 / 10 / 6 / 4 / 2 by rarity; 10 three-stage lines, 6 two-stage lines, 8 standalones; starters Gwisp, Frostkey, Dropling                   | Approved proposal                                                               |
-| C3  | Element ids unchanged; crypto names are display names only (Burn, Liquidity, Yield, Mining, Gas, Airdrop, Cold, Moon, Oracle, FUD)                             | No code or data migration needed                                                |
-| C4  | Type chart on a ring: each element beats the next and the one three ahead; 2 strengths and 2 weaknesses each                                                   | Balanced by construction; tested                                                |
-| C5  | Content is written in `@nyrgo/shared`; stats, skills, capture difficulty and evolution costs are derived by rules (stat total by rarity, weights by archetype) | One place to rebalance; evolutions always get stronger (tested)                 |
-| C6  | `content:sync` copies content to the database on every API start; removed definitions are marked `retired`, never deleted                                      | Owned creatures keep valid foreign keys                                         |
-| C7  | Legendary and mythic creatures never spawn in the wild; events only                                                                                            | Rarity stays meaningful                                                         |
-| C8  | A banned-word test blocks franchise, coin, brand, person and owned-meme names in creature names and text                                                       | Guardrail from the proposal                                                     |
-| C9  | Creature art is 2D vector (SVG) drawn in code, one original design per creature, generated into `public/creatures/` and committed; a test fails on drift       | Owner rejected 3D (2026-10-29); light, sharp at any size, editable in Figma     |
-| C10 | Capture items are "vaults", not balls                                                                                                                          | Distance from the best-known franchise                                          |
+| #   | Decision                                                                                                                                                                                                                  | Reason                                                                               |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| C1  | Theme: satire of crypto and NFT culture; villains are scams, heroes are safe habits ("nyrgo — Universo de criaturas", approved 2026-10-29)                                                                                | Owner choice; keeps the game from reading as financial promotion to 14+ players      |
+| C2  | 50 creatures: 16 / 12 / 10 / 6 / 4 / 2 by rarity; 10 three-stage lines, 6 two-stage lines, 8 standalones; starters Gwisp, Frostkey, Dropling                                                                              | Approved proposal                                                                    |
+| C3  | Element ids unchanged; crypto names are display names only (Burn, Liquidity, Yield, Mining, Gas, Airdrop, Cold, Moon, Oracle, FUD)                                                                                        | No code or data migration needed                                                     |
+| C4  | Type chart on a ring: each element beats the next and the one three ahead; 2 strengths and 2 weaknesses each                                                                                                              | Balanced by construction; tested                                                     |
+| C5  | Content is written in `@nyrgo/shared`; stats, skills, capture difficulty and evolution costs are derived by rules (stat total by rarity, weights by archetype)                                                            | One place to rebalance; evolutions always get stronger (tested)                      |
+| C6  | `content:sync` copies content to the database on every API start; removed definitions are marked `retired`, never deleted                                                                                                 | Owned creatures keep valid foreign keys                                              |
+| C7  | Legendary and mythic creatures never spawn in the wild; events only                                                                                                                                                       | Rarity stays meaningful                                                              |
+| C8  | A banned-word test blocks franchise, coin, brand, person and owned-meme names in creature names and text                                                                                                                  | Guardrail from the proposal                                                          |
+| C9  | Creature art is the owner's painted set (2026-10-29): five sheets in `art/sheets/`, cut by `tools/slice-art.py` into a 384 px WebP portrait and a 128 px thumbnail per creature; the earlier code-drawn SVGs were removed | Owner decision after rejecting 3D and the SVG style; one source of truth for the art |
+| C10 | Capture items are "vaults", not balls                                                                                                                                                                                     | Distance from the best-known franchise                                               |
 
 ## 2026-10-29 — Milestone 4: movement checks, risk and retention
 
@@ -111,17 +111,17 @@ Newest first. Each entry: date, decision, reason, who approved.
 
 ## 2026-10-29 — Phase 1 architecture (approved by the owner)
 
-| #   | Decision                                                                                      | Reason                                                                                |
-| --- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| D1  | Modular monolith, pnpm monorepo (`apps/web`, `apps/api`, `packages/shared`)                   | Lowest operating cost at this stage; modules extract later if justified               |
-| D2  | Map tiles: self-hosted Protomaps PMTiles from OSM data                                        | Fixed cost, no player locations sent to a third party (GDPR)                          |
-| D3  | Spawns on H3 resolution 9 (~0.11 km² per cell in Córdoba, measured), regions on resolution 7  | Uniform hexagons; native PostgreSQL support through h3-pg                             |
-| D4  | Creatures are 2D portraits (SVG) in a monster-collecting style; was 3D (GLB) until 2026-10-29 | Owner decision after seeing the 3D placeholders; no 3D engine to download             |
-| D5  | Turn-based 1v1 PvE combat resolved on the server                                              | Cheaper and harder to cheat than real time                                            |
-| D6  | Login: guest + email magic link; OAuth later                                                  | Minimum personal data, no passwords to store                                          |
-| D7  | Wallet (Phase 3): `@hot-labs/near-connect` + `near-api-js`                                    | The connector recommended by the official NEAR wallet-login guide, checked 2026-10-29 |
-| D8  | Hosting: one EU server with Docker Compose, static frontend behind a CDN                      | EU data residency; provider and domain still to be chosen                             |
-| D9  | Repo codename `nyrgo`; pilot city Córdoba, Spain                                              | Owner choice                                                                          |
+| #   | Decision                                                                                                                         | Reason                                                                                |
+| --- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| D1  | Modular monolith, pnpm monorepo (`apps/web`, `apps/api`, `packages/shared`)                                                      | Lowest operating cost at this stage; modules extract later if justified               |
+| D2  | Map tiles: self-hosted Protomaps PMTiles from OSM data                                                                           | Fixed cost, no player locations sent to a third party (GDPR)                          |
+| D3  | Spawns on H3 resolution 9 (~0.11 km² per cell in Córdoba, measured), regions on resolution 7                                     | Uniform hexagons; native PostgreSQL support through h3-pg                             |
+| D4  | Creatures are painted 2D portraits (WebP) supplied by the owner; was code-drawn SVG, and 3D (GLB) before that, all on 2026-10-29 | Owner decision; no 3D engine to download                                              |
+| D5  | Turn-based 1v1 PvE combat resolved on the server                                                                                 | Cheaper and harder to cheat than real time                                            |
+| D6  | Login: guest + email magic link; OAuth later                                                                                     | Minimum personal data, no passwords to store                                          |
+| D7  | Wallet (Phase 3): `@hot-labs/near-connect` + `near-api-js`                                                                       | The connector recommended by the official NEAR wallet-login guide, checked 2026-10-29 |
+| D8  | Hosting: one EU server with Docker Compose, static frontend behind a CDN                                                         | EU data residency; provider and domain still to be chosen                             |
+| D9  | Repo codename `nyrgo`; pilot city Córdoba, Spain                                                                                 | Owner choice                                                                          |
 
 ## 2026-10-29 — Implementation choices made while scaffolding
 
@@ -142,4 +142,4 @@ Newest first. Each entry: date, decision, reason, who approved.
 
 - Hosting provider and domain (does not block Phase 1).
 - Email provider (Resend, Postmark, SES or other): required before any production deploy.
-- Whether the code-drawn 2D portraits are final or get repainted by an illustrator (the style was approved on a sample; the full set is in `apps/web/public/creatures/`).
+- Who holds the rights to the painted portraits and under which licence they ship (needed before any public release); a few portraits show coin symbols that resemble a real currency's.

@@ -153,7 +153,7 @@ export default function MapView({
         el.setAttribute('aria-hidden', 'true');
         el.className = 'creature-marker';
         const img = document.createElement('img');
-        img.src = `/creatures/${c.creatureId}.svg`;
+        img.src = `/creatures/${c.creatureId}-thumb.webp`;
         img.alt = '';
         el.append(img);
         el.addEventListener('click', () => tap.current?.(c.id));

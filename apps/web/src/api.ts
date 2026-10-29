@@ -187,8 +187,10 @@ export interface DexCreature {
   starter: boolean;
   evolution: Evolution | null;
   lore: { es: string; en: string };
-  /** 2D portrait (SVG) served by the web app itself, under /creatures/. */
+  /** Painted portrait (WebP, 384 px wide) served by the web app itself, under /creatures/. */
   art: string;
+  /** Same picture, 128 px wide, for lists and map markers. */
+  thumb: string;
 }
 
 export interface Dex {

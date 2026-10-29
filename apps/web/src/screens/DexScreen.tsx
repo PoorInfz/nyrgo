@@ -60,7 +60,7 @@ export function DexScreen({ api }: { api: Api }) {
             </span>
           </p>
           <div className="portrait" style={{ '--el': el.color } as CSSProperties}>
-            <img src={open.art} alt={t('artLabel', { name: open.name })} width={256} height={256} />
+            <img src={open.art} alt={t('artLabel', { name: open.name })} width={384} height={558} />
           </div>
           <p>{open.lore[lang]}</p>
         </section>
@@ -180,7 +180,14 @@ export function DexScreen({ api }: { api: Api }) {
             return (
               <li key={c.id}>
                 <div className="dex-card unknown" aria-label={`${number} ${t('unknownCreature')}`}>
-                  <img src={c.art} alt="" width={96} height={96} loading="lazy" decoding="async" />
+                  <img
+                    src={c.thumb}
+                    alt=""
+                    width={96}
+                    height={140}
+                    loading="lazy"
+                    decoding="async"
+                  />
                   <span className="muted">{number}</span>
                   <span className="dex-name">{t('unknown')}</span>
                 </div>
@@ -190,7 +197,7 @@ export function DexScreen({ api }: { api: Api }) {
           return (
             <li key={c.id}>
               <button type="button" className="dex-card" onClick={() => setOpenId(c.id)}>
-                <img src={c.art} alt="" width={96} height={96} loading="lazy" decoding="async" />
+                <img src={c.thumb} alt="" width={96} height={140} loading="lazy" decoding="async" />
                 <span className="dex-dot" style={{ background: elements.get(c.element)!.color }} />
                 {entry.caughtCount > 0 && (
                   <span className="caught-mark" title={t('caughtMark')}>

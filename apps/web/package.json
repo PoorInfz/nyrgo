@@ -8,8 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run",
-    "art:gen": "tsx scripts/gen-art.ts"
+    "test": "vitest run"
   },
   "dependencies": {
     "@nyrgo/shared": "workspace:*",

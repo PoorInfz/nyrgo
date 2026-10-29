@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.8.1 — 2026-10-29 — Painted creature art
+
+Changed
+
+- The 50 creatures now use the owner's painted portraits: five sheets kept in `art/sheets/`, cut
+  by `tools/slice-art.py` into a 384 px WebP portrait and a 128 px thumbnail each (3 MB in all).
+  `GET /v1/dex` returns `art` and `thumb`; lists, markers, battles and the Dex use the thumbnail,
+  the creature page and the encounter the portrait. Unseen Dex entries are blurred silhouettes.
+
+Removed
+
+- The code-drawn SVG portraits, their generator and tests.
+
+Verified locally on 2026-10-29: 237 tests passing (60 shared, 131 API, 46 web); lint, typecheck,
+format and build clean; in headless Chromium against the real API at 390 px all portraits and
+thumbnails loaded through the starter pick, map, encounter, battle and Dex with no console errors
+and no horizontal overflow.
+
 ## 0.8.0 — 2026-10-29 — Phase 1, milestone 8: economy
 
 Added

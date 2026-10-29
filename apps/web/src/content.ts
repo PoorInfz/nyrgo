@@ -37,5 +37,6 @@ export function useContent(api: Api, enabled = true): { dex: Dex | null; failed:
   return state;
 }
 
-/** Portrait URL for a creature id (the same file the Dex lists). */
-export const artUrl = (creatureId: string) => `/creatures/${creatureId}.svg`;
+/** Portrait and thumbnail URLs for a creature id (the same files the Dex lists). */
+export const artUrl = (creatureId: string) => `/creatures/${creatureId}.webp`;
+export const thumbUrl = (creatureId: string) => `/creatures/${creatureId}-thumb.webp`;

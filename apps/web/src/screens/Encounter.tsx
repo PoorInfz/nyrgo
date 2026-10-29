@@ -9,7 +9,7 @@ import {
   type NearbyCreature,
   type OwnedCreature,
 } from '../api';
-import { artUrl, useContent } from '../content';
+import { artUrl, thumbUrl, useContent } from '../content';
 import { Battle } from './Battle';
 
 /** Seconds for one shrink of the timing ring (kept in sync with the CSS animation). */
@@ -196,8 +196,8 @@ export function Encounter({
         <img
           src={artUrl(spawn.creatureId)}
           alt={t('artLabel', { name })}
-          width={200}
-          height={200}
+          width={384}
+          height={558}
         />
       </div>
       {def && <p>{def.lore[lang]}</p>}
@@ -281,7 +281,7 @@ export function Encounter({
                 disabled={busy || c.hp <= 0}
                 onClick={() => fightWith(c.id)}
               >
-                <img src={artUrl(c.creatureId)} alt="" width={40} height={40} />
+                <img src={thumbUrl(c.creatureId)} alt="" width={40} height={58} />
                 <span>
                   {d?.name ?? c.creatureId} · {t('levelShort', { level: c.level })}
                 </span>

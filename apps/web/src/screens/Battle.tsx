@@ -9,7 +9,7 @@ import {
   type BattleView,
   type Dex,
 } from '../api';
-import { artUrl } from '../content';
+import { thumbUrl } from '../content';
 
 type Lang = 'es' | 'en';
 
@@ -141,10 +141,10 @@ export function Battle({
             label={t('battle.hpOf', { who: who('foe'), hp: b.foe.hp, max: b.foe.maxHp })}
           />
         </div>
-        <img src={artUrl(foe.id)} alt="" width={120} height={120} />
+        <img src={thumbUrl(foe.id)} alt="" width={120} height={174} />
       </div>
       <div className="fighter mine">
-        <img src={artUrl(me.id)} alt="" width={120} height={120} />
+        <img src={thumbUrl(me.id)} alt="" width={120} height={174} />
         <div className="fighter-info">
           <strong>{me.name}</strong>{' '}
           <span className="muted">{t('levelShort', { level: b.player.level })}</span>
