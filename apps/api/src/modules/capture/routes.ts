@@ -3,6 +3,7 @@ import type { FastifyInstance } from 'fastify';
 import type { PoolClient } from 'pg';
 import { Type, type Static } from '@sinclair/typebox';
 import {
+  encounterLevel,
   CREATURES_BY_ID,
   DEFAULT_CONFIG,
   ITEMS_BY_ID,
@@ -72,6 +73,15 @@ async function markDex(c: PoolClient, userId: string, creatureId: string, caught
        caught_count = dex_entries.caught_count + EXCLUDED.caught_count`,
     [userId, creatureId, caught],
   );
+}
+
+/** The player's level, which caps the level of the wild creatures they meet. */
+async function playerLevel(c: PoolClient, userId: string): Promise<number> {
+  const { rows } = await c.query<{ level: number }>(
+    `SELECT level FROM players WHERE user_id = $1`,
+    [userId],
+  );
+  return rows[0]?.level ?? 1;
 }
 
 const rollIvs = (): Ivs => ({
@@ -180,8 +190,9 @@ export async function captureRoutes(app: FastifyInstance, { db }: { db: Db }) {
           foe_hp: number | null;
           foe_max_hp: number | null;
           won_at: Date | null;
+          level: number | null;
         }>(
-          `SELECT id, status, attempts, expires_at, foe_hp, foe_max_hp, won_at FROM encounters WHERE user_id = $1 AND spawn_id = $2 FOR UPDATE`,
+          `SELECT id, status, attempts, expires_at, foe_hp, foe_max_hp, won_at, level FROM encounters WHERE user_id = $1 AND spawn_id = $2 FOR UPDATE`,
           [auth.userId, req.params.id],
         );
         const existing = prior[0];
@@ -206,11 +217,18 @@ export async function captureRoutes(app: FastifyInstance, { db }: { db: Db }) {
             foe_hp: number | null;
             foe_max_hp: number | null;
             won_at: Date | null;
+            level: number | null;
           }>(
-            `INSERT INTO encounters (user_id, spawn_id, expires_at)
-             VALUES ($1, $2, $3::timestamptz + make_interval(mins => $4))
-             RETURNING id, status, attempts, expires_at, foe_hp, foe_max_hp, won_at`,
-            [auth.userId, req.params.id, spawn.expires_at, cap.encounterGraceMin],
+            `INSERT INTO encounters (user_id, spawn_id, expires_at, level)
+             VALUES ($1, $2, $3::timestamptz + make_interval(mins => $4), $5)
+             RETURNING id, status, attempts, expires_at, foe_hp, foe_max_hp, won_at, level`,
+            [
+              auth.userId,
+              req.params.id,
+              spawn.expires_at,
+              cap.encounterGraceMin,
+              encounterLevel(DEFAULT_CONFIG.spawns, spawn.level, await playerLevel(c, auth.userId)),
+            ],
           );
           enc = ins.rows[0]!;
           await markDex(c, auth.userId, spawn.definition_id, false);
@@ -220,7 +238,7 @@ export async function captureRoutes(app: FastifyInstance, { db }: { db: Db }) {
           id: enc.id,
           spawnId: req.params.id,
           creatureId: spawn.definition_id,
-          level: spawn.level,
+          level: enc.level ?? spawn.level,
           rarity: def.rarity,
           status: enc.status,
           attempts: enc.attempts,
@@ -265,7 +283,7 @@ export async function captureRoutes(app: FastifyInstance, { db }: { db: Db }) {
             fighting: boolean;
           }>(
             `SELECT e.id, e.user_id, e.spawn_id, e.status, e.attempts, e.expires_at > now() AS open,
-                    s.definition_id, s.level, e.foe_hp, e.foe_max_hp,
+                    s.definition_id, COALESCE(e.level, s.level) AS level, e.foe_hp, e.foe_max_hp,
                     EXISTS (SELECT 1 FROM battles b WHERE b.encounter_id = e.id AND b.result IS NULL) AS fighting
                FROM encounters e JOIN spawns s ON s.id = e.spawn_id
               WHERE e.id = $1 FOR UPDATE OF e`,

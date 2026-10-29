@@ -146,7 +146,7 @@ export async function battleRoutes(app: FastifyInstance, { db }: { db: Db }) {
           level: number;
         }>(
           `SELECT e.user_id, e.spawn_id, e.status, e.expires_at > now() AS open, e.foe_hp, e.won_at,
-                  s.definition_id, s.level
+                  s.definition_id, COALESCE(e.level, s.level) AS level
              FROM encounters e JOIN spawns s ON s.id = e.spawn_id
             WHERE e.id = $1 FOR UPDATE OF e`,
           [req.params.id],

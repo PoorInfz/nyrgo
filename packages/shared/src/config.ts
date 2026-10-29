@@ -1,8 +1,9 @@
 import type { Rarity } from './domain.js';
 
 /**
- * Default gameplay configuration (config version 1).
- * These are starting assumptions from the approved Phase 1 proposal, not tuned values.
+ * Default gameplay configuration (config version 2).
+ * Version 1 held the starting assumptions of the Phase 1 proposal; version 2 is tuned by the
+ * Phase 2 economy simulation (packages/sim, report in docs/economy).
  * In production the active config is loaded from the versioned `config_versions` table;
  * these defaults seed it and are what tests run against.
  */
@@ -49,6 +50,10 @@ export interface EconomyConfig {
     newCell: { xp: number; gold: number; dailyCap: number };
     levelUpGoldPerLevel: number;
   };
+  /** XP a creature earns for wearing out a wild one: base + perFoeLevel × the foe's level. */
+  creatureBattleXp: { base: number; perFoeLevel: number };
+  /** Relative weights of the items a place can give. Materials are rare on purpose. */
+  poiLoot: Record<string, number>;
   /** Target band for (gold earned / gold spent) of a regular player. */
   faucetSinkBand: { min: number; max: number };
 }
@@ -84,6 +89,16 @@ export interface SpawnConfig {
   rarityWeights: Partial<Record<Rarity, number>>;
   /** Level range by evolution stage. */
   levelByStage: Record<1 | 2 | 3, [number, number]>;
+  /**
+   * Relative weights of evolution stages among the candidates of one rarity and biome (rarity
+   * already decides most of the stage). Unset: every candidate is equally likely.
+   */
+  stageWeights?: Record<1 | 2 | 3, number>;
+  /**
+   * A wild creature meets each player at most this many levels above the player's own level
+   * (the spawn is shared; the encounter is per player). Null: the spawn's level as it is.
+   */
+  wildLevelAbovePlayer?: number | null;
   /** Spawns are placed at most this far from their cell centre (r9 cells are ~150 m across the flats). */
   maxOffsetM: number;
   /** Rings of neighbouring cells searched around the player's cell. */
@@ -123,7 +138,7 @@ export interface GameConfig {
 }
 
 export const DEFAULT_CONFIG: GameConfig = {
-  version: 1,
+  version: 2,
   world: {
     spawnH3Resolution: 9,
     regionH3Resolution: 7,
@@ -140,16 +155,28 @@ export const DEFAULT_CONFIG: GameConfig = {
     maxNearbyPois: 100,
   },
   economy: {
-    dailyGameplayGoldCap: 1500,
+    dailyGameplayGoldCap: 500,
     rarityXpMultiplier: { common: 1, uncommon: 1.5, rare: 2, epic: 3, legendary: 4, mythic: 5 },
     rewards: {
-      captureSuccess: { xp: 100, gold: 10 },
+      captureSuccess: { xp: 40, gold: 5 },
       captureFail: { xp: 10, gold: 0 },
-      poiInteract: { xp: 25, goldMin: 20, goldMax: 40, itemsMin: 2, itemsMax: 4 },
-      pveWin: { xp: 150, gold: 25, dailyCap: 20 },
-      dailyMission: { xp: 500, gold: 150, perDay: 3 },
-      newCell: { xp: 50, gold: 5, dailyCap: 20 },
-      levelUpGoldPerLevel: 20,
+      poiInteract: { xp: 15, goldMin: 8, goldMax: 16, itemsMin: 1, itemsMax: 3 },
+      pveWin: { xp: 60, gold: 12, dailyCap: 20 },
+      dailyMission: { xp: 150, gold: 60, perDay: 3 },
+      newCell: { xp: 50, gold: 3, dailyCap: 20 },
+      levelUpGoldPerLevel: 5,
+    },
+    creatureBattleXp: { base: 80, perFoeLevel: 20 },
+    poiLoot: {
+      'vault-basic': 30,
+      patch: 22,
+      'vault-reinforced': 10,
+      'patch-secure': 5,
+      'hash-shard': 6,
+      'moon-dust': 6,
+      'vault-frost': 6,
+      'yield-seed': 6,
+      'node-restart': 1,
     },
     faucetSinkBand: { min: 0.9, max: 1.2 },
   },
@@ -167,8 +194,8 @@ export const DEFAULT_CONFIG: GameConfig = {
     baseChance: {
       common: 0.6,
       uncommon: 0.4,
-      rare: 0.25,
-      epic: 0.12,
+      rare: 0.2,
+      epic: 0.09,
       legendary: 0.06,
       mythic: 0.03,
     },
@@ -190,7 +217,9 @@ export const DEFAULT_CONFIG: GameConfig = {
   spawns: {
     slotsByBiome: { urban: 1, park: 3, historic: 2, culture: 2 },
     slotChance: 0.6,
-    rarityWeights: { common: 62, uncommon: 25, rare: 10, epic: 3 },
+    rarityWeights: { common: 64, uncommon: 26, rare: 8, epic: 2 },
+    stageWeights: { 1: 85, 2: 13, 3: 2 },
+    wildLevelAbovePlayer: 3,
     levelByStage: { 1: [2, 10], 2: [10, 22], 3: [22, 35] },
     maxOffsetM: 110,
     searchRings: 2,

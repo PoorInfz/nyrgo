@@ -122,7 +122,13 @@ export async function visibleSpawns(
     distance_m: number;
     expires_at: Date;
   }>(
-    `SELECT s.id, s.definition_id, s.level,
+    `SELECT s.id, s.definition_id,
+            COALESCE(
+              (SELECT e.level FROM encounters e WHERE e.spawn_id = s.id AND e.user_id = $5),
+              CASE WHEN $6::int IS NULL THEN s.level
+                   ELSE LEAST(s.level, GREATEST(1,
+                          COALESCE((SELECT p.level FROM players p WHERE p.user_id = $5), 1) + $6::int))
+              END) AS level,
             ST_Y(s.geom::geometry) AS lat, ST_X(s.geom::geometry) AS lng,
             ST_Distance(s.geom, ST_SetSRID(ST_MakePoint($3, $2), 4326)::geography) AS distance_m,
             s.expires_at
@@ -134,7 +140,15 @@ export async function visibleSpawns(
                          WHERE e.spawn_id = s.id AND e.user_id = $5 AND e.status <> 'open')
       ORDER BY distance_m
       LIMIT 50`,
-    [cells, lat, lng, DEFAULT_CONFIG.world.visibleRadiusM, userId],
+    [
+      cells,
+      lat,
+      lng,
+      DEFAULT_CONFIG.world.visibleRadiusM,
+      userId,
+      // the level each player meets: see encounterLevel() in @nyrgo/shared
+      DEFAULT_CONFIG.spawns.wildLevelAbovePlayer ?? null,
+    ],
   );
   return rows.map((r) => ({
     id: r.id,

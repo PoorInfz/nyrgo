@@ -167,6 +167,25 @@ describe.skipIf(!TEST_DB_URL)('spawns, encounters and captures', () => {
     return { p, spawn, enc };
   }
 
+  it('meets a wild creature at most a few levels above the player', async () => {
+    const p = await player();
+    const above = DEFAULT_CONFIG.spawns.wildLevelAbovePlayer!;
+    const spawn = await placeSpawn(p.at, 'pebblock', 30);
+    const near = (await p.fix(p.at)).json();
+    const seen = near.creatures.find((c: { id: string }) => c.id === spawn);
+    // a new player is level 1
+    expect(seen.level).toBe(1 + above);
+    const enc = (await p.call('POST', `/v1/spawns/${spawn}/encounter`)).json();
+    expect(enc.level).toBe(1 + above);
+    // the level is fixed for this encounter even if the player levels up meanwhile
+    await t.db.query(`UPDATE players SET level = 10 WHERE user_id = $1`, [p.id]);
+    const again = (await p.call('POST', `/v1/spawns/${spawn}/encounter`)).json();
+    expect(again.level).toBe(1 + above);
+    // a low-level spawn keeps its own level
+    const low = await placeSpawn(p.at, 'pebblock', 2);
+    expect((await p.call('POST', `/v1/spawns/${low}/encounter`)).json().level).toBe(2);
+  });
+
   it('requires an Idempotency-Key and never spends two vaults for one retried throw', async () => {
     const { p, enc } = await openEncounter('pebblock');
     const url = `/v1/encounters/${enc.id}/capture`;
@@ -267,17 +286,14 @@ describe.skipIf(!TEST_DB_URL)('spawns, encounters and captures', () => {
     const dex = (await p.call('GET', '/v1/me/dex')).json();
     expect(dex.entries[0]).toMatchObject({ creatureId: 'gwisp', caughtCount: 1 });
 
-    // 100 XP takes a new player to level 2, which pays 20 × 2 Gold on top of the capture
+    // 40 XP and 5 Gold for a common catch; level 2 needs 100 XP
     const me = (await p.call('GET', '/v1/me')).json();
-    expect(me).toMatchObject({ level: 2, xp: 100, gold: 50 });
+    expect(me).toMatchObject({ level: 1, xp: 40, gold: 5 });
     const ledger = await t.db.query(
       `SELECT amount, reason FROM gold_ledger WHERE user_id = $1 ORDER BY id`,
       [p.id],
     );
-    expect(ledger.rows).toEqual([
-      { amount: '10', reason: 'capture' },
-      { amount: '40', reason: 'level_up' },
-    ]);
+    expect(ledger.rows).toEqual([{ amount: '5', reason: 'capture' }]);
 
     const again = await p.call(
       'POST',
@@ -374,14 +390,14 @@ describe.skipIf(!TEST_DB_URL)('spawns, encounters and captures', () => {
   it('caps gameplay Gold per day and pays level-ups', async () => {
     const p = await player();
     const r1 = await withTx(t.db, (c) =>
-      grantReward(c, p.id, { xp: 350, gold: 1000, reason: 'test', refId: randomUUID() }),
+      grantReward(c, p.id, { xp: 350, gold: 100, reason: 'test', refId: randomUUID() }),
     );
-    // 350 XP: level 3 (needs 300); level-ups pay 20×2 + 20×3
-    expect(r1).toMatchObject({ level: 3, leveledUp: true, gold: 1100, goldCapped: 0 });
+    // 350 XP: level 3 (needs 300); level-ups pay 5×2 + 5×3
+    expect(r1).toMatchObject({ level: 3, leveledUp: true, gold: 125, goldCapped: 0 });
     const r2 = await withTx(t.db, (c) =>
       grantReward(c, p.id, { xp: 0, gold: 1000, reason: 'test', refId: randomUUID() }),
     );
-    expect(r2.gold).toBe(DEFAULT_CONFIG.economy.dailyGameplayGoldCap - 1100);
+    expect(r2.gold).toBe(DEFAULT_CONFIG.economy.dailyGameplayGoldCap - 125);
     expect(r2.goldCapped).toBe(1000 - r2.gold);
     const me = (await p.call('GET', '/v1/me')).json();
     expect(me.gold).toBe(DEFAULT_CONFIG.economy.dailyGameplayGoldCap);

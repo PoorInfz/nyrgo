@@ -3,7 +3,7 @@
 Mobile-first geolocation creature-collection RPG with an original IP and optional NEAR integration.
 The full game is playable without a wallet, crypto or purchases.
 
-Status: **Phase 1, milestone 5 (creature content)**. See [CHANGELOG.md](CHANGELOG.md).
+Status: **Phase 2 (economy simulation) done; Phase 3 (NEAR) not started**. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Layout
 
@@ -12,6 +12,7 @@ Status: **Phase 1, milestone 5 (creature content)**. See [CHANGELOG.md](CHANGELO
 | `apps/api`          | Fastify API (modular monolith), SQL migrations, integration tests         |
 | `apps/web`          | React + Vite PWA client                                                   |
 | `packages/shared`   | Domain types, error codes and default game config shared by both          |
+| `packages/sim`      | Economy and progression simulation on the shared game rules               |
 | `infra/db`          | PostgreSQL 17 + PostGIS + h3-pg image for local dev and CI                |
 | `.github/workflows` | CI: format, lint, typecheck, migrations, tests, build, audit, secret scan |
 
@@ -112,6 +113,18 @@ createdb -h localhost -U nyrgo nyrgo_test
 DATABASE_URL=postgres://nyrgo:nyrgo@localhost:5432/nyrgo_test pnpm db:migrate
 TEST_DATABASE_URL=postgres://nyrgo:nyrgo@localhost:5432/nyrgo_test pnpm test
 ```
+
+## Economy simulation
+
+`packages/sim` plays simulated players through 90 days on the real game rules and checks the
+economy against stated targets:
+
+```bash
+pnpm --filter @nyrgo/shared build
+pnpm --filter @nyrgo/sim sim -- --players 100 --days 90   # ~2 minutes → docs/economy/
+```
+
+The report compares config version 1 (Phase 1 assumptions) with the current config.
 
 ## Project rules
 

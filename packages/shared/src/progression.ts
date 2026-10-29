@@ -1,4 +1,5 @@
 import type { Stats } from './content/creatures.js';
+import { DEFAULT_CONFIG, type EconomyConfig } from './config.js';
 
 /**
  * Player and creature progression shared by the API (authoritative) and the client (display).
@@ -58,8 +59,12 @@ export function creatureLevelForXp(xp: number): number {
 }
 
 /** XP a creature earns for wearing out a wild creature of `foeLevel`. */
-export function battleXp(foeLevel: number): number {
-  return 20 + foeLevel * 6;
+export function battleXp(
+  foeLevel: number,
+  economy: Pick<EconomyConfig, 'creatureBattleXp'> = DEFAULT_CONFIG.economy,
+): number {
+  const x = economy.creatureBattleXp;
+  return x.base + foeLevel * x.perFoeLevel;
 }
 
 /**

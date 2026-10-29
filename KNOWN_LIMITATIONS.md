@@ -29,16 +29,23 @@ Stated openly so nobody relies on something that is not there.
 - The admin panel has no pagination or search and lists at most 50 cases and 200 places.
 - Accessibility was checked with axe on every screen (no violations) plus keyboard focus on tab
   changes; a review with a screen reader on a phone is still to do.
-- The economy numbers (loot, prices, rewards, caps, cooldowns) are the approved starting
-  assumptions. The Phase 2 simulation has not checked the faucet/sink balance yet.
+- The economy numbers are tuned by a simulation (config v2, docs/economy), not by real players.
+  The simulated players follow a simple sensible policy and the city is modelled as ~10 reachable
+  creatures and ~6 places per walking hour; real behaviour and the real Córdoba data will differ.
+  Re-run the simulation after the OpenStreetMap import and after the first play test.
+- The game config lives in code (`DEFAULT_CONFIG`); it is not yet written to `config_versions`
+  in the database, so a running server cannot switch config versions without a deploy.
+- A regular player catches about three quarters of the 44 wild creatures in the first month:
+  the Dex needs more species (or regional ones) to stay a long-term goal.
+- The first-cell exploration reward (`rewards.newCell`) is configured but not implemented.
 - A 5-minute cooldown per place means a player standing between two places can collect every few
   minutes; the daily Gold cap is the only limit on that today.
 - Missions reset at midnight Europe/Madrid for everyone, wherever they play.
 - Battles are 1v1 with one creature each and no switching; no trainer (NPC) battles and no PvP.
-- Battle numbers (damage scale, type weight, XP, rewards) come from a quick simulation in the tests,
-  not from the Phase 2 economy simulation.
-- Spawn rules (slots per biome, rarity weights, levels, flee chance) are starting assumptions; the
-  economy simulation (Phase 2) has not tuned them.
+- Damage numbers (damage scale, type weight) come from a quick simulation in the tests; the
+  economy simulation uses the battle engine as it is and tunes only rewards, XP and spawns.
+- Spawn slots per biome and flee chances are still the Phase 1 assumptions; the simulation checked
+  them only indirectly (through the targets).
 - The throw's timing score is reported by the client. A modified client can always send 1; the
   effect is capped at +25 % of the chance (decision S7).
 - "Seen" is recorded when an encounter opens, so the Dex stays hidden until a player walks to a

@@ -1,0 +1,21 @@
+{
+  "name": "@nyrgo/sim",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Economy and progression simulation: simulated players on the real game rules.",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "sim": "tsx src/cli.ts"
+  },
+  "dependencies": {
+    "@nyrgo/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.5"
+  }
+}

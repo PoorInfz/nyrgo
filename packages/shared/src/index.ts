@@ -11,3 +11,4 @@ export * from './progression.js';
 export * from './random.js';
 export * from './combat.js';
 export * from './economy.js';
+export * from './spawns.js';

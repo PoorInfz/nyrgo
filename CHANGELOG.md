@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.11.0 — 2026-10-29 — Phase 2: economy simulation, config version 2
+
+Verified locally on 2026-10-29: format, lint, typecheck and build clean; 257 tests passing (64 shared, 137 API, 51 web, 5 simulation); full simulation of 100 players × 4 archetypes × 90 days in about 2 minutes. Not yet checked with real players.
+
+Added
+
+- `packages/sim`: simulated players (casual, regular, dedicated, intensive) on the game's own rules;
+  `pnpm --filter @nyrgo/sim sim` writes `docs/economy/README.md` (targets, before/after, assumptions)
+  and the raw numbers.
+- Wild creatures meet each player at most 3 levels above the player's own level; the level is kept
+  on the encounter and shown that way on the map (migration `encounter_level`).
+
+Changed
+
+- Config version 2 (see docs/economy): less XP and Gold per action, level-up Gold 5 × level,
+  fewer free vaults and more evolution materials from places, 3.5 × creature battle XP, slightly
+  rarer rare and epic finds, evolved forms rarer in the wild, daily Gold cap 500.
+- A regular player now earns about as much Gold as they spend after the first month (0.99, was
+  5.1), reaches level 30 in about three months (was three weeks) and evolves a first creature in
+  about two weeks (was five).
+
 ## 0.10.0 — 2026-10-29 — Game interface and the nyrGo! logo
 
 Verified locally on 2026-10-29: format, lint, typecheck and build clean; 248 tests passing (61 shared, 136 API, 51 web); axe-core reports no violations on 12 screens; screenshots of every screen reviewed at 390 x 844. Not yet tested on a real phone.

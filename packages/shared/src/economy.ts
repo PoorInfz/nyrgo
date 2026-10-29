@@ -2,7 +2,7 @@ import type { Element } from './domain.js';
 import { ELEMENTS } from './domain.js';
 import { CREATURES_BY_ID, type CreatureDef } from './content/creatures.js';
 import { ELEMENT_INFO } from './content/elements.js';
-import { DEFAULT_CONFIG } from './config.js';
+import { DEFAULT_CONFIG, type EconomyConfig } from './config.js';
 import { seededRandom } from './random.js';
 
 /**
@@ -10,18 +10,8 @@ import { seededRandom } from './random.js';
  * the daily missions, and when a creature can evolve.
  */
 
-/** Relative weights of the items a place can give. Materials are rare on purpose. */
-export const POI_LOOT: Record<string, number> = {
-  'vault-basic': 50,
-  patch: 22,
-  'vault-reinforced': 10,
-  'patch-secure': 5,
-  'hash-shard': 3,
-  'moon-dust': 3,
-  'vault-frost': 3,
-  'yield-seed': 3,
-  'node-restart': 1,
-};
+/** Relative weights of the items a place can give (the active config's). */
+export const POI_LOOT: Record<string, number> = DEFAULT_CONFIG.economy.poiLoot;
 
 export interface Loot {
   gold: number;
@@ -29,11 +19,14 @@ export interface Loot {
 }
 
 /** What one visit to a place gives, from a random source the server owns. */
-export function rollPoiLoot(rand: () => number): Loot {
-  const r = DEFAULT_CONFIG.economy.rewards.poiInteract;
+export function rollPoiLoot(
+  rand: () => number,
+  economy: EconomyConfig = DEFAULT_CONFIG.economy,
+): Loot {
+  const r = economy.rewards.poiInteract;
   const gold = r.goldMin + Math.floor(rand() * (r.goldMax - r.goldMin + 1));
   const count = r.itemsMin + Math.floor(rand() * (r.itemsMax - r.itemsMin + 1));
-  const entries = Object.entries(POI_LOOT);
+  const entries = Object.entries(economy.poiLoot);
   const total = entries.reduce((s, [, w]) => s + w, 0);
   const items: Record<string, number> = {};
   for (let i = 0; i < count; i++) {
@@ -100,12 +93,16 @@ export const MISSIONS_BY_ID: ReadonlyMap<string, MissionDef> = new Map(
  * Today's missions for a player: the same three all day, different kinds, chosen from the
  * player id and the date (a calendar day in the game's time zone, `YYYY-MM-DD`).
  */
-export function dailyMissions(userId: string, day: string): MissionDef[] {
+export function dailyMissions(
+  userId: string,
+  day: string,
+  economy: EconomyConfig = DEFAULT_CONFIG.economy,
+): MissionDef[] {
   const rand = seededRandom(`missions:${userId}:${day}`);
   const pool = [...MISSIONS];
   const picked: MissionDef[] = [];
   const kinds = new Set<MissionKind>();
-  while (picked.length < DEFAULT_CONFIG.economy.rewards.dailyMission.perDay && pool.length > 0) {
+  while (picked.length < economy.rewards.dailyMission.perDay && pool.length > 0) {
     const m = pool.splice(Math.floor(rand() * pool.length), 1)[0]!;
     // one mission per kind (catching any creature and one of an element count as different)
     if (kinds.has(m.kind)) continue;

@@ -1,12 +1,5 @@
 import { createHash, createHmac } from 'node:crypto';
-import {
-  CREATURES,
-  sfc32,
-  type Biome,
-  type CreatureDef,
-  type Rarity,
-  type SpawnConfig,
-} from '@nyrgo/shared';
+import { pickWild, sfc32, type Biome, type SpawnConfig } from '@nyrgo/shared';
 
 /**
  * Pure spawn generation. Given the server secret, a cell, its biome and centre, and the window,
@@ -48,27 +41,6 @@ export function cellWindow(
   return { start, end: start + lifetimeMs };
 }
 
-const wild = CREATURES.filter((c) => c.wild);
-
-function pickRarity(r: number, weights: Partial<Record<Rarity, number>>): Rarity {
-  const entries = Object.entries(weights) as [Rarity, number][];
-  const total = entries.reduce((s, [, w]) => s + w, 0);
-  let x = r * total;
-  for (const [rarity, w] of entries) {
-    if (x < w) return rarity;
-    x -= w;
-  }
-  return entries[entries.length - 1]![0];
-}
-
-/** Creatures of a rarity that live in a biome; falls back to the whole rarity, then to common. */
-function pool(rarity: Rarity, biome: Biome): CreatureDef[] {
-  const local = wild.filter((c) => c.rarity === rarity && c.biomes.includes(biome));
-  if (local.length > 0) return local;
-  const any = wild.filter((c) => c.rarity === rarity);
-  return any.length > 0 ? any : wild.filter((c) => c.rarity === 'common');
-}
-
 const M_PER_DEG_LAT = 111_320;
 
 export function generateCell(
@@ -97,15 +69,13 @@ export function generateCell(
     const angle = rand() * 2 * Math.PI;
     const dist = Math.sqrt(rand()) * cfg.maxOffsetM;
     if (present >= cfg.slotChance) continue;
-    const candidates = pool(pickRarity(r, cfg.rarityWeights), info.biome);
-    const def = candidates[Math.floor(which * candidates.length)]!;
-    const [min, max] = cfg.levelByStage[def.stage];
+    const { def, level } = pickWild(cfg, info.biome, r, which, lv);
     out.push({
       cell: info.cell,
       slot,
       seed: base + BigInt(slot),
       definitionId: def.id,
-      level: min + Math.floor(lv * (max - min + 1)),
+      level,
       lat: info.lat + (Math.sin(angle) * dist) / M_PER_DEG_LAT,
       lng:
         info.lng +
