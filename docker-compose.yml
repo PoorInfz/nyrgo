@@ -1,0 +1,21 @@
+# Local development stack. Credentials here are for local use only.
+services:
+  db:
+    build: ./infra/db
+    image: nyrgo-db:17
+    environment:
+      POSTGRES_USER: nyrgo
+      POSTGRES_PASSWORD: nyrgo
+      POSTGRES_DB: nyrgo
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U nyrgo -d nyrgo']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  db-data:

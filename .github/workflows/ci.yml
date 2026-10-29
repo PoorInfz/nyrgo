@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      TEST_DATABASE_URL: postgres://nyrgo:nyrgo@127.0.0.1:5432/nyrgo_test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Start PostgreSQL + PostGIS + h3 (same image as local development)
+        run: |
+          docker build -t nyrgo-db:17 infra/db
+          docker run -d --name db -p 127.0.0.1:5432:5432 \
+            -e POSTGRES_USER=nyrgo -e POSTGRES_PASSWORD=nyrgo -e POSTGRES_DB=nyrgo_test \
+            nyrgo-db:17
+          for i in $(seq 1 30); do docker exec db pg_isready -U nyrgo -d nyrgo_test && break; sleep 2; done
+
+      - name: Format
+        run: pnpm format:check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Build shared package
+        run: pnpm --filter @nyrgo/shared build
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Migrations up, down, up
+        env:
+          DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+        run: |
+          pnpm db:migrate
+          pnpm db:rollback
+          pnpm db:migrate
+
+      - name: Tests
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      - name: Dependency audit (high and critical)
+        run: pnpm audit --audit-level high
+
+  secrets:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

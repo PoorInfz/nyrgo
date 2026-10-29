@@ -1,0 +1,40 @@
+/**
+ * Stable machine-readable error codes returned in RFC 9457 problem+json bodies.
+ * The client maps these to localized messages; never change an existing code's meaning.
+ */
+export const ERROR_CODES = {
+  validation_failed: 400,
+  unauthenticated: 401,
+  forbidden: 403,
+  not_found: 404,
+  conflict: 409,
+  idempotency_mismatch: 422,
+  rate_limited: 429,
+  too_far: 422,
+  spawn_expired: 410,
+  speed_implausible: 422,
+  accuracy_too_low: 422,
+  cooldown_active: 429,
+  insufficient_gold: 422,
+  internal_error: 500,
+} as const;
+
+export type ErrorCode = keyof typeof ERROR_CODES;
+
+export interface Problem {
+  type: string;
+  title: string;
+  status: number;
+  code: ErrorCode;
+  detail?: string;
+}
+
+export function problem(code: ErrorCode, title: string, detail?: string): Problem {
+  const base: Problem = {
+    type: `https://nyrgo.dev/errors/${code}`,
+    title,
+    status: ERROR_CODES[code],
+    code,
+  };
+  return detail === undefined ? base : { ...base, detail };
+}
