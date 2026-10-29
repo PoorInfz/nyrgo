@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.2.0 — 2026-10-29 — Phase 1, milestone 2: accounts
+
+Added
+
+- Guest accounts with an age gate (birth month and year; minimum 14 in Spain, 16 elsewhere);
+  only the age band is stored.
+- Email magic links: upgrade a guest to a registered account, or sign in on another device.
+  Single use, 15 minutes, hashed, throttled per address and per IP; no account enumeration.
+- Sessions in httpOnly SameSite=Lax cookies, hashed at rest, rotated on sign-in, revoked on logout.
+- `GET/PATCH /v1/me`, `GET /v1/me/data-export` (GDPR access/portability) and `DELETE /v1/me`
+  (GDPR erasure with anonymized ledger rows; recent sign-in required for registered accounts).
+- Foreign-origin refusal on state-changing requests; unknown request fields now rejected.
+- Dev mail driver that prints sign-in links to the log; memory driver for tests.
+- Migration `magic-links` (new table, `sessions.last_seen_at`).
+- Web: age gate, guest start, email sign-in and upgrade, magic-link landing that strips the token
+  from the URL, profile with rename, data download, sign-out and deletion; Spanish and English.
+
+Fixed
+
+- `pnpm dev` now loads the repo `.env` file (milestone 1 documented it but never loaded it).
+
+Verified locally on 2026-10-29: 61 tests passing (12 shared, 41 API of which 28 run against
+PostgreSQL, 8 web); end-to-end smoke test with curl against the running API (guest → link from
+the dev log → registered → `/v1/me`; email absent from logs; foreign origin refused).
+
 ## 0.1.0 — 2026-10-29 — Phase 1, milestone 1: scaffold and CI
 
 Added

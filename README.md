@@ -3,7 +3,7 @@
 Mobile-first geolocation creature-collection RPG with an original IP and optional NEAR integration.
 The full game is playable without a wallet, crypto or purchases.
 
-Status: **Phase 1, milestone 1 (scaffold and CI)**. See [CHANGELOG.md](CHANGELOG.md).
+Status: **Phase 1, milestone 2 (accounts)**. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Layout
 
@@ -33,6 +33,10 @@ pnpm dev                          # API on :3000, web on :5173
 ```
 
 Check it: `curl localhost:3000/ready` should report the `postgis`, `h3` and `h3_postgis` versions.
+
+Open http://localhost:5173, pass the age gate and you are playing as a guest. To save progress with
+an email, request a link: with `MAIL_DRIVER=log` the link appears in the API log (`dev mail (not sent)`);
+open it in the same browser.
 
 ## Tests
 

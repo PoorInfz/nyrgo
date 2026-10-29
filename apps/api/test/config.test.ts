@@ -35,4 +35,22 @@ describe('loadConfig', () => {
       loadConfig({ ...base, NODE_ENV: 'production', ENABLE_DEV_ROUTES: 'true' }),
     ).toThrow(/production/);
   });
+
+  it('refuses development mail drivers in production', () => {
+    expect(() =>
+      loadConfig({ ...base, NODE_ENV: 'production', APP_URL: 'https://nyrgo.test' }),
+    ).toThrow(/MAIL_DRIVER/);
+  });
+
+  it('sets auth defaults and secure cookies only in production', () => {
+    const c = loadConfig({ ...base, APP_URL: 'http://localhost:5173/' });
+    expect(c).toMatchObject({
+      appUrl: 'http://localhost:5173',
+      defaultRegion: 'ES',
+      sessionTtlDays: 30,
+      magicLinkTtlMin: 15,
+      reauthWindowMin: 15,
+      secureCookies: false,
+    });
+  });
 });

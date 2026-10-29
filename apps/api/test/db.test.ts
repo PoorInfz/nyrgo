@@ -2,6 +2,7 @@
  * Integration tests against a real PostgreSQL + PostGIS + h3-pg database that has the
  * migrations applied. Set TEST_DATABASE_URL to run them (CI always does).
  */
+import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
 import { buildApp } from '../src/app.js';
@@ -54,7 +55,7 @@ describe.skipIf(!url)('with database', () => {
     });
 
     it('keeps the gold ledger append-only and idempotent per (reason, ref_id)', async () => {
-      const ref = '00000000-0000-4000-8000-000000000001';
+      const ref = randomUUID();
       const { rows } = await db.query<{ id: string }>(
         `INSERT INTO gold_ledger (user_id, amount, reason, ref_id) VALUES ($1, 10, 'test', $2) RETURNING id`,
         [userId, ref],

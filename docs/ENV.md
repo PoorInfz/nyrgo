@@ -5,14 +5,22 @@ Production values come from the secret manager, never from committed files.
 
 ## API
 
-| Variable            | Required | Default                 | Notes                                                                   |
-| ------------------- | -------- | ----------------------- | ----------------------------------------------------------------------- |
-| `NODE_ENV`          | no       | `development`           | `development`, `test` or `production`                                   |
-| `API_HOST`          | no       | `0.0.0.0`               | Listen address                                                          |
-| `API_PORT`          | no       | `3000`                  | 1–65535                                                                 |
-| `CORS_ORIGINS`      | no       | `http://localhost:5173` | Comma-separated allowed origins                                         |
-| `DATABASE_URL`      | yes      | —                       | PostgreSQL connection string; also read by `pnpm db:migrate`            |
-| `ENABLE_DEV_ROUTES` | no       | `false`                 | Enables `/dev/v1/*` (GPS simulator). Startup fails if set in production |
+| Variable             | Required | Default                 | Notes                                                                                                            |
+| -------------------- | -------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `NODE_ENV`           | no       | `development`           | `development`, `test` or `production`                                                                            |
+| `API_HOST`           | no       | `0.0.0.0`               | Listen address                                                                                                   |
+| `API_PORT`           | no       | `3000`                  | 1–65535                                                                                                          |
+| `CORS_ORIGINS`       | no       | `http://localhost:5173` | Comma-separated allowed origins; state-changing requests from any other `Origin` get 403                         |
+| `DATABASE_URL`       | yes      | —                       | PostgreSQL connection string; also read by `pnpm db:migrate`                                                     |
+| `ENABLE_DEV_ROUTES`  | no       | `false`                 | Enables `/dev/v1/*` (GPS simulator). Startup fails if set in production                                          |
+| `APP_URL`            | no       | `http://localhost:5173` | Web app base URL used in sign-in links. Must be `https://` in production                                         |
+| `MAIL_DRIVER`        | no       | `log`                   | `log` prints sign-in links to the API log; `memory` keeps them in memory (tests). Both are refused in production |
+| `DEFAULT_REGION`     | no       | `ES`                    | Two-letter region used when the client sends none; decides the minimum age                                       |
+| `SESSION_TTL_DAYS`   | no       | `30`                    | Session lifetime, 1–90                                                                                           |
+| `MAGIC_LINK_TTL_MIN` | no       | `15`                    | Sign-in link lifetime, 5–60                                                                                      |
+| `REAUTH_WINDOW_MIN`  | no       | `15`                    | How recent a sign-in must be to delete a registered account, 1–60                                                |
+
+Session cookies get the `Secure` flag automatically when `NODE_ENV=production`.
 
 ## Tests
 

@@ -2,6 +2,20 @@
 
 Newest first. Each entry: date, decision, reason, who approved.
 
+## 2026-10-29 — Milestone 2: accounts
+
+| #   | Decision                                                                                                                                     | Reason                                                                                                 |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| A1  | New accounts are only created as guests (age gate there); email is added later by upgrading                                                  | One place for the age check, and the magic-link endpoint never reveals whether an email has an account |
+| A2  | Age gate asks birth month and year, stores only the band (`13-15`, `16-17`, `18+`)                                                           | Data minimization; month is enough to never overstate age                                              |
+| A3  | Minimum age 14 for Spain, 16 elsewhere (GDPR default), per region                                                                            | LOPDGDD art. 7; to be reviewed per market                                                              |
+| A4  | Sessions: 256-bit random token in an httpOnly, SameSite=Lax cookie; only the SHA-256 hash is stored; 30-day expiry; rotated on every sign-in | Stolen database rows cannot be replayed as sessions                                                    |
+| A5  | Magic links: single use, 15 minutes, max 3 per address per 15 minutes, plus per-IP limits                                                    | Limits abuse of the email endpoint                                                                     |
+| A6  | State-changing requests with a foreign `Origin` are refused                                                                                  | CSRF defence in addition to SameSite cookies                                                           |
+| A7  | Unknown request fields are rejected (`removeAdditional: false`), not silently dropped                                                        | Fastify's default would hide client bugs and probing                                                   |
+| A8  | Deleting a registered account needs a sign-in from the last 15 minutes                                                                       | Protects against a borrowed unlocked phone                                                             |
+| A9  | Mail drivers: `log` (dev, prints the link) and `memory` (tests). The API refuses to start in production until a real provider is added       | Owner has no provider yet; never send sign-in links to logs in production                              |
+
 ## 2026-10-29 — Phase 1 architecture (approved by the owner)
 
 | #   | Decision                                                                                          | Reason                                                                                |
@@ -34,4 +48,5 @@ Newest first. Each entry: date, decision, reason, who approved.
 ## Still open
 
 - Hosting provider and domain (does not block Phase 1).
+- Email provider (Resend, Postmark, SES or other): required before any production deploy.
 - Final 3D art style and pipeline (needed before Phase 4).

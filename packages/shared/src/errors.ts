@@ -16,6 +16,11 @@ export const ERROR_CODES = {
   accuracy_too_low: 422,
   cooldown_active: 429,
   insufficient_gold: 422,
+  age_restricted: 403,
+  reauth_required: 403,
+  invalid_token: 400,
+  email_taken: 409,
+  bad_origin: 403,
   internal_error: 500,
 } as const;
 
