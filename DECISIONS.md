@@ -178,18 +178,18 @@ Report with all numbers: [docs/economy/README.md](docs/economy/README.md) (regen
 
 ## 2026-10-29 — Implementation choices made while scaffolding
 
-| #   | Decision                                                                                              | Reason                                                                                  |
-| --- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| I1  | TypeScript pinned to `~6.0.3`, not 7.0                                                                | `typescript-eslint` 8.72 rejects TS 7 (peer range `<6.1.0`). Revisit when it supports 7 |
-| I2  | Fastify 5 + TypeBox 0.34 for env and request validation                                               | Same schemas will generate the OpenAPI spec                                             |
-| I3  | `node-pg-migrate` 9 with plain `.sql` migrations                                                      | Reviewable SQL, up/down in one file                                                     |
-| I4  | PostgreSQL 17 image (`postgis/postgis:17-3.5` + `postgresql-17-h3`) for dev and CI                    | CI builds the same image as local dev, so both run identical extensions                 |
-| I5  | Added a `config_versions` table (20 tables, not 19)                                                   | The master prompt requires versioned, auditable config                                  |
-| I6  | `gold_ledger` and `admin_audit_log` are append-only via triggers, not only role grants                | Holds even when connected as a superuser                                                |
-| I7  | GDPR erasure anonymizes the `users` row instead of deleting it                                        | Append-only ledgers keep only a pseudonymous id; personal fields are nulled             |
-| I8  | Only one _successful_ capture per player and spawn (partial unique index); failed attempts may repeat | Lets players retry with another item while blocking duplicate rewards                   |
-| I9  | `/health` never touches the database; `/ready` checks the database and spatial extensions             | Liveness must not flap when the database is slow                                        |
-| I10 | Dev routes (`/dev/v1/*`) refuse to start in production                                                | Prevents the GPS simulator from ever reaching players                                   |
+| #   | Decision                                                                                                                                                                  | Reason                                                                                  |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| I1  | TypeScript pinned to `~6.0.3`, not 7.0                                                                                                                                    | `typescript-eslint` 8.72 rejects TS 7 (peer range `<6.1.0`). Revisit when it supports 7 |
+| I2  | Fastify 5 + TypeBox 0.34 for env and request validation                                                                                                                   | Same schemas will generate the OpenAPI spec                                             |
+| I3  | `node-pg-migrate` 9 with plain `.sql` migrations                                                                                                                          | Reviewable SQL, up/down in one file                                                     |
+| I4  | PostgreSQL 17 image (`postgres:17-bookworm` + PGDG `postgresql-17-postgis-3`, `postgresql-17-h3`; was `postgis/postgis:17-3.5`, bullseye, no longer built) for dev and CI | CI builds the same image as local dev, so both run identical extensions                 |
+| I5  | Added a `config_versions` table (20 tables, not 19)                                                                                                                       | The master prompt requires versioned, auditable config                                  |
+| I6  | `gold_ledger` and `admin_audit_log` are append-only via triggers, not only role grants                                                                                    | Holds even when connected as a superuser                                                |
+| I7  | GDPR erasure anonymizes the `users` row instead of deleting it                                                                                                            | Append-only ledgers keep only a pseudonymous id; personal fields are nulled             |
+| I8  | Only one _successful_ capture per player and spawn (partial unique index); failed attempts may repeat                                                                     | Lets players retry with another item while blocking duplicate rewards                   |
+| I9  | `/health` never touches the database; `/ready` checks the database and spatial extensions                                                                                 | Liveness must not flap when the database is slow                                        |
+| I10 | Dev routes (`/dev/v1/*`) refuse to start in production                                                                                                                    | Prevents the GPS simulator from ever reaching players                                   |
 
 ## Still open
 
