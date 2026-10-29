@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.3.0 — 2026-10-29 — Phase 1, milestone 3: map and world data
+
+Added
+
+- OpenStreetMap importer (`world:import`): Overpass query for Córdoba, tag classifier for public
+  landmarks and exclusion zones, polygon assembly and corridor buffers in PostGIS, idempotent
+  re-imports that remove vanished rows and keep player reports.
+- Exclusion zones for schools, childcare, health, police, prisons, military, cemeteries,
+  construction, playgrounds, water, motorways, rail and private homes; places of worship never used.
+- Development seed (`world:seed`) with 10 approximate landmarks in central Córdoba.
+- Migration `world-data`: POI provenance, biome and tags, text OSM refs, `poi_reports`,
+  `is_excluded(point, ignore)`.
+- `POST /v1/world/nearby` (visible places by distance, in-range flag, OSM attribution; stores the
+  location sample) and `POST /v1/pois/:id/report` (three distinct reports hide a place).
+- Web: Map and Profile tabs; location permission explained before it is requested; MapLibre map
+  with PMTiles basemap support and a no-basemap fallback; accessible list of nearby places;
+  weak-signal and driving warnings; report button; GPS simulator for development.
+
+Fixed
+
+- Schema: POIs keyed by OSM type and id together (`n1` and `w1` no longer collide).
+
+Verified locally on 2026-10-29: 99 tests passing (12 shared, 62 API, 25 web); the import and
+seed scripts run against PostgreSQL; the game played in headless Chromium against the real API,
+both in the dev build (simulator) and the production build (browser geolocation): age gate,
+location, nearby list, map render, teleport, weak fix, no console errors, no horizontal overflow,
+simulator absent from production bundles.
+
 ## 0.2.0 — 2026-10-29 — Phase 1, milestone 2: accounts
 
 Added

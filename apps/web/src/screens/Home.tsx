@@ -85,8 +85,6 @@ export function Home({
         </dl>
       </section>
 
-      <p className="muted">{t('phase')}</p>
-
       {profile.kind === 'guest' && (
         <EmailForm api={api} title={t('saveTitle')} hint={t('saveHint')} />
       )}

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ApiError, createApi, type Profile } from './api';
-import { Home } from './screens/Home';
+import { Game } from './screens/Game';
 import { Verify } from './screens/Verify';
 import { Welcome } from './screens/Welcome';
 import './app.css';
@@ -76,7 +76,7 @@ export function App({ apiUrl }: { apiUrl: string }) {
       )}
       {view.name === 'verify' && <Verify api={api} token={view.token} onDone={afterVerify} />}
       {view.name === 'home' && (
-        <Home
+        <Game
           api={api}
           profile={view.profile}
           onChange={(profile) => setView({ name: 'home', profile })}

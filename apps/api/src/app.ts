@@ -12,6 +12,7 @@ import { LogMailer, MemoryMailer, type Mailer } from './modules/auth/mailer.js';
 import { authRoutes } from './modules/auth/routes.js';
 import { sessionLoader } from './modules/auth/sessions.js';
 import { healthRoutes } from './routes/health.js';
+import { worldRoutes } from './modules/world/routes.js';
 
 export interface AppDeps {
   config: AppConfig;
@@ -108,6 +109,7 @@ export async function buildApp({ config, db, mailer }: AppDeps): Promise<Fastify
   await app.register(healthRoutes, { db });
   await app.register(authRoutes, { db, config, mailer: mail });
   await app.register(accountRoutes, { db, config });
+  await app.register(worldRoutes, { db });
 
   if (config.devRoutes) {
     app.get('/dev/v1/ping', async () => ({ dev: true }));

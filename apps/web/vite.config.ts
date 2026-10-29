@@ -26,6 +26,8 @@ export default defineConfig({
     }),
   ],
   server: { port: 5173 },
+  // MapLibre ships its worker as a sibling ES module; pre-bundling would break the relative URL.
+  optimizeDeps: { exclude: ['maplibre-gl'] },
   test: {
     environment: 'jsdom',
     setupFiles: ['./test/setup.ts'],

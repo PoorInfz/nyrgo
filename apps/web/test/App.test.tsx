@@ -31,6 +31,9 @@ function mockApi(routes: Record<string, Route>) {
   return fn;
 }
 
+/** Signed-in players land on the map; account controls live in the profile tab. */
+const openProfile = async () => fireEvent.click(await screen.findByRole('tab', { name: 'Perfil' }));
+
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
 
@@ -58,6 +61,8 @@ describe('signed out', () => {
     fireEvent.change(screen.getByLabelText('Año'), { target: { value: '1995' } });
     fireEvent.click(screen.getByRole('button', { name: 'Empezar a jugar' }));
 
+    expect(await screen.findByRole('button', { name: 'Activar ubicación' })).toBeInTheDocument();
+    await openProfile();
     expect(await screen.findByText('Explorer-abc123')).toBeInTheDocument();
     const call = fetch.mock.calls.find(([, init]) => init?.method === 'POST')!;
     expect(JSON.parse(String(call[1]!.body))).toEqual({ birthYear: 1995, birthMonth: 6 });
@@ -95,6 +100,7 @@ describe('signed in as guest', () => {
       'POST /v1/auth/magic-link': () => json(202, { sent: true }),
     });
     render(<App apiUrl="http://api.test" />);
+    await openProfile();
     expect(await screen.findByText('Guarda tu progreso')).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.test' } });
     fireEvent.click(screen.getByRole('button', { name: 'Enviarme el enlace' }));
@@ -109,6 +115,7 @@ describe('signed in as guest', () => {
       'DELETE /v1/me': () => json(403, { code: 'reauth_required', title: 'x' }),
     });
     render(<App apiUrl="http://api.test" />);
+    await openProfile();
     fireEvent.click(await screen.findByRole('button', { name: 'Borrar mi cuenta' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('entra de nuevo');
     expect(screen.queryByText('Guarda tu progreso')).not.toBeInTheDocument();
@@ -122,6 +129,7 @@ describe('magic link landing', () => {
       'POST /v1/auth/verify': () => json(200, { ...guest, kind: 'registered' }),
     });
     render(<App apiUrl="http://api.test" />);
+    await openProfile();
     expect(await screen.findByText('Cuenta guardada')).toBeInTheDocument();
     await waitFor(() => expect(window.location.pathname).toBe('/'));
     expect(window.location.search).toBe('');

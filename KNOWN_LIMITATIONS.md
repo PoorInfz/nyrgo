@@ -9,10 +9,21 @@ Stated openly so nobody relies on something that is not there.
   stay disabled while the client is web-only (master prompt §16). Testnet and simulated rewards are fine.
 - **iOS PWA limits.** No background geolocation, limited push notifications, storage can be evicted.
 
-## Current state (Phase 1, milestone 2)
+## Current state (Phase 1, milestone 3)
 
-- Accounts work (guest, email upgrade, sign-in, profile, export, deletion). No gameplay yet:
-  no map, creatures or Gold faucets until milestones 3–8.
+- Accounts, the map and nearby places work. No creatures, captures, battles or Gold faucets yet
+  (milestones 5–8).
+- **Location samples are stored but not yet purged.** Each nearby query stores the player's point;
+  the 24-hour / 30-day retention job arrives with milestone 4. Do not run a public test before then.
+- **Real Córdoba data has not been imported from this build environment**, which cannot reach
+  Overpass. The importer is tested against a synthetic sample in Overpass format; the first real run
+  (`world:import`) should be followed by a manual look at the exclusion zones.
+- The seed (`world:seed`) uses hand-entered, approximate coordinates and is for development only.
+- Basemap glyphs and sprites default to Protomaps' GitHub Pages; self-host them before launch
+  (`VITE_MAP_ASSETS_URL`). Without a PMTiles file no external request is made.
+- Map rendering was verified in headless Chromium (SwiftShader WebGL), not yet on a physical phone.
+- Exclusion rules are tag-based: unmapped schools or homes are not excluded. Player reports and
+  admin hiding are the safety net.
 - **No real email.** Sign-in links are printed to the API log (`MAIL_DRIVER=log`). The API refuses to
   start with `NODE_ENV=production` until an email provider is integrated.
 - **Same-site deployment required.** The session cookie is SameSite=Lax, so the API and the web app

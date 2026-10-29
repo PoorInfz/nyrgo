@@ -44,7 +44,28 @@ export const resources = {
       reauth: 'Por seguridad, entra de nuevo con tu email y vuelve a intentarlo.',
       guestLogoutWarning: 'Eres invitado: si cierras sesión perderás tu progreso.',
       error: 'Algo ha fallado. Inténtalo de nuevo.',
-      phase: 'Fase 1 en construcción: el mapa llega en el próximo hito.',
+      tabsLabel: 'Secciones',
+      tabPlay: 'Mapa',
+      tabProfile: 'Perfil',
+      locationTitle: 'Activa tu ubicación',
+      locationWhy:
+        'nyrgo usa tu ubicación solo mientras juegas, para mostrarte lo que hay cerca. Las posiciones exactas se borran a las 24 horas.',
+      locationEnable: 'Activar ubicación',
+      locating: 'Buscando tu posición…',
+      locationDenied:
+        'No tenemos permiso para ver tu ubicación. Actívalo en los ajustes del navegador para jugar.',
+      locationUnavailable:
+        'No conseguimos tu ubicación. Sal a un sitio abierto e inténtalo de nuevo.',
+      weakSignal: 'Señal GPS débil ({{m}} m). Esperando más precisión…',
+      drivingWarning: 'Parece que vas en vehículo. No juegues mientras conduces.',
+      mapLabel: 'Mapa con tu posición y los lugares cercanos',
+      nearbyTitle: 'Lugares cercanos',
+      nearbyEmpty: 'No hay lugares a tu alrededor. Prueba a caminar hacia una plaza o un parque.',
+      inRange: 'al alcance',
+      metres: 'a {{m}} m',
+      report: 'Reportar',
+      reportConfirm:
+        '¿Reportar este lugar como inseguro o privado? Dejará de mostrarse si varios jugadores lo reportan.',
     },
   },
   en: {
@@ -89,7 +110,27 @@ export const resources = {
       reauth: 'For your security, sign in again with your email and retry.',
       guestLogoutWarning: 'You are a guest: signing out loses your progress.',
       error: 'Something went wrong. Please try again.',
-      phase: 'Phase 1 under construction: the map arrives in the next milestone.',
+      tabsLabel: 'Sections',
+      tabPlay: 'Map',
+      tabProfile: 'Profile',
+      locationTitle: 'Turn on your location',
+      locationWhy:
+        'nyrgo uses your location only while you play, to show what is nearby. Exact positions are deleted after 24 hours.',
+      locationEnable: 'Turn on location',
+      locating: 'Finding your position…',
+      locationDenied:
+        'We do not have permission to see your location. Allow it in your browser settings to play.',
+      locationUnavailable: 'We could not get your location. Step outside and try again.',
+      weakSignal: 'Weak GPS signal ({{m}} m). Waiting for a better fix…',
+      drivingWarning: 'Looks like you are in a vehicle. Never play while driving.',
+      mapLabel: 'Map with your position and nearby places',
+      nearbyTitle: 'Nearby places',
+      nearbyEmpty: 'Nothing around you yet. Try walking towards a square or a park.',
+      inRange: 'in range',
+      metres: '{{m}} m away',
+      report: 'Report',
+      reportConfirm:
+        'Report this place as unsafe or private? It will be hidden if several players report it.',
     },
   },
 } as const;

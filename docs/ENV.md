@@ -22,6 +22,12 @@ Production values come from the secret manager, never from committed files.
 
 Session cookies get the `Secure` flag automatically when `NODE_ENV=production`.
 
+## World import (scripts)
+
+| Variable       | Default                                   | Notes                                    |
+| -------------- | ----------------------------------------- | ---------------------------------------- |
+| `OVERPASS_URL` | `https://overpass-api.de/api/interpreter` | Overpass endpoint used by `world:import` |
+
 ## Tests
 
 | Variable            | Notes                                                                            |
@@ -30,6 +36,8 @@ Session cookies get the `Secure` flag automatically when `NODE_ENV=production`.
 
 ## Web (build time)
 
-| Variable       | Default                 | Notes                                                                                 |
-| -------------- | ----------------------- | ------------------------------------------------------------------------------------- |
-| `VITE_API_URL` | `http://localhost:3000` | Public API base URL. Never put secrets in `VITE_*` variables: they ship in the bundle |
+| Variable              | Default                                       | Notes                                                                                         |
+| --------------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `VITE_API_URL`        | `http://localhost:3000`                       | Public API base URL. Never put secrets in `VITE_*` variables: they ship in the bundle         |
+| `VITE_PMTILES_URL`    | —                                             | PMTiles basemap, e.g. `/tiles/cordoba.pmtiles`. Unset: plain background, no external requests |
+| `VITE_MAP_ASSETS_URL` | `https://protomaps.github.io/basemaps-assets` | Glyphs and sprites for the basemap; self-host before launch                                   |

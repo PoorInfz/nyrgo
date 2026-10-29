@@ -1,4 +1,6 @@
 import type { AgeBand, ErrorCode } from '@nyrgo/shared';
+import type { LocationFix } from './geo/location';
+import type { MapPoi } from './map/style';
 
 export interface Profile {
   id: string;
@@ -13,6 +15,16 @@ export interface Profile {
   canUseWeb3: boolean;
   createdAt: string;
 }
+
+export interface Nearby {
+  cell: string;
+  visibleRadiusM: number;
+  interactionRadiusM: number;
+  attribution: string;
+  pois: MapPoi[];
+}
+
+export type PoiReportReason = 'unsafe' | 'private' | 'inaccessible' | 'other';
 
 export class ApiError extends Error {
   constructor(
@@ -56,6 +68,16 @@ export function createApi(baseUrl: string) {
     rename: (displayName: string) => call<Profile>('PATCH', '/v1/me', { displayName }),
     exportData: () => call<unknown>('GET', '/v1/me/data-export'),
     deleteAccount: () => call<void>('DELETE', '/v1/me', { confirm: 'DELETE' }),
+    nearby: (fix: LocationFix) =>
+      call<Nearby>('POST', '/v1/world/nearby', {
+        lat: fix.lat,
+        lng: fix.lng,
+        accuracy: fix.accuracy,
+        speed: fix.speed,
+        timestamp: Math.round(fix.timestamp),
+      }),
+    reportPoi: (id: string, reason: PoiReportReason) =>
+      call<{ received: true }>('POST', `/v1/pois/${encodeURIComponent(id)}/report`, { reason }),
   };
 }
 

@@ -3,7 +3,7 @@
 Mobile-first geolocation creature-collection RPG with an original IP and optional NEAR integration.
 The full game is playable without a wallet, crypto or purchases.
 
-Status: **Phase 1, milestone 2 (accounts)**. See [CHANGELOG.md](CHANGELOG.md).
+Status: **Phase 1, milestone 3 (map and world data)**. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Layout
 
@@ -37,6 +37,45 @@ Check it: `curl localhost:3000/ready` should report the `postgis`, `h3` and `h3_
 Open http://localhost:5173, pass the age gate and you are playing as a guest. To save progress with
 an email, request a link: with `MAIL_DRIVER=log` the link appears in the API log (`dev mail (not sent)`);
 open it in the same browser.
+
+## World data (Córdoba)
+
+The map needs places and no-go zones. Two ways to get them:
+
+```bash
+# Quick start: 10 approximate landmarks in central Córdoba (hand-entered, dev only)
+pnpm --filter @nyrgo/api world:seed
+
+# Real data from OpenStreetMap via Overpass (needs internet; takes a minute).
+# File paths are relative to apps/api.
+pnpm --filter @nyrgo/api world:import --save data/osm/cordoba.json
+pnpm --filter @nyrgo/api world:import --file data/osm/cordoba.json   # re-load offline
+pnpm --filter @nyrgo/api world:import --dry-run                       # just count
+```
+
+The import keeps public landmarks (historic sites, artworks, museums, parks, squares) and builds
+exclusion zones where nothing will ever be placed: schools and childcare, hospitals, police,
+prisons, military land, cemeteries, construction sites, playgrounds, water, motorways and rail
+corridors, and private homes. Places of worship are never game locations. Re-running it updates
+changed places, removes deleted ones and keeps player reports. Data © OpenStreetMap contributors (ODbL).
+
+### Basemap (optional)
+
+Without a basemap the map shows a dark background with the game layers on top, which is enough to
+play. For streets and labels, extract Córdoba from a Protomaps daily build with the
+[pmtiles CLI](https://github.com/protomaps/go-pmtiles/releases):
+
+```bash
+pmtiles extract https://build.protomaps.com/<YYYYMMDD>.pmtiles apps/web/public/tiles/cordoba.pmtiles \
+  --bbox=-4.85,37.85,-4.72,37.92
+echo "VITE_PMTILES_URL=/tiles/cordoba.pmtiles" >> .env
+```
+
+### GPS simulator
+
+In development (`pnpm dev`) the game uses a simulator instead of real GPS: teleport to landmarks,
+walk preset routes at 5, 15 or 50 km/h, or force a poor 120 m fix. Add `?realgps` to the URL to
+use the device GPS. Production builds do not contain the simulator.
 
 ## Tests
 

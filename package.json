@@ -2,7 +2,7 @@
   "name": "nyrgo",
   "private": true,
   "type": "module",
-  "description": "nyrgo — mobile-first geolocation creature-collection RPG with optional NEAR integration",
+  "description": "nyrgo \u2014 mobile-first geolocation creature-collection RPG with optional NEAR integration",
   "packageManager": "pnpm@10.28.0",
   "engines": {
     "node": ">=22"
@@ -16,7 +16,9 @@
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
     "db:migrate": "pnpm --filter @nyrgo/api db:migrate",
-    "db:rollback": "pnpm --filter @nyrgo/api db:rollback"
+    "db:rollback": "pnpm --filter @nyrgo/api db:rollback",
+    "world:import": "pnpm --filter @nyrgo/api world:import",
+    "world:seed": "pnpm --filter @nyrgo/api world:seed"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

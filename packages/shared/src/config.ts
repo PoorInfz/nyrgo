@@ -23,6 +23,12 @@ export interface WorldConfig {
   preciseLocationRetentionH: number;
   /** Whole location sample rows are deleted after this many days. */
   locationSampleRetentionD: number;
+  /** A POI is hidden pending review once this many different players report it. */
+  poiHideAfterReports: number;
+  /** Exclusion kinds that do not hide POIs (landmarks on bridges stay visible). */
+  poiIgnoredExclusions: string[];
+  /** Most POIs returned by one nearby query. */
+  maxNearbyPois: number;
 }
 
 export interface EconomyConfig {
@@ -75,6 +81,9 @@ export const DEFAULT_CONFIG: GameConfig = {
     poiCooldownMin: 5,
     preciseLocationRetentionH: 24,
     locationSampleRetentionD: 30,
+    poiHideAfterReports: 3,
+    poiIgnoredExclusions: ['water'],
+    maxNearbyPois: 100,
   },
   economy: {
     dailyGameplayGoldCap: 1500,
