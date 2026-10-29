@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.14.1 — 2026-10-29 — NFT cards framed
+
+- Each card's portrait is framed on the creature's real outline (from its cut-out mask, in
+  `apps/api/src/modules/nft/focus.ts`, made by `tools/make-focus.py`), so no head or tail is cut
+  off. Tall creatures may lose a little ground at the feet; where the painting is too narrow the
+  side margins are the same painting, blurred and faded in. All 50 in `docs/nft/all.webp`.
+
 ## 0.14.0 — 2026-10-29 — Phase 3, part 3: the NFT collection
 
 Verified locally on 2026-10-29: format, lint, typecheck and build clean; 289 tests passing (67

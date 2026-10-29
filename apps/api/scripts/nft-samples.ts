@@ -1,11 +1,12 @@
 /**
  * Draws example NFT cards into docs/nft/ so the collection can be reviewed without minting:
- * one species from its worst grade to its best, and one creature of each rarity.
+ * one species from its worst grade to its best, one creature of each rarity, and every species
+ * (all.webp) to check that each portrait sits well in its frame.
  *   pnpm --filter @nyrgo/api nft:samples
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import sharp from 'sharp';
-import { NFT_SUPPLY_BY_RARITY, CREATURES_BY_ID } from '@nyrgo/shared';
+import { CREATURES, NFT_SUPPLY_BY_RARITY, CREATURES_BY_ID } from '@nyrgo/shared';
 import { renderCard, type CardData } from '../src/modules/nft/card.js';
 
 const ART = '../web/public';
@@ -64,5 +65,29 @@ for (const [name, cards] of rows) {
     .webp({ quality: 82 })
     .toBuffer();
   writeFileSync(`${OUT}/${name}.webp`, strip);
+}
+// every species, small, to check the framing of each portrait
+{
+  const pngs = await Promise.all(
+    CREATURES.map((c) => renderCard(ART, card(c.id, 10, iv(8, 8, 8, 8), 1))),
+  );
+  const w = 200;
+  const h = 293;
+  const cols = 10;
+  const sheet = await sharp({
+    create: { width: w * cols, height: h * Math.ceil(pngs.length / cols), channels: 4, background: '#e2f8ff' },
+  })
+    .composite(
+      await Promise.all(
+        pngs.map(async (png, i) => ({
+          input: await sharp(png).resize(w, h).toBuffer(),
+          left: (i % cols) * w,
+          top: Math.floor(i / cols) * h,
+        })),
+      ),
+    )
+    .webp({ quality: 80 })
+    .toBuffer();
+  writeFileSync(`${OUT}/all.webp`, sheet);
 }
 process.stdout.write(`cards written to ${OUT}\n`);

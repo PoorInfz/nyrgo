@@ -38,4 +38,6 @@ The grade comes from the creature's individual values (IVs, 0–15 for each of i
 Every card is drawn by the API when the token is minted and served as its image
 (`/v1/nft/cards/<token>.png`); its attributes (species, element, rarity, grade, quality, level,
 stats, edition, supply) are at `/v1/nft/tokens/<token>.json`. These examples are drawn with
-`pnpm --filter @nyrgo/api nft:samples`.
+`pnpm --filter @nyrgo/api nft:samples`; `all.webp` shows all 50 species. The portrait is framed
+on each creature's outline (`focus.ts`, regenerate with `python3 tools/make-focus.py` when the
+art changes).
