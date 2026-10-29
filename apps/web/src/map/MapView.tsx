@@ -1,10 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
-import type { Map as MlMap, GeoJSONSource } from 'maplibre-gl';
+import type { Map as MlMap, GeoJSONSource, Marker } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { LocationFix } from '../geo/location';
 import { BIOME_COLORS, OSM_ATTRIBUTION, buildStyle, poisToGeoJSON, type MapPoi } from './style';
 
 const PLAYER_ZOOM = 16;
+
+export interface MapCreature {
+  id: string;
+  creatureId: string;
+  lat: number;
+  lng: number;
+  inRange: boolean;
+}
 
 /**
  * The interactive map. MapLibre needs WebGL, so it is loaded lazily and only in the browser;
@@ -13,11 +21,16 @@ const PLAYER_ZOOM = 16;
 export default function MapView({
   fix,
   pois,
+  creatures = [],
+  onCreature,
   lang,
   label,
 }: {
   fix: LocationFix | null;
   pois: MapPoi[];
+  creatures?: MapCreature[];
+  /** Tapping a creature on the map; the list beside the map does the same for keyboards. */
+  onCreature?: (id: string) => void;
   lang: string;
   label: string;
 }) {
@@ -25,6 +38,12 @@ export default function MapView({
   const map = useRef<MlMap | null>(null);
   const [ready, setReady] = useState(false);
   const centred = useRef(false);
+  const lib = useRef<typeof import('maplibre-gl') | null>(null);
+  const markers = useRef(new Map<string, Marker>());
+  const tap = useRef(onCreature);
+  useEffect(() => {
+    tap.current = onCreature;
+  }, [onCreature]);
 
   useEffect(() => {
     let cancelled = false;
@@ -38,6 +57,7 @@ export default function MapView({
       ]);
       if (cancelled || !container.current) return;
       maplibregl.setWorkerUrl(workerUrl);
+      lib.current = maplibregl;
       const protocol = new Protocol();
       maplibregl.addProtocol('pmtiles', protocol.tile);
       const created = new maplibregl.Map({
@@ -101,12 +121,48 @@ export default function MapView({
         setReady(true);
       });
     })();
+    const live = markers.current;
     return () => {
       cancelled = true;
+      for (const m of live.values()) m.remove();
+      live.clear();
       instance?.remove();
       map.current = null;
     };
   }, [lang]);
+
+  // Creatures are HTML markers showing their portrait; the list below the map is the
+  // accessible way to reach them, so markers stay out of the tab order.
+  useEffect(() => {
+    const m = map.current;
+    const ml = lib.current;
+    if (!ready || !m || !ml) return;
+    const keep = new Set(creatures.map((c) => c.id));
+    for (const [id, marker] of markers.current) {
+      if (!keep.has(id)) {
+        marker.remove();
+        markers.current.delete(id);
+      }
+    }
+    for (const c of creatures) {
+      let marker = markers.current.get(c.id);
+      if (!marker) {
+        const el = document.createElement('button');
+        el.type = 'button';
+        el.tabIndex = -1;
+        el.setAttribute('aria-hidden', 'true');
+        el.className = 'creature-marker';
+        const img = document.createElement('img');
+        img.src = `/creatures/${c.creatureId}.svg`;
+        img.alt = '';
+        el.append(img);
+        el.addEventListener('click', () => tap.current?.(c.id));
+        marker = new ml.Marker({ element: el }).setLngLat([c.lng, c.lat]).addTo(m);
+        markers.current.set(c.id, marker);
+      }
+      marker.getElement().dataset.inRange = String(c.inRange);
+    }
+  }, [ready, creatures]);
 
   useEffect(() => {
     if (!ready || !map.current) return;

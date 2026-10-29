@@ -59,6 +59,35 @@ export interface CaptureConfig {
   maxChance: number;
   /** Bonus per unit of throw skill score (score is 0..1). */
   skillBonus: number;
+  /** Chance the creature runs away after each failed attempt. */
+  fleeChance: Record<Rarity, number>;
+  /** Minutes an encounter stays open after its spawn would have disappeared. */
+  encounterGraceMin: number;
+  /** Items every new player starts with. */
+  starterKit: Record<string, number>;
+  /** Level of the starter creature a player picks. */
+  starterLevel: number;
+}
+
+/**
+ * Wild spawns. Each H3 cell refreshes on its own schedule (offset by a hash of the cell) so
+ * the whole map does not change at once. Generation is deterministic from a server secret,
+ * the cell and the window, so every player sees the same creatures and clients cannot
+ * predict them.
+ */
+export interface SpawnConfig {
+  /** Spawn slots per cell by the cell's biome (the most common biome of its POIs). */
+  slotsByBiome: Record<'urban' | 'park' | 'historic' | 'culture', number>;
+  /** Each slot is filled with this probability. */
+  slotChance: number;
+  /** Relative weights of the rarities that appear in the wild. */
+  rarityWeights: Partial<Record<Rarity, number>>;
+  /** Level range by evolution stage. */
+  levelByStage: Record<1 | 2 | 3, [number, number]>;
+  /** Spawns are placed at most this far from their cell centre (r9 cells are ~150 m across the flats). */
+  maxOffsetM: number;
+  /** Rings of neighbouring cells searched around the player's cell. */
+  searchRings: number;
 }
 
 /**
@@ -89,6 +118,7 @@ export interface GameConfig {
   world: WorldConfig;
   economy: EconomyConfig;
   capture: CaptureConfig;
+  spawns: SpawnConfig;
   antiCheat: AntiCheatConfig;
 }
 
@@ -145,6 +175,25 @@ export const DEFAULT_CONFIG: GameConfig = {
     minChance: 0.02,
     maxChance: 0.95,
     skillBonus: 0.25,
+    fleeChance: {
+      common: 0.1,
+      uncommon: 0.15,
+      rare: 0.2,
+      epic: 0.25,
+      legendary: 0.3,
+      mythic: 0.35,
+    },
+    encounterGraceMin: 2,
+    starterKit: { 'vault-basic': 15, patch: 3 },
+    starterLevel: 5,
+  },
+  spawns: {
+    slotsByBiome: { urban: 1, park: 3, historic: 2, culture: 2 },
+    slotChance: 0.6,
+    rarityWeights: { common: 62, uncommon: 25, rare: 10, epic: 3 },
+    levelByStage: { 1: [2, 10], 2: [10, 22], 3: [22, 35] },
+    maxOffsetM: 110,
+    searchRings: 2,
   },
 };
 

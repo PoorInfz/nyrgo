@@ -199,7 +199,7 @@ button.danger {
 
 .tabs {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 4px;
   background: var(--surface);
   border-radius: 12px;
@@ -209,6 +209,9 @@ button.danger {
 .tab {
   background: none;
   color: var(--muted);
+  padding: 0 4px;
+  font-size: 15px;
+  overflow-wrap: anywhere;
 }
 
 .tab.active {
@@ -464,4 +467,203 @@ h3 {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+/* ---------------------------------------------------------------- milestone 6: creatures */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+button.secondary {
+  background: none;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+button.small {
+  min-height: 40px;
+  padding: 0 12px;
+}
+
+.small {
+  font-size: 13px;
+}
+
+.creature-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.creature-list li {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.creature-list img {
+  border-radius: 10px;
+  background: #f4f1fb;
+}
+
+.creature-list li[data-in-range='true'] .poi-name {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.creature-marker {
+  width: 44px;
+  height: 44px;
+  min-height: 0;
+  padding: 2px;
+  border-radius: 50%;
+  background: #f4f1fb;
+  border: 3px solid var(--border);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 45%);
+}
+
+.creature-marker[data-in-range='true'] {
+  border-color: var(--accent);
+  width: 52px;
+  height: 52px;
+}
+
+.creature-marker img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.encounter-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: radial-gradient(circle at 50% 60%, #ffffff, #e9e4f7 70%);
+  padding: 12px;
+  overflow: hidden;
+}
+
+.encounter-stage img {
+  width: min(100%, 220px);
+  height: auto;
+  position: relative;
+}
+
+/* The timing ring shrinks over the creature; pressing when it is small scores higher. */
+.ring {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  border: 6px solid var(--gold);
+  animation: ring-shrink 1.4s linear infinite;
+  pointer-events: none;
+}
+
+.ring.still {
+  animation: none;
+  transform: scale(0.6);
+}
+
+@keyframes ring-shrink {
+  from {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+  to {
+    transform: scale(0.2);
+    opacity: 1;
+  }
+}
+
+.vaults {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vault {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+}
+
+.vault.empty {
+  color: var(--muted);
+}
+
+.result {
+  border-radius: 12px;
+  padding: 8px 12px;
+  background: var(--surface-2);
+}
+
+.result p {
+  margin: 4px 0;
+}
+
+.result-caught strong {
+  color: var(--accent);
+}
+
+.dex-card.unknown img {
+  background: none;
+  filter: brightness(0) invert(1) opacity(0.22);
+}
+
+.dex-card.unknown {
+  cursor: default;
+}
+
+.caught-mark {
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.dex-card.owned {
+  cursor: default;
+}
+
+.starter {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.starter img {
+  border-radius: 12px;
+  background: #f4f1fb;
+  width: 100%;
+  height: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ring {
+    animation: none;
+    transform: scale(0.6);
+  }
 }

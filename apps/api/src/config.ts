@@ -18,6 +18,8 @@ const EnvSchema = Type.Object({
   MAGIC_LINK_TTL_MIN: Type.Integer({ minimum: 5, maximum: 60, default: 15 }),
   REAUTH_WINDOW_MIN: Type.Integer({ minimum: 1, maximum: 60, default: 15 }),
   JOBS_ENABLED: Type.Boolean({ default: true }),
+  /** Seeds wild spawns. Anyone holding it can predict where creatures appear. */
+  SPAWN_SECRET: Type.String({ minLength: 16, default: 'dev-only-spawn-secret-change-me' }),
 });
 
 export type Env = Static<typeof EnvSchema>;
@@ -39,6 +41,7 @@ export interface AppConfig {
   secureCookies: boolean;
   /** Run scheduled jobs (retention, risk decay) in this process. */
   jobsEnabled: boolean;
+  spawnSecret: string;
 }
 
 export class ConfigError extends Error {}
@@ -64,6 +67,11 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
       `MAIL_DRIVER=${env.MAIL_DRIVER} writes sign-in links to logs or memory; configure a real email provider for production`,
     );
   }
+  if (prod && (env.SPAWN_SECRET.startsWith('dev-only') || env.SPAWN_SECRET.length < 32)) {
+    throw new ConfigError(
+      'SPAWN_SECRET must be a random value of at least 32 characters in production',
+    );
+  }
   if (prod && !env.APP_URL.startsWith('https://')) {
     throw new ConfigError('APP_URL must use https in production');
   }
@@ -84,5 +92,6 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
     reauthWindowMin: env.REAUTH_WINDOW_MIN,
     secureCookies: prod,
     jobsEnabled: env.JOBS_ENABLED,
+    spawnSecret: env.SPAWN_SECRET,
   };
 }

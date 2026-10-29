@@ -100,6 +100,8 @@ describe.skipIf(!TEST_DB_URL)('scheduled jobs', () => {
         magicLinksDeleted: 0,
         idempotencyKeysDeleted: 0,
         riskSignalsDeleted: 0,
+        spawnsDeleted: 0,
+        spawnGenerationsDeleted: 0,
       });
     });
   });

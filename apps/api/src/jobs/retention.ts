@@ -8,6 +8,10 @@ import type { Db } from '../db.js';
  */
 
 export const RISK_SIGNAL_RETENTION_D = 90;
+/** Spawns are kept this long after they expire; their capture attempts and encounters go with them. */
+export const SPAWN_RETENTION_D = 90;
+/** Generation markers are only needed while their window is live. */
+export const SPAWN_GENERATION_RETENTION_H = 24;
 /** Expired or revoked sessions and used links are kept a little while for support questions. */
 export const AUTH_GRACE_D = 7;
 const BATCH = 10_000;
@@ -19,6 +23,8 @@ export interface RetentionReport {
   magicLinksDeleted: number;
   idempotencyKeysDeleted: number;
   riskSignalsDeleted: number;
+  spawnsDeleted: number;
+  spawnGenerationsDeleted: number;
 }
 
 async function batched(db: Db, sql: string, params: unknown[]): Promise<number> {
@@ -76,6 +82,19 @@ export async function runRetention(db: Db): Promise<RetentionReport> {
          SELECT id FROM risk_signals
           WHERE created_at < now() - make_interval(days => $1) LIMIT ${BATCH})`,
       [RISK_SIGNAL_RETENTION_D],
+    ),
+    spawnsDeleted: await batched(
+      db,
+      `DELETE FROM spawns WHERE id IN (
+         SELECT id FROM spawns WHERE expires_at < now() - make_interval(days => $1) LIMIT ${BATCH})`,
+      [SPAWN_RETENTION_D],
+    ),
+    spawnGenerationsDeleted: await batched(
+      db,
+      `DELETE FROM spawn_generations WHERE (h3_r9, window_start) IN (
+         SELECT h3_r9, window_start FROM spawn_generations
+          WHERE window_start < now() - make_interval(hours => $1) LIMIT ${BATCH})`,
+      [SPAWN_GENERATION_RETENTION_H],
     ),
   };
 }

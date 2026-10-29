@@ -2,6 +2,23 @@
 
 Newest first. Each entry: date, decision, reason, who approved.
 
+## 2026-10-29 — Milestone 6: spawns, encounters and captures
+
+| #   | Decision                                                                                                                                                  | Reason                                                                   |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| S1  | Spawns are generated per H3 r9 cell and 15-minute window from HMAC-SHA256(`SPAWN_SECRET`, cell, window); same for every player                            | Fair, cheap (generated on first sight), unpredictable without the secret |
+| S2  | Each cell refreshes at its own offset (hash of the cell id)                                                                                               | The map never changes all at once                                        |
+| S3  | Cell biome = most common biome of its POIs (urban if none); slots per cell: urban 1, park 3, historic 2, culture 2, each filled 60 %                      | More creatures in parks and old town, fewer on plain streets             |
+| S4  | Wild rarity weights 62 / 25 / 10 / 3 (common to epic); level range by stage 2–10, 10–22, 22–35                                                            | Starting assumptions, to tune in the simulation (Phase 2)                |
+| S5  | A candidate is dropped if it lands outside its cell or in any exclusion zone (water included)                                                             | Safety first; an empty slot is the cost                                  |
+| S6  | "Seen" means an encounter was opened (within 40 m), not merely shown on the map                                                                           | Seeing must take a walk; matches the Dex rule "hide until seen"          |
+| S7  | The capture roll and chance are computed on the server; the client sends the vault and a timing score 0–1 worth at most +25 %                             | Client-reported skill is untrusted, so its weight is capped              |
+| S8  | Capture requests need an `Idempotency-Key`; replays return the stored result, a different body with the same key is refused                               | A retried throw never spends two vaults or rolls twice                   |
+| S9  | After a failed throw the creature may flee (10–35 % by rarity); a caught or fled spawn disappears for that player only                                    | Tension per throw; other players are unaffected                          |
+| S10 | Starter kit (15 basic vaults, 3 patches) granted once, on first need; one starter creature per player, picked from the three starters                     | Playable from minute one without a shop                                  |
+| S11 | Player levels: total XP 50·L·(L−1), max 50; level-up pays 20 Gold × new level; all gameplay Gold counts against the daily cap of 1500 (Europe/Madrid day) | Simple curve to tune later; one cap for every faucet                     |
+| S12 | Spawns are kept 90 days after expiry, then deleted with their encounters and capture attempts                                                             | Enough history for support and anti-cheat review                         |
+
 ## 2026-10-29 — Milestone 5: creature content (approved by the owner)
 
 | #   | Decision                                                                                                                                                       | Reason                                                                          |

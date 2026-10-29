@@ -6,6 +6,7 @@ import { withTx } from '../../db.js';
 import { HttpProblem } from '../../http/problem.js';
 import { requireAuth } from '../auth/sessions.js';
 import { recordFix } from '../anticheat/movement.js';
+import { cellsAround, ensureSpawns, visibleSpawns } from '../spawns/store.js';
 
 export const LocationSample = Type.Object(
   {
@@ -33,7 +34,10 @@ const PoiParams = Type.Object({ id: Type.String({ format: 'uuid' }) });
 
 export const OSM_ATTRIBUTION = '© OpenStreetMap contributors (ODbL)';
 
-export async function worldRoutes(app: FastifyInstance, { db }: { db: Db }) {
+export async function worldRoutes(
+  app: FastifyInstance,
+  { db, spawnSecret }: { db: Db; spawnSecret: string },
+) {
   const cfg = DEFAULT_CONFIG.world;
 
   /**
@@ -69,6 +73,11 @@ export async function worldRoutes(app: FastifyInstance, { db }: { db: Db }) {
           clientTs: timestamp,
         });
       });
+
+      // Wild creatures around the player: generated on first sight for each cell and window.
+      const cells = await cellsAround(db, fix.cell);
+      await withTx(db, (c) => ensureSpawns(c, cells, spawnSecret));
+      const spawns = await visibleSpawns(db, auth.userId, cells, lat, lng);
 
       const point = `ST_SetSRID(ST_MakePoint($2, $1), 4326)`;
       const { rows } = await db.query<{
@@ -108,6 +117,10 @@ export async function worldRoutes(app: FastifyInstance, { db }: { db: Db }) {
           distanceM: Math.round(r.distance_m),
           // Close enough AND allowed to interact right now (walking pace, no cooldown).
           inRange: r.distance_m <= cfg.interactionRadiusM && fix.movement.interactable,
+        })),
+        creatures: spawns.map((s) => ({
+          ...s,
+          inRange: s.distanceM <= cfg.interactionRadiusM && fix.movement.interactable,
         })),
       };
     },

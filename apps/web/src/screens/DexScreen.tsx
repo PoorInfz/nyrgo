@@ -1,7 +1,7 @@
 import { type CSSProperties, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Element } from '@nyrgo/shared';
-import type { Api, Dex, DexCreature } from '../api';
+import type { Api, Dex, DexCreature, DexEntry } from '../api';
 
 type Lang = 'es' | 'en';
 
@@ -13,12 +13,18 @@ export function DexScreen({ api }: { api: Api }) {
   const [failed, setFailed] = useState(false);
   const [filter, setFilter] = useState<Element | 'all'>('all');
   const [openId, setOpenId] = useState<string | null>(null);
+  /** The player's own progress; until it loads every entry stays hidden. */
+  const [mine, setMine] = useState<Map<string, DexEntry>>(new Map());
 
   useEffect(() => {
     api
       .dex()
       .then(setDex)
       .catch(() => setFailed(true));
+    api
+      .myDex()
+      .then((r) => setMine(new Map(r.entries.map((e) => [e.creatureId, e]))))
+      .catch(() => undefined);
   }, [api]);
 
   const elements = useMemo(() => new Map(dex?.elements.map((e) => [e.id, e])), [dex]);
@@ -28,7 +34,8 @@ export function DexScreen({ api }: { api: Api }) {
   if (failed) return <p role="alert">{t('offline')}</p>;
   if (!dex) return <p role="status">{t('loading')}</p>;
 
-  const open = openId ? byId.get(openId) : undefined;
+  const open = openId && mine.has(openId) ? byId.get(openId) : undefined;
+  const caughtCount = [...mine.values()].filter((e) => e.caughtCount > 0).length;
   if (open) {
     const el = elements.get(open.element)!;
     const evolvesTo = open.evolution ? byId.get(open.evolution.to) : undefined;
@@ -108,16 +115,23 @@ export function DexScreen({ api }: { api: Api }) {
         {(evolvesFrom || evolvesTo) && (
           <section className="card stack" aria-labelledby="dex-evo">
             <h3 id="dex-evo">{t('evolution')}</h3>
-            {evolvesFrom && (
-              <button type="button" className="link" onClick={() => setOpenId(evolvesFrom.id)}>
-                ← {evolvesFrom.name}
-              </button>
-            )}
+            {evolvesFrom &&
+              (mine.has(evolvesFrom.id) ? (
+                <button type="button" className="link" onClick={() => setOpenId(evolvesFrom.id)}>
+                  ← {evolvesFrom.name}
+                </button>
+              ) : (
+                <p className="muted">← {t('unknown')}</p>
+              ))}
             {evolvesTo && open.evolution && (
               <p>
-                <button type="button" className="link" onClick={() => setOpenId(evolvesTo.id)}>
-                  {evolvesTo.name} →
-                </button>{' '}
+                {mine.has(evolvesTo.id) ? (
+                  <button type="button" className="link" onClick={() => setOpenId(evolvesTo.id)}>
+                    {evolvesTo.name} →
+                  </button>
+                ) : (
+                  <span>{t('unknown')} →</span>
+                )}{' '}
                 <span className="muted">
                   {open.evolution.level !== null
                     ? t('evolveLevel', { level: open.evolution.level })
@@ -153,19 +167,43 @@ export function DexScreen({ api }: { api: Api }) {
           </button>
         ))}
       </div>
-      <p className="muted">{t('dexCount', { count: list.length })}</p>
+      <p className="muted">
+        {t('dexProgress', { seen: mine.size, caught: caughtCount, total: dex.creatures.length })}
+        {' · '}
+        {t('dexCount', { count: list.length })}
+      </p>
       <ul className="dex-grid">
-        {list.map((c) => (
-          <li key={c.id}>
-            <button type="button" className="dex-card" onClick={() => setOpenId(c.id)}>
-              <img src={c.art} alt="" width={96} height={96} loading="lazy" decoding="async" />
-              <span className="dex-dot" style={{ background: elements.get(c.element)!.color }} />
-              <span className="muted">#{String(c.dex).padStart(3, '0')}</span>
-              <span className="dex-name">{c.name}</span>
-              <span className={`rarity rarity-${c.rarity}`}>{t(`rarity.${c.rarity}`)}</span>
-            </button>
-          </li>
-        ))}
+        {list.map((c) => {
+          const entry = mine.get(c.id);
+          const number = `#${String(c.dex).padStart(3, '0')}`;
+          if (!entry) {
+            return (
+              <li key={c.id}>
+                <div className="dex-card unknown" aria-label={`${number} ${t('unknownCreature')}`}>
+                  <img src={c.art} alt="" width={96} height={96} loading="lazy" decoding="async" />
+                  <span className="muted">{number}</span>
+                  <span className="dex-name">{t('unknown')}</span>
+                </div>
+              </li>
+            );
+          }
+          return (
+            <li key={c.id}>
+              <button type="button" className="dex-card" onClick={() => setOpenId(c.id)}>
+                <img src={c.art} alt="" width={96} height={96} loading="lazy" decoding="async" />
+                <span className="dex-dot" style={{ background: elements.get(c.element)!.color }} />
+                {entry.caughtCount > 0 && (
+                  <span className="caught-mark" title={t('caughtMark')}>
+                    ✓<span className="sr-only">{t('caughtMark')}</span>
+                  </span>
+                )}
+                <span className="muted">{number}</span>
+                <span className="dex-name">{c.name}</span>
+                <span className={`rarity rarity-${c.rarity}`}>{t(`rarity.${c.rarity}`)}</span>
+              </button>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

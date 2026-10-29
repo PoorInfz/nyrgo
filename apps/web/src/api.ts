@@ -34,6 +34,18 @@ export interface Movement {
   lockedUntil: string | null;
 }
 
+export interface NearbyCreature {
+  /** The spawn id. */
+  id: string;
+  creatureId: string;
+  level: number;
+  lat: number;
+  lng: number;
+  distanceM: number;
+  expiresAt: string;
+  inRange: boolean;
+}
+
 export interface Nearby {
   cell: string;
   movement: Movement;
@@ -41,6 +53,51 @@ export interface Nearby {
   interactionRadiusM: number;
   attribution: string;
   pois: MapPoi[];
+  creatures: NearbyCreature[];
+}
+
+export interface InventoryItem {
+  id: string;
+  qty: number;
+}
+
+export interface Encounter {
+  id: string;
+  spawnId: string;
+  creatureId: string;
+  level: number;
+  rarity: Rarity;
+  status: 'open' | 'caught' | 'fled';
+  attempts: number;
+  expiresAt: string;
+  inventory: InventoryItem[];
+}
+
+export interface OwnedCreature {
+  id: string;
+  creatureId: string;
+  level: number;
+  ivs: Stats;
+  stats: Stats;
+  hp: number;
+  acquiredVia: 'capture' | 'starter';
+  acquiredAt: string;
+}
+
+export interface CaptureResult {
+  result: 'caught' | 'escaped' | 'fled';
+  chance: number;
+  attempts: number;
+  itemsLeft: number;
+  reward: { xp: number; gold: number; level: number; leveledUp: boolean; goldCapped: number };
+  creature: OwnedCreature | null;
+}
+
+export interface DexEntry {
+  creatureId: string;
+  seenAt: string;
+  caughtAt: string | null;
+  caughtCount: number;
 }
 
 export interface DexElement {
@@ -91,13 +148,21 @@ export class ApiError extends Error {
 }
 
 export function createApi(baseUrl: string) {
-  async function call<T>(method: string, path: string, body?: unknown): Promise<T> {
+  async function call<T>(
+    method: string,
+    path: string,
+    body?: unknown,
+    extraHeaders: Record<string, string> = {},
+  ): Promise<T> {
     let res: Response;
     try {
       res = await fetch(`${baseUrl}${path}`, {
         method,
         credentials: 'include',
-        headers: body === undefined ? {} : { 'content-type': 'application/json' },
+        headers: {
+          ...(body === undefined ? {} : { 'content-type': 'application/json' }),
+          ...extraHeaders,
+        },
         body: body === undefined ? null : JSON.stringify(body),
       });
     } catch {
@@ -133,6 +198,21 @@ export function createApi(baseUrl: string) {
     dex: () => call<Dex>('GET', '/v1/dex'),
     reportPoi: (id: string, reason: PoiReportReason) =>
       call<{ received: true }>('POST', `/v1/pois/${encodeURIComponent(id)}/report`, { reason }),
+    encounter: (spawnId: string) =>
+      call<Encounter>('POST', `/v1/spawns/${encodeURIComponent(spawnId)}/encounter`),
+    /** `key` must stay the same when retrying the same throw, so it is never counted twice. */
+    capture: (encounterId: string, item: string, skill: number, key: string) =>
+      call<CaptureResult>(
+        'POST',
+        `/v1/encounters/${encodeURIComponent(encounterId)}/capture`,
+        { item, skill },
+        { 'idempotency-key': key },
+      ),
+    inventory: () => call<{ items: InventoryItem[] }>('GET', '/v1/me/inventory'),
+    myCreatures: () => call<{ creatures: OwnedCreature[] }>('GET', '/v1/me/creatures'),
+    myDex: () => call<{ entries: DexEntry[] }>('GET', '/v1/me/dex'),
+    pickStarter: (creatureId: string) =>
+      call<OwnedCreature>('POST', '/v1/me/starter', { creatureId }),
   };
 }
 

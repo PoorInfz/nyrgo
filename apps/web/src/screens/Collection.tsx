@@ -1,0 +1,98 @@
+import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { Api, OwnedCreature } from '../api';
+import { artUrl, useContent } from '../content';
+
+type Lang = 'es' | 'en';
+
+/** The player's creatures; a new player first picks one of the three starters. */
+export function Collection({ api }: { api: Api }) {
+  const { t, i18n } = useTranslation();
+  const lang: Lang = i18n.language.startsWith('en') ? 'en' : 'es';
+  const { dex, failed } = useContent(api);
+  const [mine, setMine] = useState<OwnedCreature[] | null>(null);
+  const [error, setError] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const reload = useCallback(
+    () =>
+      api
+        .myCreatures()
+        .then((r) => setMine(r.creatures))
+        .catch(() => setError(true)),
+    [api],
+  );
+  useEffect(() => {
+    void reload();
+  }, [reload]);
+
+  if (failed || error) return <p role="alert">{t('offline')}</p>;
+  if (!dex || !mine) return <p role="status">{t('loading')}</p>;
+
+  const byId = new Map(dex.creatures.map((c) => [c.id, c]));
+  const elements = new Map(dex.elements.map((e) => [e.id, e]));
+
+  async function pick(id: string, name: string) {
+    if (!window.confirm(t('starterConfirm', { name }))) return;
+    setBusy(true);
+    await api.pickStarter(id).catch(() => undefined);
+    await reload();
+    setBusy(false);
+  }
+
+  if (mine.length === 0) {
+    const starters = dex.creatures.filter((c) => c.starter);
+    return (
+      <section className="stack" aria-labelledby="starter-title">
+        <h2 id="starter-title">{t('starterTitle')}</h2>
+        <p className="muted">{t('starterWhy')}</p>
+        <ul className="plain stack">
+          {starters.map((c) => (
+            <li key={c.id} className="card starter">
+              <img src={c.art} alt="" width={120} height={120} />
+              <div className="stack">
+                <h3>{c.name}</h3>
+                <p>
+                  <span className="chip" style={{ background: elements.get(c.element)!.color }}>
+                    {elements.get(c.element)!.name[lang]}
+                  </span>
+                </p>
+                <p className="muted">{c.lore[lang]}</p>
+                <button type="button" disabled={busy} onClick={() => pick(c.id, c.name)}>
+                  {t('pickStarter', { name: c.name })}
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    );
+  }
+
+  return (
+    <section className="stack" aria-labelledby="col-title">
+      <h2 id="col-title">{t('collectionTitle')}</h2>
+      <p className="muted">{t('collectionCount', { count: mine.length })}</p>
+      <ul className="dex-grid">
+        {mine.map((m) => {
+          const def = byId.get(m.creatureId);
+          return (
+            <li key={m.id}>
+              <div className="dex-card owned">
+                <img src={artUrl(m.creatureId)} alt="" width={96} height={96} />
+                <span className="dex-name">{def?.name ?? m.creatureId}</span>
+                <span className="muted">
+                  {t('levelShort', { level: m.level })} · {t(`caughtVia.${m.acquiredVia}`)}
+                </span>
+                <span className="muted small">
+                  {t('stat.hp')} {m.stats.hp} · {t('stat.atk')} {m.stats.atk} · {t('stat.def')}{' '}
+                  {m.stats.def} · {t('stat.spd')} {m.stats.spd}
+                </span>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}

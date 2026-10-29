@@ -9,13 +9,21 @@ Stated openly so nobody relies on something that is not there.
   stay disabled while the client is web-only (master prompt §16). Testnet and simulated rewards are fine.
 - **iOS PWA limits.** No background geolocation, limited push notifications, storage can be evicted.
 
-## Current state (Phase 1, milestone 5)
+## Current state (Phase 1, milestone 6)
 
-- Accounts, the map, nearby places and the creature encyclopedia work. Creatures do not spawn or
-  get captured yet (milestone 6); no battles or Gold faucets yet (milestones 7–8).
+- Accounts, the map, nearby places, the Dex, wild spawns, encounters, captures, the collection and
+  the starter pick work. No battles, POI rewards, shop or missions yet (milestones 7–8), so the only
+  way to get more vaults today is the starter kit.
+- Spawn rules (slots per biome, rarity weights, levels, flee chance) are starting assumptions; the
+  economy simulation (Phase 2) has not tuned them.
+- The throw's timing score is reported by the client. A modified client can always send 1; the
+  effect is capped at +25 % of the chance (decision S7).
+- "Seen" is recorded when an encounter opens, so the Dex stays hidden until a player walks to a
+  creature. Creatures shown on the map but never approached stay "???".
+- Creature levels do not change after capture yet (no XP for creatures until combat).
+- Portraits in the map markers and lists are loaded one file per creature; no sprite sheet yet.
 - Skills and passives are defined (power, accuracy, effect and value) but nothing applies them until
   the combat engine in milestone 7.
-- The Dex shows every creature, including legendaries. Hiding entries until seen comes with captures.
 - Creature portraits are vector art drawn in code: one pose each, no animations or shiny variants.
   Labels inside a few portraits ("gm", "wen?", "todo OK", "MARGIN", "TOLL") are not translated.
 - Portraits are about 360 KB in total (50 SVG files, 3–12 KB each), not yet minified.

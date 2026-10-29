@@ -7,3 +7,4 @@ export * from './content/skills.js';
 export * from './content/passives.js';
 export * from './content/creatures.js';
 export * from './content/items.js';
+export * from './progression.js';

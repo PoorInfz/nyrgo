@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.6.0 — 2026-10-29 — Phase 1, milestone 6: spawns, encounters and captures
+
+Added
+
+- Wild spawns per H3 cell and 15-minute window, generated from a server secret on first sight,
+  identical for every player, staggered per cell, weighted by the cell's biome and by rarity, and
+  never placed in an exclusion zone. `/v1/world/nearby` now also returns the creatures in sight.
+- Encounters (`POST /v1/spawns/:id/encounter`) within 40 m, behind the movement checks.
+- Captures (`POST /v1/encounters/:id/capture`) with the three vaults and a timing score; chance and
+  roll on the server; `Idempotency-Key` required; flee chance after a failed throw.
+- Collection (`GET /v1/me/creatures`), personal Dex (`GET /v1/me/dex`), inventory
+  (`GET /v1/me/inventory`) and the starter pick (`POST /v1/me/starter`).
+- Starter kit, player levels, XP and Gold rewards through the ledger with the daily cap.
+- Migration `capture`: `spawn_generations`, `encounters`, `dex_entries`, starter and cascade rules.
+- Retention: spawns 90 days (with encounters and attempts), generation markers 24 hours.
+- Web: creatures on the map (portrait markers) and in an accessible list, encounter screen with
+  vault choice and a timing ring (static with reduced motion), Collection tab with the starter
+  pick, Dex entries hidden as silhouettes until seen and marked when caught; Spanish and English.
+- New config `SPAWN_SECRET` (required, 32+ characters, in production).
+
+Fixed during verification
+
+- Two encounter requests at once (a remounted screen) made the second one fail with a duplicate
+  key; they now queue on an advisory lock and share one encounter.
+- Four tabs wrapped onto two lines at 390 px.
+
+Verified locally on 2026-10-29: 192 tests passing (36 shared, 113 API, 43 web); lint, typecheck,
+format and build clean; migrations down and up again; in headless Chromium against the real API
+at 390 px: starter picked, a creature caught with the real throw flow, collection and Dex updated,
+no console errors, no horizontal overflow.
+
 ## 0.5.1 — 2026-10-29 — 2D creature art
 
 Changed

@@ -36,12 +36,25 @@ const DEX: Dex = {
   recipes: RECIPES,
 };
 
-beforeEach(async () => {
-  await i18n.changeLanguage('es');
+const json = (body: unknown) => new Response(JSON.stringify(body), { status: 200 });
+const entry = (creatureId: string, caughtCount = 0) => ({
+  creatureId,
+  seenAt: '2026-10-29T09:00:00.000Z',
+  caughtAt: caughtCount ? '2026-10-29T09:01:00.000Z' : null,
+  caughtCount,
+});
+
+/** Serves the content and a personal Dex; by default the player has seen everything. */
+function serve(entries = CREATURES.map((c) => entry(c.id))) {
   vi.stubGlobal(
     'fetch',
-    vi.fn(async () => new Response(JSON.stringify(DEX), { status: 200 })),
+    vi.fn(async (url: string) => (url.endsWith('/v1/me/dex') ? json({ entries }) : json(DEX))),
   );
+}
+
+beforeEach(async () => {
+  await i18n.changeLanguage('es');
+  serve();
 });
 afterEach(() => {
   cleanup();
@@ -53,12 +66,12 @@ const renderDex = () => render(<DexScreen api={createApi('http://api.test')} />)
 describe('Dex', () => {
   it('lists all 50 creatures and filters by element', async () => {
     renderDex();
-    expect(await screen.findByText('50 criaturas')).toBeInTheDocument();
+    expect(await screen.findByText(/· 50 criaturas/)).toBeInTheDocument();
     expect(screen.getAllByRole('listitem')).toHaveLength(50);
     // thumbnails are decorative: the name is already on the card
     expect(document.querySelectorAll('.dex-card img[alt=""]')).toHaveLength(50);
     fireEvent.click(screen.getByRole('button', { name: 'Gas' }));
-    expect(screen.getByText('5 criaturas')).toBeInTheDocument();
+    expect(screen.getByText(/· 5 criaturas/)).toBeInTheDocument();
     expect(screen.getByText('Gwisp')).toBeInTheDocument();
     expect(screen.queryByText('Frostkey')).not.toBeInTheDocument();
   });
@@ -97,5 +110,25 @@ describe('Dex', () => {
     fireEvent.click(await screen.findByText('Seedsnatcher'));
     expect(screen.getByText(/Never give them/)).toBeInTheDocument();
     expect(screen.getByText(/Strong against: Liquidity, Yield/)).toBeInTheDocument();
+  });
+
+  it('hides creatures the player has not seen and marks the caught ones', async () => {
+    serve([entry('gwisp', 1), entry('gasguzzle')]);
+    renderDex();
+    expect(
+      await screen.findByText('Vistas 2 · Capturadas 1 de 50', { exact: false }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Gwisp')).toBeInTheDocument();
+    expect(screen.getByText('Gasguzzle')).toBeInTheDocument();
+    expect(screen.queryByText('Frostkey')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Llavecita de hielo/)).not.toBeInTheDocument();
+    expect(screen.getAllByText('???')).toHaveLength(48);
+    expect(screen.getByLabelText('#022 Criatura desconocida')).toBeInTheDocument();
+    // only the caught one carries the mark
+    expect(screen.getAllByText('Capturada', { selector: '.sr-only' })).toHaveLength(1);
+    // the evolution link to an unseen creature stays hidden
+    fireEvent.click(screen.getByText('Gasguzzle'));
+    expect(screen.getByText('??? →')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Gaswarlord →' })).not.toBeInTheDocument();
   });
 });

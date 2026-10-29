@@ -65,6 +65,12 @@ export async function accountRoutes(
           `SELECT id, definition_id, level, xp, acquired_via, acquired_at FROM creature_instances WHERE owner_id = $1`,
         ),
         inventory: await q(`SELECT item_id, qty FROM inventory WHERE user_id = $1`),
+        dex: await q(
+          `SELECT definition_id, seen_at, caught_at, caught_count FROM dex_entries WHERE user_id = $1`,
+        ),
+        encounters: await q(
+          `SELECT spawn_id, status, attempts, started_at, ended_at FROM encounters WHERE user_id = $1 ORDER BY started_at`,
+        ),
         goldLedger: await q(
           `SELECT amount, reason, ref_id, created_at FROM gold_ledger WHERE user_id = $1 ORDER BY id`,
         ),
@@ -89,7 +95,8 @@ export async function accountRoutes(
 
   /**
    * GDPR art. 17. Personal data is deleted; rows that must stay for ledger integrity
-   * (Gold ledger, capture attempts, battles) keep only the now-anonymous user id.
+   * (Gold ledger, capture attempts, battles) keep only the now-anonymous user id. Capture
+   * attempts age out with their spawn after the spawn retention period.
    * Registered accounts must have signed in within the reauth window.
    */
   app.delete<{ Body: Static<typeof DeleteMeBody> }>(
@@ -129,6 +136,8 @@ export async function accountRoutes(
           `DELETE FROM player_movement WHERE user_id = $1`,
           `DELETE FROM review_cases WHERE user_id = $1`,
           `DELETE FROM poi_reports WHERE user_id = $1`,
+          `DELETE FROM dex_entries WHERE user_id = $1`,
+          `DELETE FROM encounters WHERE user_id = $1`,
         ]) {
           await c.query(sql, [id]);
         }

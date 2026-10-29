@@ -1,6 +1,8 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ApiError, type Api, type Nearby } from '../api';
+import { ApiError, type Api, type Nearby, type NearbyCreature } from '../api';
+import { artUrl, useContent } from '../content';
+import { Encounter } from './Encounter';
 import {
   browserSource,
   simulatedSource,
@@ -51,6 +53,12 @@ export function Play({
   const [cooldownMin, setCooldownMin] = useState<number | null>(null);
   const last = useRef<{ fix: LocationFix; at: number } | null>(null);
   const [active, setActive] = useState(false);
+  const [facing, setFacing] = useState<NearbyCreature | null>(null);
+  /** Spawns caught or scared away here; the next nearby answer leaves them out anyway. */
+  const [gone, setGone] = useState<ReadonlySet<string>>(new Set());
+  // Names for the creature list; only fetched once the player starts playing.
+  const { dex } = useContent(api, active);
+  const names = useMemo(() => new Map(dex?.creatures.map((c) => [c.id, c.name])), [dex]);
 
   useEffect(() => {
     if (!active) return;
@@ -109,6 +117,21 @@ export function Play({
     );
   }
 
+  if (facing) {
+    return (
+      <Encounter
+        api={api}
+        spawn={facing}
+        onClose={(wasGone) => {
+          if (wasGone) setGone((g) => new Set(g).add(facing.id));
+          setFacing(null);
+        }}
+      />
+    );
+  }
+
+  const creatures = (nearby?.creatures ?? []).filter((c) => !gone.has(c.id));
+
   // Either the device says it is moving fast or the server measured it between fixes.
   const driving = (fix ? looksLikeDriving(fix) : false) || nearby?.movement.reason === 'speed';
 
@@ -136,9 +159,44 @@ export function Play({
 
       {showMap && (
         <Suspense fallback={<div className="map" />}>
-          <MapView fix={fix} pois={nearby?.pois ?? []} lang={i18n.language} label={t('mapLabel')} />
+          <MapView
+            fix={fix}
+            pois={nearby?.pois ?? []}
+            creatures={creatures}
+            onCreature={(id) => {
+              const c = creatures.find((x) => x.id === id);
+              if (c?.inRange) setFacing(c);
+            }}
+            lang={i18n.language}
+            label={t('mapLabel')}
+          />
         </Suspense>
       )}
+
+      <section className="card" aria-labelledby="creatures-title">
+        <h2 id="creatures-title">{t('creaturesTitle')}</h2>
+        {nearby && creatures.length === 0 && <p className="muted">{t('creaturesEmpty')}</p>}
+        <ul className="creature-list">
+          {creatures.map((c) => {
+            const name = names.get(c.creatureId) ?? c.creatureId;
+            return (
+              <li key={c.id} data-in-range={c.inRange}>
+                <img src={artUrl(c.creatureId)} alt="" width={48} height={48} />
+                <span className="poi-name">
+                  {name} <span className="muted">{t('levelShort', { level: c.level })}</span>
+                </span>
+                {c.inRange ? (
+                  <button type="button" className="small" onClick={() => setFacing(c)}>
+                    {t('catchIt')}
+                  </button>
+                ) : (
+                  <span className="muted">{t('approach', { m: c.distanceM })}</span>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </section>
 
       <section className="card" aria-labelledby="nearby-title">
         <h2 id="nearby-title">{t('nearbyTitle')}</h2>

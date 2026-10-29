@@ -22,6 +22,10 @@ export const ERROR_CODES = {
   email_taken: 409,
   bad_origin: 403,
   location_required: 428,
+  already_caught: 409,
+  creature_fled: 410,
+  out_of_items: 409,
+  starter_taken: 409,
   internal_error: 500,
 } as const;
 
