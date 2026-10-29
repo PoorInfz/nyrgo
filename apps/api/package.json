@@ -24,6 +24,7 @@
     "@nyrgo/shared": "workspace:*",
     "@sinclair/typebox": "^0.34.52",
     "fastify": "^5.12.7",
+    "near-api-js": "7.4.0",
     "node-pg-migrate": "^9.0.0",
     "pg": "^8.23.1",
     "pg-boss": "^12.38.0"
@@ -32,7 +33,6 @@
     "@types/geojson": "^7946.0.16",
     "@types/node": "^24.19.2",
     "@types/pg": "^8.23.1",
-    "near-api-js": "7.4.0",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
     "vitest": "^5.0.5"

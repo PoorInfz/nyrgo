@@ -23,6 +23,8 @@ export interface OwnedView {
   maxHp: number;
   acquiredVia: string;
   acquiredAt: string;
+  /** Set when the creature is an NFT: being minted, or held by a NEAR account. */
+  onchain: { status: 'minting' | 'minted'; account: string | null } | null;
 }
 
 interface Row {
@@ -35,6 +37,8 @@ interface Row {
   hp_updated_at: Date;
   acquired_via: string;
   acquired_at: Date;
+  onchain_status: 'minting' | 'minted' | null;
+  onchain_owner: string | null;
   now: Date;
 }
 
@@ -52,14 +56,24 @@ function view(r: Row): OwnedView {
     maxHp: stats.hp,
     acquiredVia: r.acquired_via,
     acquiredAt: r.acquired_at.toISOString(),
+    onchain: r.onchain_status ? { status: r.onchain_status, account: r.onchain_owner } : null,
   };
 }
 
-const COLUMNS = `id, definition_id, level, xp, ivs, hp_current, hp_updated_at, acquired_via, acquired_at, now() AS now`;
+const COLUMNS = `id, definition_id, level, xp, ivs, hp_current, hp_updated_at, acquired_via, acquired_at,
+  onchain_status, onchain_owner, now() AS now`;
+
+/**
+ * A creature that is an NFT belongs, in the game, to whoever holds the token: it shows up for
+ * the player whose linked NEAR account holds it, and for nobody else.
+ */
+const VISIBLE = `(onchain_owner IS NULL
+  OR onchain_owner = (SELECT w.account_id FROM wallet_links w WHERE w.user_id = owner_id))`;
 
 export async function listOwned(q: Q, userId: string): Promise<OwnedView[]> {
   const { rows } = await q.query<Row>(
-    `SELECT ${COLUMNS} FROM creature_instances WHERE owner_id = $1 ORDER BY acquired_at DESC, id`,
+    `SELECT ${COLUMNS} FROM creature_instances WHERE owner_id = $1 AND ${VISIBLE}
+      ORDER BY acquired_at DESC, id`,
     [userId],
   );
   return rows.map(view);
@@ -72,7 +86,8 @@ export async function loadOwned(
   id: string,
 ): Promise<OwnedView | null> {
   const { rows } = await c.query<Row>(
-    `SELECT ${COLUMNS} FROM creature_instances WHERE id = $1 AND owner_id = $2 FOR UPDATE`,
+    `SELECT ${COLUMNS} FROM creature_instances WHERE id = $1 AND owner_id = $2 AND ${VISIBLE}
+      FOR UPDATE`,
     [id, userId],
   );
   return rows[0] ? view(rows[0]) : null;

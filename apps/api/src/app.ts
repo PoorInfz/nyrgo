@@ -20,6 +20,9 @@ import { economyRoutes } from './modules/economy/routes.js';
 import { adminRoutes } from './modules/admin/routes.js';
 import { walletRoutes } from './modules/wallet/routes.js';
 import { httpNearRpc, type NearRpc } from './modules/wallet/rpc.js';
+import { nearNftChain, type NftChain } from './modules/nft/chain.js';
+import { nftRoutes } from './modules/nft/routes.js';
+import { Syncer } from './modules/nft/service.js';
 
 export interface AppDeps {
   config: AppConfig;
@@ -28,11 +31,19 @@ export interface AppDeps {
   mailer?: Mailer;
   /** Overrides the NEAR RPC client (tests pass a fake). */
   nearRpc?: NearRpc;
+  /** Overrides the creatures NFT client (tests pass a fake chain). */
+  nftChain?: NftChain;
 }
 
 const STATE_CHANGING = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
-export async function buildApp({ config, db, mailer, nearRpc }: AppDeps): Promise<FastifyInstance> {
+export async function buildApp({
+  config,
+  db,
+  mailer,
+  nearRpc,
+  nftChain,
+}: AppDeps): Promise<FastifyInstance> {
   const app = Fastify({
     logger:
       config.env === 'test'
@@ -119,12 +130,21 @@ export async function buildApp({ config, db, mailer, nearRpc }: AppDeps): Promis
   await app.register(authRoutes, { db, config, mailer: mail });
   await app.register(accountRoutes, { db, config });
   await app.register(worldRoutes, { db, spawnSecret: config.spawnSecret });
-  await app.register(captureRoutes, { db });
+  const nft = config.near.nft;
+  const chain: NftChain | null =
+    nftChain ?? (nft ? nearNftChain({ rpcUrl: config.near.rpcUrl, ...nft }) : null);
+  const syncer = chain ? new Syncer(db, chain, config.near.network) : null;
+  app.decorate('nftSyncer', syncer);
+  await app.register(captureRoutes, {
+    db,
+    ...(syncer ? { syncNfts: (userId: string) => syncer.forPlayer(userId) } : {}),
+  });
   await app.register(battleRoutes, { db });
   await app.register(economyRoutes, { db });
   await app.register(contentRoutes);
   // Own plugin scope: the token hook only applies to /admin/v1/*.
   await app.register(adminRoutes, { db, config });
+  if (chain) await app.register(nftRoutes, { db, config, chain });
   await app.register(walletRoutes, {
     db,
     config,

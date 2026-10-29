@@ -28,6 +28,11 @@ const EnvSchema = Type.Object({
     default: 'testnet',
   }),
   NEAR_RPC_URL: Type.String({ default: 'https://rpc.testnet.near.org' }),
+  /** The creatures NFT contract (contracts/creatures). Empty: creatures cannot leave as NFTs. */
+  NEAR_NFT_CONTRACT: Type.String({ default: '' }),
+  /** The game account that mints, and its key (`ed25519:…`). Secret: only the API holds it. */
+  NEAR_MINTER_ACCOUNT: Type.String({ default: '' }),
+  NEAR_MINTER_KEY: Type.String({ default: '' }),
   /** Who the signed message is for (NEP-413 `recipient`); wallets show it to the player. */
   NEAR_SIGN_RECIPIENT: Type.String({ minLength: 1, maxLength: 64, default: 'nyrgo' }),
   /** Seeds wild spawns. Anyone holding it can predict where creatures appear. */
@@ -61,6 +66,8 @@ export interface AppConfig {
     recipient: string;
     /** Minutes a wallet challenge stays valid. */
     challengeTtlMin: number;
+    /** Null when creature NFTs are switched off. */
+    nft: { contractId: string; minterAccount: string; minterKey: string } | null;
   };
 }
 
@@ -120,6 +127,15 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
       'NEAR_NETWORK=mainnet is closed until the Phase 6 gates (anti-cheat on native clients, MiCA review)',
     );
   }
+  const nftParts = [env.NEAR_NFT_CONTRACT, env.NEAR_MINTER_ACCOUNT, env.NEAR_MINTER_KEY];
+  if (nftParts.some(Boolean) && !nftParts.every(Boolean)) {
+    throw new ConfigError(
+      'NEAR_NFT_CONTRACT, NEAR_MINTER_ACCOUNT and NEAR_MINTER_KEY go together (all set or none)',
+    );
+  }
+  if (env.NEAR_MINTER_KEY && !/^ed25519:[1-9A-HJ-NP-Za-km-z]{60,100}$/.test(env.NEAR_MINTER_KEY)) {
+    throw new ConfigError('NEAR_MINTER_KEY must be an ed25519 secret key (ed25519:…)');
+  }
   if (!/^https:\/\//.test(env.NEAR_RPC_URL) && prod) {
     throw new ConfigError('NEAR_RPC_URL must use https in production');
   }
@@ -150,6 +166,13 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
       rpcUrl: env.NEAR_RPC_URL,
       recipient: env.NEAR_SIGN_RECIPIENT,
       challengeTtlMin: 5,
+      nft: env.NEAR_NFT_CONTRACT
+        ? {
+            contractId: env.NEAR_NFT_CONTRACT,
+            minterAccount: env.NEAR_MINTER_ACCOUNT,
+            minterKey: env.NEAR_MINTER_KEY,
+          }
+        : null,
     },
   };
 }

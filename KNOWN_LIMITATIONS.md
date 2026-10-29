@@ -20,6 +20,17 @@ Stated openly so nobody relies on something that is not there.
 - Only ed25519 keys are accepted (secp256k1 keys are rare on NEAR).
 - The game keeps no wallet session: the connector is closed after signing, so the player picks a
   wallet again every time they link.
+- **Creature NFTs are not deployed.** The contract is written and unit-tested (6 tests) and the API
+  is tested against an in-memory contract, but the `.wasm` has not been built here (it builds in
+  CI) nor deployed to testnet, and no real mint has happened. Steps in `contracts/creatures/README.md`.
+- Ownership is read from the chain when a collection opens (at most every 30 s per player) and
+  every 10 minutes: a sold creature can stay visible to its seller for a few minutes.
+- A creature never comes back from being an NFT (there is no burn or "return to game"); it stays
+  playable in the game for whoever holds the token.
+- Minting is free for the player; the game pays storage (~0.01 NEAR per token, 0.1 attached and the
+  rest refunded). There is no daily mint limit per player yet.
+- The token's metadata is fixed at mint: a creature that levels up later still shows its level
+  when it left.
 
 ## Current state (Phase 1 complete, milestone 9)
 

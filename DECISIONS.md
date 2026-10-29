@@ -2,6 +2,19 @@
 
 Newest first. Each entry: date, decision, reason, who approved.
 
+## 2026-10-29 — Phase 3, part 2: creatures as NFTs (owner's choice: "the NFT is the creature")
+
+| #   | Decision                                                                                                                                                                                                              | Why                                                                                                 |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| F1  | A player can take a creature out as a NEP-171 NFT to their linked account; token id = creature id; whoever holds the token has the creature in the game                                                               | Owner's choice: trading or gifting the NFT trades the creature                                      |
+| F2  | Contract `contracts/creatures`: NEAR's `near-contract-standards` (NEP-171 core, 177 metadata, 178 approvals, 181 enumeration) unchanged, plus `nft_mint` for the game account only; the game pays storage             | Standard, audited code for everything a wallet or marketplace touches                               |
+| F3  | Metadata: name, lore, art URL and in `extra` the species, element, rarity, IVs, level when it left and catch date                                                                                                     | What makes a creature that creature; progress (level, XP, HP) stays in the game and travels with it |
+| F4  | The game reads ownership from the chain: on opening the collection (at most every 30 s per player) and every 10 minutes for all holders; a creature held by an account nobody linked is hidden until someone links it | No indexer to run yet; enough for testnet volumes                                                   |
+| F5  | While it is an NFT a creature cannot evolve (its species is in the token); battles and healing still work                                                                                                             | The token stays truthful                                                                            |
+| F6  | Mints that fail or time out: the creature stays in the game; a retry first asks the chain whether the token exists, so a creature is never minted twice                                                               | Network errors must not duplicate or lose creatures                                                 |
+| F7  | Deleting an account keeps its NFT creatures (they belong to the token)                                                                                                                                                | The holder of the token must keep the creature                                                      |
+| F8  | The `.wasm` is built in CI (`cargo near build`); the build environment here cannot download the wasm target                                                                                                           | Reproducible from the repo                                                                          |
+
 ## 2026-10-29 — Phase 3, part 1: linking a NEAR account
 
 | #   | Decision                                                                                                                                                                                                   | Why                                                                                              |

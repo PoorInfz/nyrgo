@@ -207,3 +207,65 @@ describe('Evolution in the collection', () => {
     expect(calls(fetch, '/evolve')).toHaveLength(1);
   });
 });
+
+describe('Creatures as NFTs in the collection', () => {
+  const creature = (over: Record<string, unknown> = {}) => ({
+    id: '66666666-6666-4666-8666-666666666666',
+    creatureId: 'gwisp',
+    level: 16,
+    xp: 4800,
+    ivs: { hp: 7, atk: 7, def: 7, spd: 7 },
+    stats: { hp: 60, atk: 50, def: 40, spd: 60 },
+    hp: 60,
+    maxHp: 60,
+    acquiredVia: 'starter',
+    acquiredAt: '2026-10-29T09:00:00.000Z',
+    onchain: null,
+    ...over,
+  });
+
+  function nftServer(wallet: string | null) {
+    return serve((url, init) => {
+      if (url.endsWith('/v1/nft'))
+        return json(200, { contractId: 'c.testnet', network: 'testnet' });
+      if (url.endsWith('/v1/me/wallet'))
+        return json(200, {
+          network: 'testnet',
+          wallet: wallet ? { accountId: wallet, network: 'testnet', linkedAt: 'now' } : null,
+        });
+      if (url.endsWith('/mint') && init.method === 'POST')
+        return json(200, {
+          creature: creature({ onchain: { status: 'minted', account: wallet } }),
+          txHash: 'tx',
+          contractId: 'c.testnet',
+        });
+      return json(200, { creatures: [creature()] });
+    });
+  }
+
+  it('takes a creature out to the linked wallet after a clear warning', async () => {
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const fetch = nftServer('alice.testnet');
+    render(<Collection api={createApi('http://api.test')} />);
+    const button = await screen.findByRole('button', { name: 'Sacar como NFT' });
+    await act(async () => {
+      fireEvent.click(button);
+    });
+    expect(confirm.mock.calls[0]![0]).toMatch(/alice\.testnet.*no podrá evolucionar/s);
+    expect(
+      await screen.findByText('Gwisp ya es un NFT en tu cartera alice.testnet.'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('NFT')).toBeInTheDocument();
+    expect(screen.getByText('En la cartera alice.testnet')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Sacar como NFT' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Evolucionar/ })).not.toBeInTheDocument();
+    expect(calls(fetch, '/mint')).toHaveLength(1);
+  });
+
+  it('offers nothing without a linked wallet', async () => {
+    nftServer(null);
+    render(<Collection api={createApi('http://api.test')} />);
+    expect(await screen.findByText('Gwisp')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Sacar como NFT' })).not.toBeInTheDocument();
+  });
+});

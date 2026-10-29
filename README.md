@@ -3,18 +3,19 @@
 Mobile-first geolocation creature-collection RPG with an original IP and optional NEAR integration.
 The full game is playable without a wallet, crypto or purchases.
 
-Status: **Phase 3 in progress: NEAR accounts can be linked (testnet)**. See [CHANGELOG.md](CHANGELOG.md).
+Status: **Phase 3 in progress: NEAR accounts can be linked and creatures taken out as NFTs (testnet, contract not deployed yet)**. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Layout
 
-| Path                | What it is                                                                |
-| ------------------- | ------------------------------------------------------------------------- |
-| `apps/api`          | Fastify API (modular monolith), SQL migrations, integration tests         |
-| `apps/web`          | React + Vite PWA client                                                   |
-| `packages/shared`   | Domain types, error codes and default game config shared by both          |
-| `packages/sim`      | Economy and progression simulation on the shared game rules               |
-| `infra/db`          | PostgreSQL 17 + PostGIS + h3-pg image for local dev and CI                |
-| `.github/workflows` | CI: format, lint, typecheck, migrations, tests, build, audit, secret scan |
+| Path                  | What it is                                                                |
+| --------------------- | ------------------------------------------------------------------------- |
+| `apps/api`            | Fastify API (modular monolith), SQL migrations, integration tests         |
+| `apps/web`            | React + Vite PWA client                                                   |
+| `packages/shared`     | Domain types, error codes and default game config shared by both          |
+| `packages/sim`        | Economy and progression simulation on the shared game rules               |
+| `contracts/creatures` | NEP-171 NFT contract for creatures (Rust, near-sdk)                       |
+| `infra/db`            | PostgreSQL 17 + PostGIS + h3-pg image for local dev and CI                |
+| `.github/workflows`   | CI: format, lint, typecheck, migrations, tests, build, audit, secret scan |
 
 ## Requirements
 

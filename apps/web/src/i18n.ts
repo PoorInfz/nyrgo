@@ -114,6 +114,15 @@ export const resources = {
       chanceLine: 'Probabilidad de este lanzamiento: {{pct}} %',
       noVaults: 'No te quedan bóvedas. Pronto podrás conseguir más en los lugares cercanos.',
       backToMap: 'Volver al mapa',
+      nft: {
+        mint: 'Sacar como NFT',
+        badge: 'NFT',
+        minting: 'Enviando…',
+        heldBy: 'En la cartera {{account}}',
+        confirm:
+          '{{name}} pasará a tu cartera {{account}} como NFT (red de pruebas).\n\nSeguirá contigo en el juego mientras tengas el NFT. Si lo regalas o lo vendes, pasará a quien lo tenga. Mientras sea NFT no podrá evolucionar.',
+        minted: '{{name}} ya es un NFT en tu cartera {{account}}.',
+      },
       near: {
         title: 'Cartera NEAR',
         network: 'Red de pruebas ({{network}})',
@@ -153,6 +162,10 @@ export const resources = {
         wallet_key_not_full_access:
           'Firma con la propia cuenta de NEAR, no con una clave de otra aplicación.',
         wallet_unavailable: 'No se pudo comprobar con NEAR. Inténtalo en un momento.',
+        wallet_required: 'Primero vincula tu cuenta de NEAR en el Perfil.',
+        creature_onchain: 'Esta criatura es un NFT: no puede evolucionar ni volver a enviarse.',
+        nft_unavailable:
+          'No se pudo conectar con NEAR. Tu criatura sigue en el juego; inténtalo de nuevo.',
       },
       collectionTitle: 'Tu colección',
       collectionCount: '{{count}} criaturas',
@@ -396,6 +409,15 @@ export const resources = {
       chanceLine: 'Chance of this throw: {{pct}}%',
       noVaults: 'You are out of vaults. Soon you will find more at nearby places.',
       backToMap: 'Back to the map',
+      nft: {
+        mint: 'Take out as NFT',
+        badge: 'NFT',
+        minting: 'Sending…',
+        heldBy: 'In wallet {{account}}',
+        confirm:
+          '{{name}} will go to your wallet {{account}} as an NFT (test network).\n\nIt stays with you in the game while you hold the NFT. If you give it away or sell it, it goes to whoever holds it. While it is an NFT it cannot evolve.',
+        minted: '{{name}} is now an NFT in your wallet {{account}}.',
+      },
       near: {
         title: 'NEAR wallet',
         network: 'Test network ({{network}})',
@@ -434,6 +456,10 @@ export const resources = {
         wallet_signature_invalid: 'The signature does not match. Try again from your wallet.',
         wallet_key_not_full_access: 'Sign with the NEAR account itself, not another app’s key.',
         wallet_unavailable: 'NEAR could not be reached. Try again in a moment.',
+        wallet_required: 'Link your NEAR account in the Profile first.',
+        creature_onchain: 'This creature is an NFT: it cannot evolve or be sent again.',
+        nft_unavailable:
+          'NEAR could not be reached. Your creature is still in the game; try again.',
       },
       collectionTitle: 'Your collection',
       collectionCount: '{{count}} creatures',

@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.13.0 — 2026-10-29 — Phase 3, part 2: creatures as NFTs (testnet)
+
+Verified locally on 2026-10-29: format, lint, typecheck and build clean; 284 tests passing (64
+shared, 158 API, 57 web, 5 simulation) plus 6 contract unit tests; the NFT
+flow is tested against an in-memory contract. The contract `.wasm` is built in CI only and is not
+deployed: no real mint has happened yet.
+
+Added
+
+- `contracts/creatures`: NEP-171 NFT contract on near-contract-standards 5.30; only the game account
+  mints. CI job builds the `.wasm` with cargo-near.
+- Collection → "Take out as NFT" (adults with a linked wallet): the creature is minted to the
+  player's NEAR account; badge and holder shown; it cannot evolve while it is an NFT.
+- The NFT is the creature: whoever holds the token has it in the game. Ownership is read from the
+  chain on opening the collection and every 10 minutes (job `nft-sync`).
+- API `GET /v1/nft`, `POST /v1/me/creatures/:id/mint`; config `NEAR_NFT_CONTRACT`,
+  `NEAR_MINTER_ACCOUNT`, `NEAR_MINTER_KEY`; migration `creature_nfts`.
+
 ## 0.12.1 — 2026-10-29 — Header banner
 
 Changed

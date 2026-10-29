@@ -278,6 +278,9 @@ export async function economyRoutes(app: FastifyInstance, { db }: { db: Db }) {
       return withTx(db, async (c) => {
         const mine = await loadOwned(c, auth.userId, req.params.id);
         if (!mine) throw new HttpProblem('not_found', 'Unknown creature');
+        // an NFT's species is part of the token; it evolves only while it is in the game
+        if (mine.onchain)
+          throw new HttpProblem('creature_onchain', 'This creature is an NFT and cannot evolve');
         const fighting = await c.query(
           `SELECT 1 FROM battles WHERE instance_id = $1 AND result IS NULL`,
           [mine.id],

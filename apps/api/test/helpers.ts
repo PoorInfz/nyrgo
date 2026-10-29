@@ -5,6 +5,7 @@ import { loadConfig } from '../src/config.js';
 import { createDb, type Db } from '../src/db.js';
 import { MemoryMailer } from '../src/modules/auth/mailer.js';
 import type { NearRpc } from '../src/modules/wallet/rpc.js';
+import type { NftChain } from '../src/modules/nft/chain.js';
 
 export const TEST_DB_URL = process.env.TEST_DATABASE_URL;
 
@@ -15,7 +16,9 @@ export interface TestApp {
   close(): Promise<void>;
 }
 
-export async function makeTestApp(opts: { nearRpc?: NearRpc } = {}): Promise<TestApp> {
+export async function makeTestApp(
+  opts: { nearRpc?: NearRpc; nftChain?: NftChain } = {},
+): Promise<TestApp> {
   const db = createDb(TEST_DB_URL!);
   const mailer = new MemoryMailer();
   const app = await buildApp({
@@ -28,6 +31,7 @@ export async function makeTestApp(opts: { nearRpc?: NearRpc } = {}): Promise<Tes
     db,
     mailer,
     ...(opts.nearRpc ? { nearRpc: opts.nearRpc } : {}),
+    ...(opts.nftChain ? { nftChain: opts.nftChain } : {}),
   });
   return {
     app,

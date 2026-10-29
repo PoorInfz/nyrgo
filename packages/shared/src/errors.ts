@@ -37,6 +37,9 @@ export const ERROR_CODES = {
   wallet_signature_invalid: 422,
   wallet_key_not_full_access: 422,
   wallet_unavailable: 503,
+  wallet_required: 409,
+  creature_onchain: 409,
+  nft_unavailable: 503,
   internal_error: 500,
 } as const;
 

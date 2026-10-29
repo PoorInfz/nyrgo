@@ -153,7 +153,10 @@ export function assertInRange(d: number) {
     );
 }
 
-export async function captureRoutes(app: FastifyInstance, { db }: { db: Db }) {
+export async function captureRoutes(
+  app: FastifyInstance,
+  { db, syncNfts }: { db: Db; syncNfts?: (userId: string) => Promise<void> },
+) {
   const cap = DEFAULT_CONFIG.capture;
 
   /** Starts (or resumes) an encounter with a spawn the player is standing next to. */
@@ -386,6 +389,13 @@ export async function captureRoutes(app: FastifyInstance, { db }: { db: Db }) {
 
   app.get('/v1/me/creatures', async (req) => {
     const auth = requireAuth(req);
+    // Creatures held as NFTs follow their token: read the chain first (throttled). If NEAR is
+    // unreachable the collection still loads, from what was last read.
+    if (syncNfts) {
+      await syncNfts(auth.userId).catch((e: Error) =>
+        req.log.warn({ err: e.message }, 'nft sync failed'),
+      );
+    }
     return { creatures: await listOwned(db, auth.userId) };
   });
 

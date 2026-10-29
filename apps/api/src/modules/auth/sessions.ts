@@ -15,6 +15,10 @@ export interface AuthContext {
 }
 
 declare module 'fastify' {
+  interface FastifyInstance {
+    /** Null when creature NFTs are switched off. */
+    nftSyncer: import('../nft/service.js').Syncer | null;
+  }
   interface FastifyRequest {
     auth: AuthContext | null;
     /** Set by the admin routes' hook from a bearer token; never from a player session. */

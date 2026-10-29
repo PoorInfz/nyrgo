@@ -14,7 +14,7 @@ app.log.info(await syncContent(db), 'content synced');
 
 let boss: PgBoss | null = null;
 if (config.jobsEnabled) {
-  boss = await startJobs(config.databaseUrl, db, app.log);
+  boss = await startJobs(config.databaseUrl, db, app.log, app.nftSyncer);
 }
 
 const shutdown = async (signal: string): Promise<void> => {

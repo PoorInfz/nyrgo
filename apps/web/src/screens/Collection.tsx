@@ -16,6 +16,8 @@ export function Collection({ api }: { api: Api }) {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [loadedAt, setLoadedAt] = useState(0);
+  /** The linked NEAR account when this player can take creatures out as NFTs. */
+  const [nftAccount, setNftAccount] = useState<string | null>(null);
 
   const reload = useCallback(
     () =>
@@ -32,6 +34,16 @@ export function Collection({ api }: { api: Api }) {
   useEffect(() => {
     void reload();
   }, [reload]);
+  useEffect(() => {
+    let live = true;
+    // both answer with an error for minors, without a wallet or with NFTs off: no button then
+    Promise.all([api.nftInfo(), api.nearStatus()])
+      .then(([, s]) => live && setNftAccount(s.wallet?.accountId ?? null))
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [api]);
 
   if (failed || error) return <p role="alert">{t('offline')}</p>;
   if (!dex || !mine) return <p role="status">{t('loading')}</p>;
@@ -61,6 +73,22 @@ export function Collection({ api }: { api: Api }) {
       const r = await api.evolve(m.id);
       setMine((all) => all?.map((x) => (x.id === m.id ? r.creature : x)) ?? all);
       setNotice(t('evolved', { from, to }));
+    } catch (err) {
+      const code = err instanceof ApiError ? err.code : 'other';
+      setNotice(t(`errors.${code}`, { defaultValue: t('errors.other') }));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function mint(m: OwnedCreature, name: string) {
+    if (!nftAccount || !window.confirm(t('nft.confirm', { name, account: nftAccount }))) return;
+    setBusy(true);
+    setNotice(null);
+    try {
+      const r = await api.mintCreature(m.id);
+      if (r.creature) setMine((all) => all?.map((x) => (x.id === m.id ? r.creature! : x)) ?? all);
+      setNotice(t('nft.minted', { name, account: nftAccount }));
     } catch (err) {
       const code = err instanceof ApiError ? err.code : 'other';
       setNotice(t(`errors.${code}`, { defaultValue: t('errors.other') }));
@@ -120,6 +148,11 @@ export function Collection({ api }: { api: Api }) {
                 <span className="pic">
                   <img src={cutUrl(m.creatureId)} alt="" width={112} height={128} />
                 </span>
+                {m.onchain && (
+                  <span className="nft-badge">
+                    {m.onchain.status === 'minted' ? t('nft.badge') : t('nft.minting')}
+                  </span>
+                )}
                 <span className="dex-name">{def?.name ?? m.creatureId}</span>
                 <span className="muted">
                   {t('levelShort', { level: m.level })} · {t(`caughtVia.${m.acquiredVia}`)}
@@ -134,7 +167,7 @@ export function Collection({ api }: { api: Api }) {
                   {t('hpLine', { hp: m.hp, max: m.maxHp })} · {t('stat.atk')} {m.stats.atk} ·{' '}
                   {t('stat.def')} {m.stats.def} · {t('stat.spd')} {m.stats.spd}
                 </span>
-                {def?.evolution && (
+                {def?.evolution && !m.onchain && (
                   <EvolveButton
                     m={m}
                     evo={def.evolution}
@@ -154,6 +187,21 @@ export function Collection({ api }: { api: Api }) {
                   >
                     {t('healWith', { item: dex.items.find((i) => i.id === 'patch')!.name[lang] })}
                   </button>
+                )}
+                {nftAccount && !m.onchain && (
+                  <button
+                    type="button"
+                    className="secondary small"
+                    disabled={busy}
+                    onClick={() => mint(m, def?.name ?? m.creatureId)}
+                  >
+                    {t('nft.mint')}
+                  </button>
+                )}
+                {m.onchain?.account && (
+                  <span className="muted small account-id">
+                    {t('nft.heldBy', { account: m.onchain.account })}
+                  </span>
                 )}
               </div>
             </li>

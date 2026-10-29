@@ -140,7 +140,8 @@ export async function accountRoutes(
           `DELETE FROM location_samples WHERE user_id = $1`,
           `DELETE FROM risk_signals WHERE user_id = $1`,
           `DELETE FROM inventory WHERE user_id = $1`,
-          `DELETE FROM creature_instances WHERE owner_id = $1`,
+          // creatures held as NFTs stay: they belong to the token, not to this account
+          `DELETE FROM creature_instances WHERE owner_id = $1 AND onchain_status IS DISTINCT FROM 'minted'`,
           `DELETE FROM mission_progress WHERE user_id = $1`,
           `DELETE FROM idempotency_keys WHERE user_id = $1`,
           `DELETE FROM player_movement WHERE user_id = $1`,
