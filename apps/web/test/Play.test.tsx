@@ -73,7 +73,11 @@ const CONTENT = { version: 1, elements: [], skills: [], creatures: [], items: []
 const routed =
   (inner: (url: string, init?: RequestInit) => Promise<Response>) =>
   async (url: string, init?: RequestInit) =>
-    url.endsWith('/v1/dex') ? json(200, CONTENT) : inner(url, init);
+    url.endsWith('/v1/dex')
+      ? json(200, CONTENT)
+      : url.endsWith('/v1/me/missions')
+        ? json(200, { day: '2026-10-29', missions: [] })
+        : inner(url, init);
 
 beforeEach(() => i18n.changeLanguage('es'));
 afterEach(() => {
@@ -101,7 +105,8 @@ describe('Play', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Activar ubicación' }));
     await m.fix();
     expect(await screen.findByText('Plaza de las Tendillas')).toBeInTheDocument();
-    expect(screen.getByText('al alcance')).toBeInTheDocument();
+    // the place in range can be visited
+    expect(screen.getByRole('button', { name: 'Visitar' })).toBeInTheDocument();
     expect(screen.getByText('a 230 m')).toBeInTheDocument();
     expect(screen.getByText(/OpenStreetMap/)).toBeInTheDocument();
     const init = (fetch.mock.calls[0] as unknown as [string, RequestInit])[1];

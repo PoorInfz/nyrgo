@@ -10,3 +10,4 @@ export * from './content/items.js';
 export * from './progression.js';
 export * from './random.js';
 export * from './combat.js';
+export * from './economy.js';

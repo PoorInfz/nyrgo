@@ -75,6 +75,9 @@ export async function accountRoutes(
           `SELECT amount, reason, ref_id, created_at FROM gold_ledger WHERE user_id = $1 ORDER BY id`,
         ),
         missions: await q(`SELECT * FROM mission_progress WHERE user_id = $1`),
+        placeVisits: await q(
+          `SELECT poi_id, last_visit_at, visits FROM poi_visits WHERE user_id = $1`,
+        ),
         captureAttempts: await q(
           `SELECT spawn_id, item_id, chance, roll, success, created_at FROM capture_attempts WHERE user_id = $1`,
         ),
@@ -140,6 +143,7 @@ export async function accountRoutes(
           `DELETE FROM poi_reports WHERE user_id = $1`,
           `DELETE FROM dex_entries WHERE user_id = $1`,
           `DELETE FROM encounters WHERE user_id = $1`,
+          `DELETE FROM poi_visits WHERE user_id = $1`,
         ]) {
           await c.query(sql, [id]);
         }

@@ -2,6 +2,18 @@
 
 Newest first. Each entry: date, decision, reason, who approved.
 
+## 2026-10-29 — Milestone 8: economy
+
+| #   | Decision                                                                                                                                                                                  | Reason                                                                      |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| E1  | Visiting a place within 40 m gives 25 XP, 20–40 Gold and 2–4 items, once per place every 5 minutes (config `poiCooldownMin`)                                                              | The approved reward table; the daily Gold cap limits farming one place      |
+| E2  | Place loot weights: basic vault 50, patch 22, reinforced vault 10, security patch 5, each evolution material 3, node restart 1                                                            | Vaults keep captures going; materials stay scarce so evolutions feel earned |
+| E3  | Shop sells only items with a price (vaults, patches, node restart), up to 20 per purchase, paid through the append-only ledger; `Idempotency-Key` required                                | No double charges; every Gold movement auditable                            |
+| E4  | Crafting uses the approved recipes and unlock levels; inputs and Gold go in one transaction                                                                                               | All or nothing                                                              |
+| E5  | Three daily missions per player, one per kind, drawn from the player id and the Europe/Madrid date; 500 XP and 150 Gold each when claimed                                                 | Same missions all day on every device; varied between players               |
+| E6  | Evolution needs the level (or 30 days held for Paperpaw), the approved Gold and materials; same creature row, new form; HP keeps its proportion; the new form counts as caught in the Dex | Keeps IVs, XP and history; no loss for evolving                             |
+| E7  | Sinks today: shop, crafting, evolution. Faucets: captures, battles, places, missions, level-ups, all under the 1500 Gold daily cap                                                        | Ready for the Phase 2 simulation to tune                                    |
+
 ## 2026-10-29 — Milestone 7: battles
 
 | #   | Decision                                                                                                                                      | Reason                                                                                                   |

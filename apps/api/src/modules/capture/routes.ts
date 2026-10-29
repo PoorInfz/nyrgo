@@ -23,6 +23,7 @@ import { requireAuth } from '../auth/sessions.js';
 import { requireInteractable } from '../anticheat/movement.js';
 import { grantReward } from '../progress/rewards.js';
 import { listOwned } from '../creatures/owned.js';
+import { bumpMissions } from '../economy/missions.js';
 
 const IdParams = Type.Object({ id: Type.String({ format: 'uuid' }) });
 type IdParams = Static<typeof IdParams>;
@@ -329,8 +330,10 @@ export async function captureRoutes(app: FastifyInstance, { db }: { db: Db }) {
             refId: attempt.rows[0]!.id,
           });
 
+          await bumpMissions(c, auth.userId, { kind: 'throw' });
           let creature = null;
           if (success) {
+            await bumpMissions(c, auth.userId, { kind: 'catch', creatureId: enc.definition_id });
             creature = await addCreature(
               c,
               auth.userId,

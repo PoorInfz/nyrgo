@@ -30,6 +30,8 @@ export const ERROR_CODES = {
   battle_active: 409,
   already_won: 409,
   invalid_action: 422,
+  level_required: 403,
+  not_ready: 409,
   internal_error: 500,
 } as const;
 

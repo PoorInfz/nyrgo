@@ -9,15 +9,18 @@ Stated openly so nobody relies on something that is not there.
   stay disabled while the client is web-only (master prompt §16). Testnet and simulated rewards are fine.
 - **iOS PWA limits.** No background geolocation, limited push notifications, storage can be evicted.
 
-## Current state (Phase 1, milestone 7)
+## Current state (Phase 1, milestone 8)
 
-- Accounts, the map, nearby places, the Dex, wild spawns, encounters, captures, the collection,
-  the starter pick and battles against wild creatures work. No POI rewards, shop or missions yet
-  (milestone 8), so the only way to get more vaults and patches today is the starter kit.
+- The Phase 1 game loop works end to end: accounts, map, places with rewards, wild spawns,
+  encounters, captures, battles, collection, evolution, shop, crafting, daily missions and the Dex.
+- The economy numbers (loot, prices, rewards, caps, cooldowns) are the approved starting
+  assumptions. The Phase 2 simulation has not checked the faucet/sink balance yet.
+- A 5-minute cooldown per place means a player standing between two places can collect every few
+  minutes; the daily Gold cap is the only limit on that today.
+- Missions reset at midnight Europe/Madrid for everyone, wherever they play.
 - Battles are 1v1 with one creature each and no switching; no trainer (NPC) battles and no PvP.
 - Battle numbers (damage scale, type weight, XP, rewards) come from a quick simulation in the tests,
   not from the Phase 2 economy simulation.
-- Evolution is defined but not available yet: creatures level up but nothing evolves them.
 - Spawn rules (slots per biome, rarity weights, levels, flee chance) are starting assumptions; the
   economy simulation (Phase 2) has not tuned them.
 - The throw's timing score is reported by the client. A modified client can always send 1; the

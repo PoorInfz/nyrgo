@@ -100,6 +100,38 @@ export interface BattleView {
   creatureXp?: { level: number; leveledUp: boolean; xp: number };
 }
 
+export interface Reward {
+  xp: number;
+  gold: number;
+  level: number;
+  leveledUp: boolean;
+  goldCapped: number;
+}
+
+export interface VisitResult {
+  items: Record<string, number>;
+  reward: Reward;
+  nextVisitAt: string;
+}
+
+export interface Mission {
+  id: string;
+  kind: 'catch' | 'catch_element' | 'win' | 'visit' | 'throw';
+  target: number;
+  element?: Element;
+  name: { es: string; en: string };
+  progress: number;
+  completed: boolean;
+  rewarded: boolean;
+}
+
+export interface Wallet {
+  gold: number;
+  level: number;
+  xp: number;
+  items: InventoryItem[];
+}
+
 export type BattleAction =
   { kind: 'skill'; skill: string } | { kind: 'item'; item: string } | { kind: 'flee' };
 
@@ -257,6 +289,28 @@ export function createApi(baseUrl: string) {
         `/v1/battles/${encodeURIComponent(battleId)}/turn`,
         { action },
         { 'idempotency-key': key },
+      ),
+    visitPoi: (poiId: string) =>
+      call<VisitResult>('POST', `/v1/pois/${encodeURIComponent(poiId)}/visit`),
+    missions: () => call<{ day: string; missions: Mission[] }>('GET', '/v1/me/missions'),
+    claimMission: (id: string) =>
+      call<{ reward: Reward; missions: Mission[] }>(
+        'POST',
+        `/v1/me/missions/${encodeURIComponent(id)}/claim`,
+      ),
+    shop: () =>
+      call<{ items: { id: string; price: number; kind: string }[]; maxPerPurchase: number }>(
+        'GET',
+        '/v1/shop',
+      ),
+    buy: (item: string, qty: number, key: string) =>
+      call<Wallet>('POST', '/v1/shop/buy', { item, qty }, { 'idempotency-key': key }),
+    craft: (recipe: string, key: string) =>
+      call<Wallet>('POST', '/v1/craft', { recipe }, { 'idempotency-key': key }),
+    evolve: (creatureId: string) =>
+      call<{ from: string; creature: OwnedCreature; gold: number }>(
+        'POST',
+        `/v1/me/creatures/${encodeURIComponent(creatureId)}/evolve`,
       ),
     heal: (creatureId: string, item: string) =>
       call<OwnedCreature>('POST', `/v1/me/creatures/${encodeURIComponent(creatureId)}/heal`, {

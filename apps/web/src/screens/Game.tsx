@@ -5,12 +5,14 @@ import { Home } from './Home';
 import { Play } from './Play';
 import { DexScreen } from './DexScreen';
 import { Collection } from './Collection';
+import { Bag } from './Bag';
 
-type Tab = 'play' | 'collection' | 'dex' | 'profile';
+type Tab = 'play' | 'collection' | 'bag' | 'dex' | 'profile';
 
 const LABELS: Record<Tab, string> = {
   play: 'tabPlay',
   collection: 'tabCollection',
+  bag: 'tabBag',
   dex: 'tabDex',
   profile: 'tabProfile',
 };
@@ -33,7 +35,7 @@ export function Game({
   return (
     <div className="stack">
       <nav className="tabs" role="tablist" aria-label={t('tabsLabel')}>
-        {(['play', 'collection', 'dex', 'profile'] as const).map((id) => (
+        {(['play', 'collection', 'bag', 'dex', 'profile'] as const).map((id) => (
           <button
             key={id}
             type="button"
@@ -51,6 +53,7 @@ export function Game({
         <Play api={api} />
       </div>
       {tab === 'collection' && <Collection api={api} />}
+      {tab === 'bag' && <Bag api={api} />}
       {tab === 'dex' && <DexScreen api={api} />}
       {tab === 'profile' && (
         <Home api={api} profile={profile} onChange={onChange} onSignedOut={onSignedOut} />

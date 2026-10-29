@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.8.0 — 2026-10-29 — Phase 1, milestone 8: economy
+
+Added
+
+- Place visits (`POST /v1/pois/:id/visit`): within 40 m, behind the movement checks, once per
+  place every 5 minutes; XP, Gold and 2–4 items rolled on the server.
+- Shop (`GET /v1/shop`, `POST /v1/shop/buy`) and workshop (`POST /v1/craft`) with
+  `Idempotency-Key`; Gold spent through the append-only ledger.
+- Daily missions (`GET /v1/me/missions`, `POST /v1/me/missions/:id/claim`): three per player and
+  day, progress from captures, throws, battle wins and place visits.
+- Evolution (`POST /v1/me/creatures/:id/evolve`) by level or days held, paying Gold and materials.
+- Shared economy rules: place loot table, mission pool and draw, evolution conditions.
+- Migration `economy`: place visits, `evolved_from`. Place visits in the data export and erasure.
+- Web: "Visit" on places in range with the loot shown, today's missions on the map screen with
+  "Claim", Bag tab (items, Gold, shop, workshop), evolve buttons with their cost and conditions
+  in the collection; Spanish and English.
+
+Fixed during verification
+
+- Any mission progress on a day whose missions matched the event failed with a server error
+  (untyped SQL parameters); found by the visit tests failing on some days only.
+- With five tabs, "Colección" broke over two lines and the shop buttons overflowed at 390 px.
+
+Verified locally on 2026-10-29: 241 tests passing (60 shared, 131 API, 50 web); lint, typecheck,
+format and build clean; migrations down and up again; in headless Chromium against the real API at
+390 px: a place visited (loot shown, mission advanced), a vault bought in the shop, Gwisp evolved
+into Gasguzzle, no console errors, no horizontal overflow.
+
 ## 0.7.0 — 2026-10-29 — Phase 1, milestone 7: battles
 
 Added

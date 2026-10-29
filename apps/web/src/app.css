@@ -799,3 +799,82 @@ button.pick img {
   flex: none;
   accent-color: var(--accent);
 }
+
+/* ---------------------------------------------------------------- milestone 8: economy */
+
+.tabs {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.tab {
+  font-size: 13px;
+  padding: 0 2px;
+}
+
+.gold-line {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--gold);
+  margin: 0;
+}
+
+.item-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.item-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.item-list li > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.row.tight {
+  flex-wrap: nowrap;
+  gap: 6px;
+}
+
+.row.tight > button {
+  flex: none;
+}
+
+.recipe,
+.mission {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.recipe > button,
+.mission > button {
+  align-self: flex-start;
+}
+
+.tab {
+  font-size: 12.5px;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-list li {
+  flex-wrap: wrap;
+}
+
+.item-list .row.tight {
+  margin-left: auto;
+}

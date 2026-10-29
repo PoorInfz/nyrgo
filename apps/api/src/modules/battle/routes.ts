@@ -25,6 +25,7 @@ import { requireInteractable } from '../anticheat/movement.js';
 import { assertInRange, distanceToSpawn } from '../capture/routes.js';
 import { addCreatureXp, loadOwned, setHp } from '../creatures/owned.js';
 import { grantReward, GAME_TZ } from '../progress/rewards.js';
+import { bumpMissions } from '../economy/missions.js';
 
 const IdParams = Type.Object({ id: Type.String({ format: 'uuid' }) });
 type IdParams = Static<typeof IdParams>;
@@ -343,6 +344,7 @@ async function finish(c: PoolClient, userId: string, b: BattleRow, state: Battle
     return out;
   }
   out.creatureXp = await addCreatureXp(c, mine, battleXp(state.foe.level), state.player.hp);
+  await bumpMissions(c, userId, { kind: 'win' });
   const eco = DEFAULT_CONFIG.economy;
   if ((await rewardedWinsToday(c, userId)) < eco.rewards.pveWin.dailyCap) {
     await c.query(`UPDATE battles SET rewarded = true WHERE id = $1`, [b.id]);

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ApiError, type Api, type Nearby, type NearbyCreature } from '../api';
 import { artUrl, useContent } from '../content';
 import { Encounter } from './Encounter';
+import { Missions } from './Missions';
 import {
   browserSource,
   simulatedSource,
@@ -59,6 +60,10 @@ export function Play({
   // Names for the creature list; only fetched once the player starts playing.
   const { dex } = useContent(api, active);
   const names = useMemo(() => new Map(dex?.creatures.map((c) => [c.id, c.name])), [dex]);
+  /** Bumped after anything that may move a mission, so the missions card refreshes. */
+  const [progressTick, setProgressTick] = useState(0);
+  const [visit, setVisit] = useState<{ ok: boolean; text: string } | null>(null);
+  const [visited, setVisited] = useState<ReadonlySet<string>>(new Set());
 
   useEffect(() => {
     if (!active) return;
@@ -99,6 +104,33 @@ export function Play({
     setActive(true);
   }
 
+  async function visitPoi(id: string) {
+    setVisit(null);
+    try {
+      const r = await api.visitPoi(id);
+      const itemNames = Object.entries(r.items)
+        .map(([item, n]) => {
+          const def = dex?.items.find((i) => i.id === item);
+          return `${n} × ${def?.name[i18n.language.startsWith('en') ? 'en' : 'es'] ?? item}`;
+        })
+        .join(', ');
+      setVisit({
+        ok: true,
+        text: `${t('rewardLine', { xp: r.reward.xp, gold: r.reward.gold })}${itemNames ? ` · ${itemNames}` : ''}`,
+      });
+      setVisited((v) => new Set(v).add(id));
+      setProgressTick((n) => n + 1);
+    } catch (err) {
+      const code = err instanceof ApiError ? err.code : 'other';
+      setVisit({
+        ok: false,
+        text: t(code === 'cooldown_active' ? 'visitCooldown' : `errors.${code}`, {
+          defaultValue: t('errors.other'),
+        }),
+      });
+    }
+  }
+
   async function report(id: string) {
     if (!window.confirm(t('reportConfirm'))) return;
     await api.reportPoi(id, 'unsafe').catch(() => undefined);
@@ -125,6 +157,7 @@ export function Play({
         onClose={(wasGone) => {
           if (wasGone) setGone((g) => new Set(g).add(facing.id));
           setFacing(null);
+          setProgressTick((n) => n + 1);
         }}
       />
     );
@@ -173,6 +206,8 @@ export function Play({
         </Suspense>
       )}
 
+      <Missions api={api} refresh={progressTick} />
+
       <section className="card" aria-labelledby="creatures-title">
         <h2 id="creatures-title">{t('creaturesTitle')}</h2>
         {nearby && creatures.length === 0 && <p className="muted">{t('creaturesEmpty')}</p>}
@@ -201,6 +236,11 @@ export function Play({
       <section className="card" aria-labelledby="nearby-title">
         <h2 id="nearby-title">{t('nearbyTitle')}</h2>
         {nearby && nearby.pois.length === 0 && <p className="muted">{t('nearbyEmpty')}</p>}
+        {visit && (
+          <p role={visit.ok ? 'status' : 'alert'} className={visit.ok ? 'notice' : ''}>
+            {visit.text}
+          </p>
+        )}
         <ul className="poi-list">
           {nearby?.pois.map((p) => (
             <li key={p.id} data-in-range={p.inRange}>
@@ -208,9 +248,15 @@ export function Play({
               <span className="poi-name">
                 {p.name ?? t(`kind.${p.kind}`, { defaultValue: p.kind })}
               </span>
-              <span className="muted">
-                {p.inRange ? t('inRange') : t('metres', { m: p.distanceM })}
-              </span>
+              {p.inRange && !visited.has(p.id) ? (
+                <button type="button" className="small" onClick={() => visitPoi(p.id)}>
+                  {t('visit')}
+                </button>
+              ) : (
+                <span className="muted">
+                  {p.inRange ? t('visitedRecently') : t('metres', { m: p.distanceM })}
+                </span>
+              )}
               <button type="button" className="link small" onClick={() => report(p.id)}>
                 {t('report')}
               </button>
