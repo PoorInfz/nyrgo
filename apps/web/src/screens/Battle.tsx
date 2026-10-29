@@ -1,4 +1,4 @@
-import { type CSSProperties, useMemo, useRef, useState } from 'react';
+import { type CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { effectiveness, type BattleEvent } from '@nyrgo/shared';
 import {
@@ -9,7 +9,7 @@ import {
   type BattleView,
   type Dex,
 } from '../api';
-import { thumbUrl } from '../content';
+import { fxUrl, spriteUrl } from '../content';
 
 type Lang = 'es' | 'en';
 
@@ -19,6 +19,8 @@ interface Fx {
   kind: 'attack' | 'hit' | 'crit' | 'miss' | 'heal' | 'faint' | 'passive';
   /** Element colour of the move being used or received. */
   color: string;
+  /** Element of the move that landed: picks the effect sheet played over the target. */
+  element?: string | undefined;
 }
 
 /** Playback speed: 0 skips every pause and effect (reduced motion, tests). */
@@ -124,6 +126,18 @@ export function Battle({
     }
   }
 
+  // Fetch the attack sheets and effects up front so the first turn does not flash.
+  useEffect(() => {
+    if (!speed) return;
+    const urls = [me.id, foe.id].map((id) => spriteUrl(id, 'attack'));
+    for (const id of [...b.player.skills, ...b.foe.skills]) {
+      const el = dex.skills.find((s) => s.id === id)?.element;
+      if (el) urls.push(fxUrl(el));
+    }
+    for (const url of new Set(urls)) new Image().src = url;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per battle
+  }, []);
+
   // Start-of-battle passives arrive with the first view.
   const [opened] = useState(() => start.events.map(describe).filter((x): x is string => !!x));
 
@@ -149,6 +163,7 @@ export function Battle({
   async function playback(next: BattleView) {
     let hp = { player: shown.player.hp, foe: shown.foe.hp };
     let color = '#ffffff';
+    let element: string | undefined;
     let seq = 0;
     const show = (f: Fx | null, ms: number) => {
       setFx(f ? { seq: ++seq, effect: f } : null);
@@ -163,12 +178,13 @@ export function Battle({
       if (line) setLog((l) => [...l, line]);
       switch (e.type) {
         case 'move':
-          color = dex.elements.find((x) => x.id === skill(e.skill).element)?.color ?? color;
+          element = skill(e.skill).element;
+          color = dex.elements.find((x) => x.id === element)?.color ?? color;
           await show({ side: e.side, kind: 'attack', color }, 380);
           break;
         case 'hit': {
           const target = e.side === 'player' ? 'foe' : 'player';
-          await show({ side: target, kind: e.crit ? 'crit' : 'hit', color }, 120);
+          await show({ side: target, kind: e.crit ? 'crit' : 'hit', color, element }, 120);
           apply(target, e.hpLeft);
           await sleep(speed * 420);
           break;
@@ -333,7 +349,10 @@ export function Battle({
   );
 }
 
-/** A fighter's picture with the current effect layered on top. */
+/**
+ * A fighter: its sprite sheet (idle loop, or the attack frames while it strikes), the element
+ * effect of a move that lands on it, and a glow layer for charge, heal and passives.
+ */
 function Sprite({
   id,
   fx,
@@ -343,16 +362,24 @@ function Sprite({
   fx: { seq: number; effect: Fx } | null;
   fainted: boolean;
 }) {
+  const style = {
+    '--fx': fx?.effect.color ?? 'transparent',
+    '--idle': `url(${spriteUrl(id, 'idle')})`,
+    '--attack': `url(${spriteUrl(id, 'attack')})`,
+    '--burst': fx?.effect.element ? `url(${fxUrl(fx.effect.element)})` : 'none',
+  } as CSSProperties;
   return (
     <div
       className={`sprite${fainted ? ' fainted' : ''}`}
       data-fx={fx?.effect.kind}
-      style={{ '--fx': fx?.effect.color ?? 'transparent' } as CSSProperties}
+      data-creature={id}
+      style={style}
       // a new key restarts the CSS animation even when the same effect repeats
       key={fx ? fx.seq : 'idle'}
     >
-      <img src={thumbUrl(id)} alt="" width={120} height={174} />
+      <span className="body" aria-hidden="true" />
       <span className="fx-layer" aria-hidden="true" />
+      <span className="fx-sheet" aria-hidden="true" />
     </div>
   );
 }

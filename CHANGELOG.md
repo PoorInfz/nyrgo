@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.9.1 — 2026-10-29 — Battle sprites and element effects
+
+Verified locally on 2026-10-29: format, lint, typecheck and build clean; 248 tests passing (61 shared, 136 API, 51 web); in the browser a battle plays idle, attack and element-effect sheets with every sheet served (200). Not yet tested on a real phone.
+
+Added
+
+- Battle sprite sheets for all 50 creatures, cut from the painted portraits: 6 idle frames
+  (breathing and sway, looping) and 5 attack frames (crouch, rise, strike, impact, recover).
+  The creature is cut out of its painted background (`tools/cut-masks.py`, BiRefNet-lite) and
+  deformed like a puppet around its feet (`tools/make-sprites.py`); no new poses are drawn.
+- Element effects: one 8-frame sheet per element (splash, flames, leaves, rocks, purple gas and
+  sparks, gust, ice shards, crescent and stars, sunburst, dark smoke), drawn by code
+  (`tools/make-fx.py`) and played over the fighter a move lands on.
+- The service worker caches sprite and effect sheets after the first battle.
+
+Changed
+
+- Battle: fighters stand cut out on a shadow instead of in a portrait card; reduced motion shows
+  still frames (the strike frame while attacking) and no effects.
+
 ## 0.9.0 — 2026-10-29 — Phase 1, milestone 9: tutorial, admin, offline, accessibility
 
 Verified locally on 2026-10-29: format, lint, typecheck and build clean; 245 tests passing (61 shared, 136 API, 48 web); axe-core reports no violations on 12 screens; production build works offline after the first visit. Not yet tested on a real phone.

@@ -37,6 +37,15 @@ export default defineConfig({
             },
           },
           {
+            // Battle sprite sheets and element effects: fetched when a battle starts.
+            urlPattern: /\/(sprites|fx)\/.*\.webp$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'battle-art',
+              expiration: { maxEntries: 120, maxAgeSeconds: 60 * 60 * 24 * 90 },
+            },
+          },
+          {
             // Static content (the Dex) is versioned with an ETag and safe to show offline.
             urlPattern: ({ url }) => url.pathname === '/v1/dex',
             handler: 'StaleWhileRevalidate',

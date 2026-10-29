@@ -19,8 +19,13 @@ Stated openly so nobody relies on something that is not there.
 - Offline covers reading (Dex, collection, portraits, profile) once the app has been opened
   online at least once after install; playing needs the server. Only the production build has
   the service worker (`pnpm build` + `vite preview`), not `pnpm dev`.
-- Battle effects are CSS over static portraits (lunge, shake, bursts); there are no attack or
-  walking sprite sheets. Real animation needs frames from the artist.
+- Battle sprites are the painted portrait deformed as a puppet (stretch, squash, sway), not new
+  drawn poses: legs and wings do not move on their own, and the creature keeps the direction it
+  was painted facing. Real poses need frames from the artist; the sheet layout and CSS already
+  take them (6 idle, 5 attack frames of 224 x 256).
+- Cut-outs are automatic (BiRefNet-lite): fine detail such as thin wings, flags or fur edges can
+  lose bits or keep a halo of the painted background; masks in `art/masks/` can be fixed by hand
+  and the sheets rebuilt.
 - The admin panel has no pagination or search and lists at most 50 cases and 200 places.
 - Accessibility was checked with axe on every screen (no violations) plus keyboard focus on tab
   changes; a review with a screen reader on a phone is still to do.

@@ -709,13 +709,13 @@ button.small {
 
 .fighter {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 120px;
+  grid-template-columns: minmax(0, 1fr) 150px;
   align-items: center;
   gap: 12px;
 }
 
 .fighter.mine {
-  grid-template-columns: 120px minmax(0, 1fr);
+  grid-template-columns: 150px minmax(0, 1fr);
 }
 
 .fighter img {
@@ -892,28 +892,43 @@ button.pick img {
 
 /* ---------------------------------------------------------------- battle effects */
 
+/* A fighter is its cut-out sprite sheet standing on a shadow. Sheets are N frames in a row;
+   steps(N, jump-none) walks background-position from the first frame (0 %) to the last (100 %). */
 .sprite {
   position: relative;
-  width: 120px;
-  height: 174px;
-  border-radius: 16px;
-  overflow: hidden;
-  background: var(--surface-2);
+  width: 100%;
+  aspect-ratio: 224 / 256;
   transition:
     opacity 0.6s ease,
     filter 0.6s ease;
 }
 
-.sprite img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  animation: idle-bob 2.6s ease-in-out infinite;
+.sprite::before {
+  content: '';
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 2%;
+  height: 9%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(0 0 0 / 45%), transparent);
 }
 
-.fighter.foe .sprite img {
-  animation-delay: -1.3s;
+.sprite .body {
+  position: absolute;
+  inset: 0;
+  background: var(--idle) 0 0 / 600% 100% no-repeat;
+  animation: sheet 1.2s steps(6, jump-none) infinite;
+}
+
+.fighter.foe .sprite .body {
+  animation-delay: -0.6s;
+}
+
+.sprite[data-fx='attack'] .body {
+  background-image: var(--attack);
+  background-size: 500% 100%;
+  animation: sheet 0.38s steps(5, jump-none) 1 forwards;
 }
 
 .fx-layer {
@@ -922,6 +937,39 @@ button.pick img {
   pointer-events: none;
   opacity: 0;
   background: radial-gradient(circle at 50% 45%, var(--fx) 0%, transparent 65%);
+  mix-blend-mode: screen;
+}
+
+/* The element effect of the move that landed, centred on the fighter and a bit larger. */
+.fx-sheet {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 125%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  pointer-events: none;
+  opacity: 0;
+  background: var(--burst) 0 0 / 800% 100% no-repeat;
+}
+
+.sprite[data-fx='hit'] .fx-sheet,
+.sprite[data-fx='crit'] .fx-sheet {
+  opacity: 1;
+  animation: sheet 0.54s steps(8, jump-none) 1 forwards;
+}
+
+.sprite[data-fx='crit'] .fx-sheet {
+  width: 150%;
+}
+
+@keyframes sheet {
+  from {
+    background-position-x: 0%;
+  }
+  to {
+    background-position-x: 100%;
+  }
 }
 
 .sprite[data-fx='attack'] {
@@ -969,15 +1017,6 @@ button.pick img {
   animation: faint 0.65s ease-in forwards;
 }
 
-@keyframes idle-bob {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-3px);
-  }
-}
 @keyframes lunge {
   0% {
     transform: translate(0, 0);
@@ -1068,9 +1107,17 @@ button.pick img {
 
 @media (prefers-reduced-motion: reduce) {
   .sprite,
-  .sprite img,
-  .fx-layer {
+  .sprite .body,
+  .fx-layer,
+  .fx-sheet {
     animation: none !important;
+  }
+  .fx-sheet {
+    display: none;
+  }
+  /* still show who is striking: the attack sheet's strike frame, no movement */
+  .sprite[data-fx='attack'] .body {
+    background-position-x: 50%;
   }
 }
 
