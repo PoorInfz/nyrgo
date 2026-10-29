@@ -28,6 +28,10 @@ const EnvSchema = Type.Object({
     default: 'testnet',
   }),
   NEAR_RPC_URL: Type.String({ default: 'https://rpc.testnet.near.org' }),
+  /** Where players' wallets and marketplaces reach this API (NFT card images and attributes). */
+  PUBLIC_API_URL: Type.String({ default: 'http://localhost:3000' }),
+  /** The web app's public folder, for the creature portraits drawn on NFT cards. */
+  NFT_ART_DIR: Type.String({ default: '../web/public' }),
   /** The creatures NFT contract (contracts/creatures). Empty: creatures cannot leave as NFTs. */
   NEAR_NFT_CONTRACT: Type.String({ default: '' }),
   /** The game account that mints, and its key (`ed25519:…`). Secret: only the API holds it. */
@@ -60,6 +64,8 @@ export interface AppConfig {
   jobsEnabled: boolean;
   spawnSecret: string;
   admins: AdminAccount[];
+  publicApiUrl: string;
+  nftArtDir: string;
   near: {
     network: 'testnet' | 'mainnet';
     rpcUrl: string;
@@ -136,6 +142,9 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
   if (env.NEAR_MINTER_KEY && !/^ed25519:[1-9A-HJ-NP-Za-km-z]{60,100}$/.test(env.NEAR_MINTER_KEY)) {
     throw new ConfigError('NEAR_MINTER_KEY must be an ed25519 secret key (ed25519:…)');
   }
+  if (prod && env.NEAR_NFT_CONTRACT && !env.PUBLIC_API_URL.startsWith('https://')) {
+    throw new ConfigError('PUBLIC_API_URL must use https in production (NFT images live there)');
+  }
   if (!/^https:\/\//.test(env.NEAR_RPC_URL) && prod) {
     throw new ConfigError('NEAR_RPC_URL must use https in production');
   }
@@ -161,6 +170,8 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
     jobsEnabled: env.JOBS_ENABLED,
     spawnSecret: env.SPAWN_SECRET,
     admins: parseAdmins(env.ADMIN_TOKENS),
+    publicApiUrl: env.PUBLIC_API_URL.replace(/\/+$/, ''),
+    nftArtDir: env.NFT_ART_DIR,
     near: {
       network: env.NEAR_NETWORK,
       rpcUrl: env.NEAR_RPC_URL,

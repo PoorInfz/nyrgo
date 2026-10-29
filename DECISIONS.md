@@ -2,6 +2,16 @@
 
 Newest first. Each entry: date, decision, reason, who approved.
 
+## 2026-10-29 — Phase 3, part 3: the NFT collection (owner: "commons more, epics fewer")
+
+| #   | Decision                                                                                                                                                                                          | Why                                                              |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| C1  | Supply per species by rarity: common 1,000, uncommon 400, rare 120, epic 30, legendary 10, mythic 3 (22,226 at most)                                                                              | Owner's request: more of the common ones, fewer of the epic ones |
+| C2  | Supply is enforced by the contract: species registered once by the game account, never raised; each mint is the next edition and its title says so; a sold-out species cannot be minted by anyone | Scarcity anyone can check on chain                               |
+| C3  | Each NFT is one individual: its IVs and stats at mint, with a grade D–S from the IV total (S about 1.5 %)                                                                                         | "Each one different, with stats from less to more"               |
+| C4  | The card image (art, rarity frame, edition, grade, stats) is drawn by the API with sharp at mint and served at a fixed URL; attributes as marketplace JSON (`reference`)                          | Wallets and marketplaces show the stats; the card never changes  |
+| C5  | The game checks the on-chain supply before minting and answers `nft_sold_out` without spending a transaction                                                                                      | No wasted gas, a clear message                                   |
+
 ## 2026-10-29 — Phase 3, part 2: creatures as NFTs (owner's choice: "the NFT is the creature")
 
 | #   | Decision                                                                                                                                                                                                              | Why                                                                                                 |

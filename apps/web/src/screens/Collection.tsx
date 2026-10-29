@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CREATURES_BY_ID, evolutionBlock, type Evolution } from '@nyrgo/shared';
+import { CREATURES_BY_ID, evolutionBlock, nftGrade, type Evolution } from '@nyrgo/shared';
 import { ApiError, type Api, type OwnedCreature } from '../api';
 import { cutUrl, useContent } from '../content';
 
@@ -150,9 +150,20 @@ export function Collection({ api }: { api: Api }) {
                 </span>
                 {m.onchain && (
                   <span className="nft-badge">
-                    {m.onchain.status === 'minted' ? t('nft.badge') : t('nft.minting')}
+                    {m.onchain.status === 'minted'
+                      ? m.onchain.edition
+                        ? t('nft.edition', { n: m.onchain.edition, of: m.onchain.supply })
+                        : t('nft.badge')
+                      : t('nft.minting')}
                   </span>
                 )}
+                <span
+                  className={`grade grade-${nftGrade(m.ivs)}`}
+                  title={t('nft.gradeHint')}
+                  aria-label={t('nft.grade', { grade: nftGrade(m.ivs) })}
+                >
+                  {nftGrade(m.ivs)}
+                </span>
                 <span className="dex-name">{def?.name ?? m.creatureId}</span>
                 <span className="muted">
                   {t('levelShort', { level: m.level })} · {t(`caughtVia.${m.acquiredVia}`)}
@@ -202,6 +213,11 @@ export function Collection({ api }: { api: Api }) {
                   <span className="muted small account-id">
                     {t('nft.heldBy', { account: m.onchain.account })}
                   </span>
+                )}
+                {m.onchain?.status === 'minted' && (
+                  <a href={api.nftCardUrl(m.id)} target="_blank" rel="noopener" className="small">
+                    {t('nft.card')}
+                  </a>
                 )}
               </div>
             </li>

@@ -122,6 +122,10 @@ export const resources = {
         confirm:
           '{{name}} pasará a tu cartera {{account}} como NFT (red de pruebas).\n\nSeguirá contigo en el juego mientras tengas el NFT. Si lo regalas o lo vendes, pasará a quien lo tenga. Mientras sea NFT no podrá evolucionar.',
         minted: '{{name}} ya es un NFT en tu cartera {{account}}.',
+        edition: 'NFT #{{n}}/{{of}}',
+        grade: 'Grado {{grade}}',
+        gradeHint: 'Grado según sus valores individuales: D, C, B, A y S (el mejor y más escaso).',
+        card: 'Ver carta NFT',
       },
       near: {
         title: 'Cartera NEAR',
@@ -417,6 +421,10 @@ export const resources = {
         confirm:
           '{{name}} will go to your wallet {{account}} as an NFT (test network).\n\nIt stays with you in the game while you hold the NFT. If you give it away or sell it, it goes to whoever holds it. While it is an NFT it cannot evolve.',
         minted: '{{name}} is now an NFT in your wallet {{account}}.',
+        edition: 'NFT #{{n}}/{{of}}',
+        grade: 'Grade {{grade}}',
+        gradeHint: 'Grade from its individual values: D, C, B, A and S (the best and scarcest).',
+        card: 'See NFT card',
       },
       near: {
         title: 'NEAR wallet',

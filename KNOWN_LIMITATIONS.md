@@ -31,6 +31,13 @@ Stated openly so nobody relies on something that is not there.
   rest refunded). There is no daily mint limit per player yet.
 - The token's metadata is fixed at mint: a creature that levels up later still shows its level
   when it left.
+- NFT card text uses Fredoka only if the server has it installed; otherwise DejaVu Sans or another
+  system sans-serif (the examples in `docs/nft/` were drawn with the fallback).
+- Cards are drawn by the API on first request and kept in memory (200 at most); nothing is pinned
+  to permanent storage (IPFS/Arweave): if the API's address changes, existing tokens point to the
+  old one. Choose the final `PUBLIC_API_URL` before minting for real.
+- The supply numbers are a design choice, not yet checked against the economy simulation (how
+  fast a species would sell out with N players).
 
 ## Current state (Phase 1 complete, milestone 9)
 

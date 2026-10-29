@@ -148,7 +148,12 @@ export interface OwnedCreature {
   acquiredVia: 'capture' | 'starter';
   acquiredAt: string;
   /** Set when the creature is an NFT: being minted, or held by a NEAR account. */
-  onchain?: { status: 'minting' | 'minted'; account: string | null } | null;
+  onchain?: {
+    status: 'minting' | 'minted';
+    account: string | null;
+    edition?: number | null;
+    supply?: number | null;
+  } | null;
 }
 
 export interface CaptureResult {
@@ -337,6 +342,8 @@ export function createApi(baseUrl: string) {
     nearLink: (body: { accountId: string; publicKey: string; signature: string; nonce: string }) =>
       call<{ wallet: NearLink }>('POST', '/v1/me/wallet/link', body),
     nearUnlink: () => call<void>('DELETE', '/v1/me/wallet'),
+    /** The card image a minted creature NFT shows in wallets. */
+    nftCardUrl: (id: string) => `${baseUrl}/v1/nft/cards/${encodeURIComponent(id)}.png`,
     /** 404 when creature NFTs are switched off on this server. */
     nftInfo: () => call<{ contractId: string; network: string }>('GET', '/v1/nft'),
     mintCreature: (id: string) =>

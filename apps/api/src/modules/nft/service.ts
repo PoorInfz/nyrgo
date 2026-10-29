@@ -1,4 +1,11 @@
-import { CREATURES_BY_ID } from '@nyrgo/shared';
+import {
+  CREATURES_BY_ID,
+  ELEMENT_INFO,
+  instanceStats,
+  ivPercent,
+  nftGrade,
+  type Ivs,
+} from '@nyrgo/shared';
 import type { PoolClient } from 'pg';
 import type { Db } from '../../db.js';
 import type { NftChain, TokenMetadata } from './chain.js';
@@ -52,7 +59,7 @@ export async function syncAccount(
   );
   let moved = 0;
   for (const { id } of gone) {
-    const holder = await chain.tokenOwner(id);
+    const holder = (await chain.token(id))?.owner ?? null;
     if (!holder) continue; // not on chain any more: leave it as it is for a person to look at
     const next = await playerFor(db, network, holder);
     await db.query(
@@ -99,26 +106,69 @@ export class Syncer {
   }
 }
 
+/** What the token shows forever: the creature as it was when it left the game. */
+export interface NftSnapshot {
+  species: string;
+  level: number;
+  ivs: Ivs;
+}
+
+/** Public attributes of a token, in the shape marketplaces read (NEP-177 `reference`). */
+export function referenceJson(
+  urls: { card: string },
+  snap: NftSnapshot,
+  edition: { edition: number; supply: number } | null,
+) {
+  const def = CREATURES_BY_ID.get(snap.species)!;
+  const stats = instanceStats(def.stats, snap.level, snap.ivs);
+  return {
+    name: edition ? `${def.name} #${edition.edition}/${edition.supply}` : def.name,
+    description: def.lore.es,
+    image: urls.card,
+    attributes: [
+      { trait_type: 'Especie', value: def.name },
+      { trait_type: 'Elemento', value: ELEMENT_INFO[def.element].es },
+      { trait_type: 'Rareza', value: def.rarity },
+      { trait_type: 'Grado', value: nftGrade(snap.ivs) },
+      { trait_type: 'Calidad', value: ivPercent(snap.ivs), max_value: 100 },
+      { trait_type: 'Nivel', value: snap.level },
+      { trait_type: 'PV', value: stats.hp },
+      { trait_type: 'Ataque', value: stats.atk },
+      { trait_type: 'Defensa', value: stats.def },
+      { trait_type: 'Velocidad', value: stats.spd },
+      ...(edition
+        ? [
+            { trait_type: 'Edición', value: edition.edition },
+            { trait_type: 'Suministro', value: edition.supply },
+          ]
+        : []),
+    ],
+  };
+}
+
 /** The token's metadata (NEP-177): what wallets and marketplaces show. */
 export function creatureMetadata(
-  appUrl: string,
-  c: { id: string; creatureId: string; level: number; ivs: unknown; acquiredAt: string },
+  urls: { card: string; reference: string },
+  snap: NftSnapshot & { caughtAt: string },
 ): TokenMetadata {
-  const def = CREATURES_BY_ID.get(c.creatureId)!;
+  const def = CREATURES_BY_ID.get(snap.species)!;
+  const stats = instanceStats(def.stats, snap.level, snap.ivs);
   return {
     title: def.name,
     description: def.lore.es,
-    media: `${appUrl}/creatures/${def.id}.webp`,
-    copies: 1,
+    media: urls.card,
+    reference: urls.reference,
     issued_at: String(Date.now()),
     extra: JSON.stringify({
       game: 'nyrGo!',
       species: def.id,
       element: def.element,
       rarity: def.rarity,
-      ivs: c.ivs,
-      levelAtMint: c.level,
-      caughtAt: c.acquiredAt,
+      level: snap.level,
+      ivs: snap.ivs,
+      stats,
+      grade: nftGrade(snap.ivs),
+      caughtAt: snap.caughtAt,
     }),
   };
 }

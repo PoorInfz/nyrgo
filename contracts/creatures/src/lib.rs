@@ -4,7 +4,11 @@
 //! The NFT *is* the creature: whoever owns the token owns the creature in the game. Only the game
 //! account (`owner_id`) can mint, and it pays the storage of every token it mints. Everything else
 //! (transfers, approvals for marketplaces, enumeration) is the standard implementation, unchanged.
-//! Testnet only until the Phase 6 gates.
+//!
+//! Scarcity is on chain: each species is registered once with its maximum supply (more for
+//! common species, fewer for epic ones), which can never change afterwards. Every mint takes the
+//! next edition number and the title says so ("Gwisp #12/1000"); once all editions exist the
+//! species is sold out, for the game too. Testnet only until the Phase 6 gates.
 
 use near_contract_standards::non_fungible_token::metadata::{
     NFTContractMetadata, NonFungibleTokenMetadataProvider, TokenMetadata, NFT_METADATA_SPEC,
@@ -15,7 +19,7 @@ use near_contract_standards::non_fungible_token::core::{
 };
 use near_contract_standards::non_fungible_token::approval::NonFungibleTokenApproval;
 use near_contract_standards::non_fungible_token::enumeration::NonFungibleTokenEnumeration;
-use near_sdk::collections::LazyOption;
+use near_sdk::collections::{LazyOption, LookupMap};
 use near_sdk::json_types::U128;
 use near_sdk::{
     env, near, require, AccountId, BorshStorageKey, PanicOnDefault, Promise, PromiseOrValue,
@@ -30,6 +34,21 @@ enum StorageKey {
     TokenMetadata,
     Enumeration,
     Approval,
+    Species,
+}
+
+/** How many of a species exist and can ever exist. */
+#[near(serializers = [borsh, json])]
+#[derive(Clone, Debug, PartialEq)]
+pub struct Supply {
+    pub minted: u32,
+    pub max: u32,
+}
+
+#[near(serializers = [json])]
+pub struct SpeciesSupply {
+    pub species: String,
+    pub max_supply: u32,
 }
 
 #[derive(PanicOnDefault)]
@@ -37,6 +56,7 @@ enum StorageKey {
 pub struct Contract {
     tokens: NonFungibleToken,
     metadata: LazyOption<NFTContractMetadata>,
+    species: LookupMap<String, Supply>,
 }
 
 #[near]
@@ -56,26 +76,71 @@ impl Contract {
                 Some(StorageKey::Approval),
             ),
             metadata: LazyOption::new(StorageKey::Metadata, Some(&metadata)),
+            species: LookupMap::new(StorageKey::Species),
         }
     }
 
-    /// Mints one creature to a player's account. Game account only; the attached deposit pays
-    /// the token's storage and any excess is refunded.
+    fn assert_game(&self) {
+        require!(
+            env::predecessor_account_id() == self.tokens.owner_id,
+            "Only the game account can do this"
+        );
+    }
+
+    /// Registers species with their maximum supply. Game account only; a species' supply is
+    /// fixed forever once registered.
+    pub fn register_species(&mut self, species: Vec<SpeciesSupply>) {
+        self.assert_game();
+        for s in species {
+            require!(
+                !s.species.is_empty() && s.species.len() <= 32,
+                "Species ids are 1-32 characters"
+            );
+            require!(s.max_supply > 0, "A species needs a supply above zero");
+            require!(
+                self.species.get(&s.species).is_none(),
+                "A species' supply is fixed once registered"
+            );
+            self.species.insert(
+                &s.species,
+                &Supply {
+                    minted: 0,
+                    max: s.max_supply,
+                },
+            );
+        }
+    }
+
+    /// How many of a species exist and can exist; null if it is not registered.
+    pub fn species_supply(&self, species: String) -> Option<Supply> {
+        self.species.get(&species)
+    }
+
+    /// Mints one creature of a registered species to a player's account, as the next edition.
+    /// Game account only; the attached deposit pays the token's storage, the rest is refunded.
     #[payable]
     pub fn nft_mint(
         &mut self,
         token_id: TokenId,
         token_owner_id: AccountId,
-        token_metadata: TokenMetadata,
+        species: String,
+        mut token_metadata: TokenMetadata,
     ) -> Token {
-        require!(
-            env::predecessor_account_id() == self.tokens.owner_id,
-            "Only the game account can mint"
-        );
+        self.assert_game();
         require!(
             token_id.len() <= 64 && !token_id.is_empty(),
             "Token ids are 1-64 characters"
         );
+        let mut supply = self
+            .species
+            .get(&species)
+            .unwrap_or_else(|| env::panic_str("Unknown species"));
+        require!(supply.minted < supply.max, "Sold out: every edition of this species exists");
+        supply.minted += 1;
+        self.species.insert(&species, &supply);
+        let title = token_metadata.title.unwrap_or_else(|| species.clone());
+        token_metadata.title = Some(format!("{} #{}/{}", title, supply.minted, supply.max));
+        token_metadata.copies = Some(supply.max as u64);
         self.tokens
             .internal_mint(token_id, token_owner_id, Some(token_metadata))
     }
@@ -239,21 +304,36 @@ mod tests {
         }
     }
 
-    /// accounts(0) = game account, accounts(1) and (2) = players.
+    /// accounts(0) = game account, accounts(1) and (2) = players. Gwisp: 1000, a test epic: 2.
     fn setup() -> (VMContextBuilder, Contract) {
         let mut ctx = VMContextBuilder::new();
         ctx.current_account_id(accounts(3))
             .predecessor_account_id(accounts(0));
         testing_env!(ctx.build());
-        (ctx, Contract::new(accounts(0), contract_metadata()))
+        let mut c = Contract::new(accounts(0), contract_metadata());
+        c.register_species(vec![
+            SpeciesSupply { species: "gwisp".into(), max_supply: 1000 },
+            SpeciesSupply { species: "rugpullor".into(), max_supply: 2 },
+        ]);
+        (ctx, c)
     }
 
-    fn mint_as(ctx: &mut VMContextBuilder, c: &mut Contract, who: usize, id: &str) -> Token {
+    fn mint_species(
+        ctx: &mut VMContextBuilder,
+        c: &mut Contract,
+        who: usize,
+        id: &str,
+        species: &str,
+    ) -> Token {
         testing_env!(ctx
             .predecessor_account_id(accounts(who))
             .attached_deposit(MINT_DEPOSIT)
             .build());
-        c.nft_mint(id.to_string(), accounts(1), creature("Gwisp"))
+        c.nft_mint(id.to_string(), accounts(1), species.to_string(), creature("Gwisp"))
+    }
+
+    fn mint_as(ctx: &mut VMContextBuilder, c: &mut Contract, who: usize, id: &str) -> Token {
+        mint_species(ctx, c, who, id, "gwisp")
     }
 
     #[test]
@@ -261,14 +341,16 @@ mod tests {
         let (mut ctx, mut c) = setup();
         let t = mint_as(&mut ctx, &mut c, 0, "c-1");
         assert_eq!(t.owner_id, accounts(1));
-        assert_eq!(t.metadata.unwrap().title.as_deref(), Some("Gwisp"));
+        let meta = t.metadata.unwrap();
+        assert_eq!(meta.title.as_deref(), Some("Gwisp #1/1000"));
+        assert_eq!(meta.copies, Some(1000));
         assert_eq!(c.nft_total_supply(), U128(1));
         assert_eq!(c.nft_tokens_for_owner(accounts(1), None, None).len(), 1);
         assert_eq!(c.game_account(), accounts(0));
     }
 
     #[test]
-    #[should_panic(expected = "Only the game account can mint")]
+    #[should_panic(expected = "Only the game account can do this")]
     fn nobody_else_can_mint() {
         let (mut ctx, mut c) = setup();
         mint_as(&mut ctx, &mut c, 1, "c-1");
@@ -315,6 +397,52 @@ mod tests {
             .predecessor_account_id(accounts(0))
             .attached_deposit(NearToken::from_yoctonear(0))
             .build());
-        c.nft_mint("c-1".to_string(), accounts(1), creature("Gwisp"));
+        c.nft_mint("c-1".to_string(), accounts(1), "gwisp".to_string(), creature("Gwisp"));
+    }
+
+    #[test]
+    fn editions_count_up_to_the_supply_of_each_species() {
+        let (mut ctx, mut c) = setup();
+        mint_as(&mut ctx, &mut c, 0, "c-1");
+        let second = mint_as(&mut ctx, &mut c, 0, "c-2");
+        assert_eq!(second.metadata.unwrap().title.as_deref(), Some("Gwisp #2/1000"));
+        let epic = mint_species(&mut ctx, &mut c, 0, "e-1", "rugpullor");
+        assert!(epic.metadata.unwrap().title.unwrap().ends_with("#1/2"));
+        assert_eq!(
+            c.species_supply("gwisp".into()),
+            Some(Supply { minted: 2, max: 1000 })
+        );
+        assert_eq!(c.species_supply("nobody".into()), None);
+    }
+
+    #[test]
+    #[should_panic(expected = "Sold out")]
+    fn a_species_sells_out_for_everyone() {
+        let (mut ctx, mut c) = setup();
+        mint_species(&mut ctx, &mut c, 0, "e-1", "rugpullor");
+        mint_species(&mut ctx, &mut c, 0, "e-2", "rugpullor");
+        mint_species(&mut ctx, &mut c, 0, "e-3", "rugpullor");
+    }
+
+    #[test]
+    #[should_panic(expected = "Unknown species")]
+    fn only_registered_species_can_be_minted() {
+        let (mut ctx, mut c) = setup();
+        mint_species(&mut ctx, &mut c, 0, "x-1", "nobody");
+    }
+
+    #[test]
+    #[should_panic(expected = "fixed once registered")]
+    fn the_supply_can_never_be_raised() {
+        let (_ctx, mut c) = setup();
+        c.register_species(vec![SpeciesSupply { species: "rugpullor".into(), max_supply: 99 }]);
+    }
+
+    #[test]
+    #[should_panic(expected = "Only the game account can do this")]
+    fn only_the_game_registers_species() {
+        let (mut ctx, mut c) = setup();
+        testing_env!(ctx.predecessor_account_id(accounts(1)).build());
+        c.register_species(vec![SpeciesSupply { species: "fake".into(), max_supply: 1 }]);
     }
 }

@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.14.0 — 2026-10-29 — Phase 3, part 3: the NFT collection
+
+Verified locally on 2026-10-29: format, lint, typecheck and build clean; 289 tests passing (67
+shared, 160 API, 57 web, 5 simulation) and 11 contract unit tests. Still not deployed: no real
+mint has happened.
+
+Added
+
+- Limited supply per species by rarity, fixed on chain: common 1,000, uncommon 400, rare 120,
+  epic 30, legendary 10, mythic 3 (22,226 NFTs at most). The contract registers species once,
+  numbers every mint ("Gwisp #12/1000") and refuses once a species is sold out.
+- Every NFT is one individual: grade D–S from its IVs, and its stats, shown on a card image the
+  API draws (`/v1/nft/cards/<token>.png`) and as marketplace attributes
+  (`/v1/nft/tokens/<token>.json`).
+- Collection: every creature shows its grade; NFTs show their edition and a link to their card.
+- Tools: `nft:species` (contract registration arguments), `nft:samples` (example cards in
+  `docs/nft/`). Config `PUBLIC_API_URL`, `NFT_ART_DIR`; migration `nft_editions`.
+
 ## 0.13.0 — 2026-10-29 — Phase 3, part 2: creatures as NFTs (testnet)
 
 Verified locally on 2026-10-29: format, lint, typecheck and build clean; 284 tests passing (64

@@ -6,10 +6,12 @@ import { withTx, type Db } from '../../db.js';
 import { HttpProblem } from '../../http/problem.js';
 import { requireAuth } from '../auth/sessions.js';
 import { listOwned, loadOwned } from '../creatures/owned.js';
-import { ChainUnavailable, type NftChain } from './chain.js';
-import { creatureMetadata } from './service.js';
+import { renderCard } from './card.js';
+import { ChainUnavailable, editionOf, type NftChain, type TokenView } from './chain.js';
+import { creatureMetadata, referenceJson, type NftSnapshot } from './service.js';
 
 const IdParams = Type.Object({ id: Type.String({ format: 'uuid' }) });
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 /** A mint that started this long ago and never finished is picked up again. */
 const STUCK_MS = 2 * 60_000;
@@ -24,8 +26,62 @@ export async function nftRoutes(
   { db, config, chain }: { db: Db; config: AppConfig; chain: NftChain },
 ) {
   const network = config.near.network;
+  const urls = (id: string) => ({
+    card: `${config.publicApiUrl}/v1/nft/cards/${id}.png`,
+    reference: `${config.publicApiUrl}/v1/nft/tokens/${id}.json`,
+  });
+  /** Cards are fixed per token: keep the last few drawn in memory. */
+  const cards = new Map<string, Buffer>();
 
   app.get('/v1/nft', async () => ({ contractId: chain.contractId, network }));
+
+  /** A minted token's snapshot and edition; null for anything else (never unminted creatures). */
+  async function minted(id: string) {
+    if (!UUID.test(id)) return null;
+    const { rows } = await db.query<{
+      nft_snapshot: NftSnapshot;
+      nft_edition: number | null;
+      nft_supply: number | null;
+    }>(
+      `SELECT nft_snapshot, nft_edition, nft_supply FROM creature_instances
+        WHERE id = $1 AND onchain_status = 'minted' AND nft_snapshot IS NOT NULL`,
+      [id],
+    );
+    return rows[0] ?? null;
+  }
+
+  /** The card image a token shows (NEP-177 `media`). Public, like everything on chain. */
+  app.get<{ Params: { file: string } }>('/v1/nft/cards/:file', async (req, reply) => {
+    const id = req.params.file.replace(/\.png$/, '');
+    let png = cards.get(id);
+    if (!png) {
+      const t = await minted(id);
+      if (!t) throw new HttpProblem('not_found', 'No such token');
+      png = await renderCard(config.nftArtDir, {
+        ...t.nft_snapshot,
+        edition: t.nft_edition,
+        supply: t.nft_supply,
+      });
+      cards.set(id, png);
+      if (cards.size > 200) cards.delete(cards.keys().next().value!);
+    }
+    return reply
+      .header('content-type', 'image/png')
+      .header('cache-control', 'public, max-age=31536000, immutable')
+      .send(png);
+  });
+
+  /** The token's attributes for marketplaces (NEP-177 `reference`). */
+  app.get<{ Params: { file: string } }>('/v1/nft/tokens/:file', async (req, reply) => {
+    const id = req.params.file.replace(/\.json$/, '');
+    const t = await minted(id);
+    if (!t) throw new HttpProblem('not_found', 'No such token');
+    const ed =
+      t.nft_edition && t.nft_supply ? { edition: t.nft_edition, supply: t.nft_supply } : null;
+    return reply
+      .header('cache-control', 'public, max-age=3600')
+      .send(referenceJson({ card: urls(id).card }, t.nft_snapshot, ed));
+  });
 
   app.post<{ Params: Static<typeof IdParams> }>(
     '/v1/me/creatures/:id/mint',
@@ -77,35 +133,56 @@ export async function nftRoutes(
       });
 
       // 2. Mint, unless an earlier attempt already did (it may have timed out after succeeding).
-      let holder: string;
+      const snapshot: NftSnapshot = {
+        species: creature.creatureId,
+        level: creature.level,
+        ivs: creature.ivs,
+      };
+      const release = () =>
+        db.query(
+          `UPDATE creature_instances SET onchain_status = NULL WHERE id = $1 AND onchain_status = 'minting'`,
+          [creature.id],
+        );
+      let token: TokenView | null;
       let txHash: string | null = null;
       try {
-        const existing = await chain.tokenOwner(creature.id);
-        if (existing) {
-          holder = existing;
-        } else {
+        token = await chain.token(creature.id);
+        if (!token) {
+          // every species has a fixed supply on chain: check before spending a transaction
+          const supply = await chain.speciesSupply(snapshot.species);
+          if (!supply) throw new ChainUnavailable(`species ${snapshot.species} is not registered`);
+          if (supply.minted >= supply.max) {
+            await release();
+            throw new HttpProblem(
+              'nft_sold_out',
+              `All ${supply.max} editions of this species already exist`,
+            );
+          }
           txHash = (
-            await chain.mint(creature.id, account, creatureMetadata(config.appUrl, creature))
+            await chain.mint(
+              creature.id,
+              account,
+              snapshot.species,
+              creatureMetadata(urls(creature.id), { ...snapshot, caughtAt: creature.acquiredAt }),
+            )
           ).txHash;
-          holder = account;
+          token = (await chain.token(creature.id)) ?? { owner: account, title: null };
         }
       } catch (e) {
         if (!(e instanceof ChainUnavailable)) throw e;
         req.log.warn({ err: e.message }, 'nft mint failed');
-        await db.query(
-          `UPDATE creature_instances SET onchain_status = NULL WHERE id = $1 AND onchain_status = 'minting'`,
-          [creature.id],
-        );
+        await release();
         throw new HttpProblem('nft_unavailable', 'NEAR could not be reached; try again');
       }
 
       // 3. Record it. The creature now belongs to whoever holds the token.
+      const ed = editionOf(token.title);
       await db.query(
         `UPDATE creature_instances
             SET onchain_status = 'minted', onchain_owner = $2, minted_at = now(), mint_tx = $3,
-                onchain_checked_at = now()
+                onchain_checked_at = now(), nft_edition = $4, nft_supply = $5, nft_snapshot = $6
           WHERE id = $1`,
-        [creature.id, holder, txHash],
+        [creature.id, token.owner, txHash, ed?.edition ?? null, ed?.supply ?? null, snapshot],
       );
       const after = (await listOwned(db, auth.userId)).find((c) => c.id === creature.id) ?? null;
       return { creature: after, txHash, contractId: chain.contractId };

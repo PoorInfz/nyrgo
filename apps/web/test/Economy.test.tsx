@@ -235,7 +235,9 @@ describe('Creatures as NFTs in the collection', () => {
         });
       if (url.endsWith('/mint') && init.method === 'POST')
         return json(200, {
-          creature: creature({ onchain: { status: 'minted', account: wallet } }),
+          creature: creature({
+            onchain: { status: 'minted', account: wallet, edition: 12, supply: 1000 },
+          }),
           txHash: 'tx',
           contractId: 'c.testnet',
         });
@@ -255,7 +257,13 @@ describe('Creatures as NFTs in the collection', () => {
     expect(
       await screen.findByText('Gwisp ya es un NFT en tu cartera alice.testnet.'),
     ).toBeInTheDocument();
-    expect(screen.getByText('NFT')).toBeInTheDocument();
+    expect(screen.getByText('NFT #12/1000')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Ver carta NFT' })).toHaveAttribute(
+      'href',
+      'http://api.test/v1/nft/cards/66666666-6666-4666-8666-666666666666.png',
+    );
+    // IVs 7+7+7+7 = 28: grade C
+    expect(screen.getByLabelText('Grado C')).toBeInTheDocument();
     expect(screen.getByText('En la cartera alice.testnet')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Sacar como NFT' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Evolucionar/ })).not.toBeInTheDocument();

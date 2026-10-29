@@ -40,6 +40,7 @@ export const ERROR_CODES = {
   wallet_required: 409,
   creature_onchain: 409,
   nft_unavailable: 503,
+  nft_sold_out: 409,
   internal_error: 500,
 } as const;
 

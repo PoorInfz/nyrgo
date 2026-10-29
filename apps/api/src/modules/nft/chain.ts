@@ -5,21 +5,42 @@ import { Account, JsonRpcProvider } from 'near-api-js';
  * a fake. Errors reaching NEAR surface as ChainUnavailable.
  */
 export interface TokenMetadata {
+  /** The species name; the contract appends the edition ("Gwisp #12/1000"). */
   title: string;
   description: string;
+  /** The card image (PNG) the API draws for this token. */
   media: string;
-  copies: number;
+  /** JSON with the attributes marketplaces show (NEP-177 `reference`). */
+  reference: string;
   issued_at: string;
-  /** JSON: species, element, rarity, IVs and level when it left the game. */
+  /** JSON: species, element, rarity, IVs, stats, grade and level when it left the game. */
   extra: string;
+}
+
+export interface TokenView {
+  owner: string;
+  title: string | null;
+}
+
+/** "Gwisp #12/1000" → edition 12 of 1000. */
+export function editionOf(title: string | null): { edition: number; supply: number } | null {
+  const m = title ? /#(\d+)\/(\d+)$/.exec(title) : null;
+  return m ? { edition: Number(m[1]), supply: Number(m[2]) } : null;
 }
 
 export interface NftChain {
   readonly contractId: string;
-  /** Mints to `owner`; resolves once the transaction is final. */
-  mint(tokenId: string, owner: string, metadata: TokenMetadata): Promise<{ txHash: string | null }>;
-  /** Current holder of a token, or null if it does not exist. */
-  tokenOwner(tokenId: string): Promise<string | null>;
+  /** Mints the next edition of `species` to `owner`; resolves once the transaction is final. */
+  mint(
+    tokenId: string,
+    owner: string,
+    species: string,
+    metadata: TokenMetadata,
+  ): Promise<{ txHash: string | null }>;
+  /** A token's holder and title, or null if it does not exist. */
+  token(tokenId: string): Promise<TokenView | null>;
+  /** How many of a species exist and can exist; null if the species is not registered. */
+  speciesSupply(species: string): Promise<{ minted: number; max: number } | null>;
   /** Every token id an account holds in this contract. */
   tokensFor(account: string): Promise<string[]>;
 }
@@ -49,12 +70,12 @@ export function nearNftChain(opts: {
   };
   return {
     contractId: opts.contractId,
-    async mint(tokenId, owner, metadata) {
+    async mint(tokenId, owner, species, metadata) {
       try {
         const out = (await minter.callFunctionRaw({
           contractId: opts.contractId,
           methodName: 'nft_mint',
-          args: { token_id: tokenId, token_owner_id: owner, token_metadata: metadata },
+          args: { token_id: tokenId, token_owner_id: owner, species, token_metadata: metadata },
           deposit: MINT_DEPOSIT,
           gas: MINT_GAS,
         })) as { transaction?: { hash?: string } };
@@ -63,9 +84,17 @@ export function nearNftChain(opts: {
         throw new ChainUnavailable(`nft_mint: ${(e as Error).message}`);
       }
     },
-    async tokenOwner(tokenId) {
-      const t = await view<{ owner_id: string } | null>('nft_token', { token_id: tokenId });
-      return t?.owner_id ?? null;
+    async token(tokenId) {
+      const t = await view<{ owner_id: string; metadata?: { title?: string | null } } | null>(
+        'nft_token',
+        { token_id: tokenId },
+      );
+      return t ? { owner: t.owner_id, title: t.metadata?.title ?? null } : null;
+    },
+    async speciesSupply(species) {
+      return (
+        (await view<{ minted: number; max: number } | null>('species_supply', { species })) ?? null
+      );
     },
     async tokensFor(account) {
       const ids: string[] = [];

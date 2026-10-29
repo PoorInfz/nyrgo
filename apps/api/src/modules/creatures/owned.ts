@@ -24,7 +24,12 @@ export interface OwnedView {
   acquiredVia: string;
   acquiredAt: string;
   /** Set when the creature is an NFT: being minted, or held by a NEAR account. */
-  onchain: { status: 'minting' | 'minted'; account: string | null } | null;
+  onchain: {
+    status: 'minting' | 'minted';
+    account: string | null;
+    edition: number | null;
+    supply: number | null;
+  } | null;
 }
 
 interface Row {
@@ -39,6 +44,8 @@ interface Row {
   acquired_at: Date;
   onchain_status: 'minting' | 'minted' | null;
   onchain_owner: string | null;
+  nft_edition: number | null;
+  nft_supply: number | null;
   now: Date;
 }
 
@@ -56,12 +63,19 @@ function view(r: Row): OwnedView {
     maxHp: stats.hp,
     acquiredVia: r.acquired_via,
     acquiredAt: r.acquired_at.toISOString(),
-    onchain: r.onchain_status ? { status: r.onchain_status, account: r.onchain_owner } : null,
+    onchain: r.onchain_status
+      ? {
+          status: r.onchain_status,
+          account: r.onchain_owner,
+          edition: r.nft_edition,
+          supply: r.nft_supply,
+        }
+      : null,
   };
 }
 
 const COLUMNS = `id, definition_id, level, xp, ivs, hp_current, hp_updated_at, acquired_via, acquired_at,
-  onchain_status, onchain_owner, now() AS now`;
+  onchain_status, onchain_owner, nft_edition, nft_supply, now() AS now`;
 
 /**
  * A creature that is an NFT belongs, in the game, to whoever holds the token: it shows up for
