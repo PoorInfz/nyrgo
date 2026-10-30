@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.27.1 — 2026-10-30 — Anime explorer
+
+- The explorer redrawn as an anime-style chibi with cel shading: hard-edged violet-leaning shadows
+  on every part, big eyes with two-tone irises and sparkle highlights, curved hair locks with an
+  "angel ring" shine, brows through the fringe, blush, and a blink every few seconds. Same
+  cosmetics, same layering.
+
 ## 0.27.0 — 2026-10-30 — Explorer avatar and cosmetics shop
 
 - The player's dot on the map is now their explorer: an original 2D character drawn in layers that

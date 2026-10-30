@@ -1704,13 +1704,31 @@ button.skill:active:not(:disabled) {
 
 .avatar.facing-left .avatar-body {
   transform: scaleX(-1);
-  transform-origin: 32px 0;
+  transform-origin: 50px 0;
+}
+
+/* blinks now and then, walking or not */
+.avatar .eyes {
+  transform-box: fill-box;
+  transform-origin: 50% 60%;
+  animation: avatar-blink 4.2s infinite;
+}
+
+@keyframes avatar-blink {
+  0%,
+  94%,
+  100% {
+    transform: scaleY(1);
+  }
+  97% {
+    transform: scaleY(0.1);
+  }
 }
 
 .avatar .leg,
 .avatar .arm {
   transform-box: fill-box;
-  transform-origin: 50% 8%;
+  transform-origin: 50% 6%;
 }
 
 .avatar.walking .avatar-body {
@@ -1748,6 +1766,7 @@ button.skill:active:not(:disabled) {
 
 @media (prefers-reduced-motion: reduce) {
   .avatar .avatar-body,
+  .avatar .eyes,
   .avatar .leg,
   .avatar .arm {
     animation: none !important;
