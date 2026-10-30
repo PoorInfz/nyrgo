@@ -51,7 +51,12 @@ Then Settings → Domains & Routes → add `app.nyrgo.fun`. The app talks to
 When the app works end to end, set `SITE_APP_OPEN=true` as a build variable of the `nyrgo`
 (website) Worker and redeploy: the "coming soon" button becomes "Play now!".
 
-## Still to do before players
+## Data and checks (GitHub → Actions, run by hand)
 
-- Map tiles for Córdoba (PMTiles): without them the map is a plain background.
-- Load Córdoba's places from OpenStreetMap into the database (`world:import`).
+- **Import world**: Córdoba's places and exclusion zones from OpenStreetMap into production
+  (secret `PROD_DATABASE_URL`).
+- **Map tiles (Córdoba)**: cuts the basemap from the latest Protomaps build into
+  `apps/web/public/tiles/cordoba/` and commits it; deploy the app afterwards.
+- **Deploy to Cloudflare**: the app or the website (secrets `CLOUDFLARE_API_TOKEN`,
+  `CLOUDFLARE_ACCOUNT_ID`).
+- **Production check**: website, app and API answer as expected.

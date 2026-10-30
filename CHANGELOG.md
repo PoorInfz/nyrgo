@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.18.0 — 2026-10-30 — Live on testnet
+
+- The game runs at app.nyrgo.fun (Cloudflare) with its API at api.nyrgo.fun (Render, Neon).
+- Córdoba loaded from OpenStreetMap (490 places, 4,748 exclusion zones).
+- Street map: Córdoba's basemap served as the app's own tile files (592 tiles, 5.7 MB), cached
+  for weak signal; workflows for tiles, world import, Cloudflare deploys and production checks.
+
 ## 0.17.0 — 2026-10-30 — Ready to deploy the game
 
 - Email through Resend (`MAIL_DRIVER=resend`, `RESEND_API_KEY`, `MAIL_FROM`): the API can now
