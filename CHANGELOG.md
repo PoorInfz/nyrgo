@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.16.0 — 2026-10-30 — Website
+
+- `apps/site`: the public page for nyrgo.fun (how to play, the 50 creatures with an element
+  filter, NFTs and supplies, FAQ), built from the game's data and art; static, for Cloudflare
+  Pages. The play button says "coming soon" until `SITE_APP_OPEN=true`.
+
 ## 0.15.0 — 2026-10-30 — Testnet deploy of the NFT contract
 
 - Workflow "Fund testnet account" (`pnpm --filter @nyrgo/api testnet:fund`): tops up a testnet

@@ -1,0 +1,17 @@
+{
+  "name": "@nyrgo/site",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsx build.mts",
+    "preview": "tsx build.mts && npx --yes serve dist"
+  },
+  "dependencies": {
+    "@fontsource-variable/fredoka": "^5.3.0",
+    "@nyrgo/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.23.15"
+  }
+}
