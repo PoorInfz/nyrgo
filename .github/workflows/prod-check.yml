@@ -1,0 +1,33 @@
+name: Production check
+
+# Run by hand: checks that the website, the app and the API answer as expected, and reports each
+# result as an annotation. Read-only; needs no secrets.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check
+        run: |
+          fail=0
+          check() { # name, command
+            if out=$(eval "$2" 2>&1); then echo "::notice title=$1::OK ${out:0:300}"
+            else echo "::error title=$1::FAILED ${out:0:300}"; fail=1; fi
+          }
+          check "website"       "curl -fsS https://nyrgo.fun/ | grep -o '<title>[^<]*'"
+          check "website es"    "curl -fsS https://nyrgo.fun/es/ | grep -o '<title>[^<]*'"
+          check "app"           "curl -fsS https://app.nyrgo.fun/ | grep -o '<title>[^<]*'"
+          check "app route"     "curl -fsS -o /dev/null -w '%{http_code}' https://app.nyrgo.fun/auth/verify"
+          check "api health"    "curl -fsS https://api.nyrgo.fun/health"
+          check "api nft"       "curl -fsS https://api.nyrgo.fun/v1/nft"
+          check "api dex"       "curl -fsS https://api.nyrgo.fun/v1/dex | jq -c '{version, creatures: (.creatures | length)}'"
+          check "api cors"      "curl -fsS -o /dev/null -D - -X OPTIONS https://api.nyrgo.fun/v1/me -H 'Origin: https://app.nyrgo.fun' -H 'Access-Control-Request-Method: GET' | grep -i '^access-control-allow-origin'"
+          check "api render"    "curl -fsS https://nyrgo-api.onrender.com/health"
+          exit $fail
