@@ -46,7 +46,7 @@ async function retry(what, fn) {
     try {
       return await fn();
     } catch (e) {
-      if (i >= TRIES) throw new Error(`${what}: ${e.message}`);
+      if (i >= TRIES) throw new Error(`${what}: ${e.message}`, { cause: e });
       log(`${what} failed (${e.message}), retry ${i}`);
       await sleep(2000 * 2 ** i);
     }
