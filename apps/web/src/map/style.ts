@@ -8,11 +8,18 @@ export const OSM_ATTRIBUTION =
 /** Default glyphs and sprites published by Protomaps; set VITE_MAP_ASSETS_URL to self-host. */
 export const DEFAULT_ASSETS_URL = 'https://protomaps.github.io/basemaps-assets';
 
+/** Zoom of the most detailed tiles we publish; MapLibre enlarges them beyond it. */
+export const TILES_MAX_ZOOM = 15;
+
 /**
- * Map style. With a PMTiles URL it draws the Protomaps basemap from our own file; without one
- * (fresh dev checkout) it draws a plain background so the game layers still work.
+ * Map style. With tiles (a `{z}/{x}/{y}` URL template of our own files, or a PMTiles archive) it
+ * draws the Protomaps basemap; without either (fresh dev checkout) it draws a plain background so
+ * the game layers still work. A template relative to the app (`/tiles/…`) is made absolute with
+ * `origin`, since MapLibre fetches tiles from a worker.
  */
 export function buildStyle(opts: {
+  tilesUrl?: string | undefined;
+  origin?: string | undefined;
   pmtilesUrl?: string | undefined;
   assetsUrl?: string | undefined;
   lang: string;
@@ -23,18 +30,30 @@ export function buildStyle(opts: {
     layers: [{ id: 'background', type: 'background', paint: { 'background-color': '#d8f5e6' } }],
   };
   // Without a basemap nothing needs fonts or icons, so no third-party request is made at all.
-  if (!opts.pmtilesUrl) return background;
+  if (!opts.tilesUrl && !opts.pmtilesUrl) return background;
   const assets = (opts.assetsUrl ?? DEFAULT_ASSETS_URL).replace(/\/+$/, '');
   return {
     ...background,
     glyphs: `${assets}/fonts/{fontstack}/{range}.pbf`,
     sprite: `${assets}/sprites/v4/dark`,
     sources: {
-      protomaps: {
-        type: 'vector',
-        url: `pmtiles://${opts.pmtilesUrl}`,
-        attribution: OSM_ATTRIBUTION,
-      },
+      protomaps: opts.tilesUrl
+        ? {
+            type: 'vector',
+            // joined by hand: URL() would escape the {z}/{x}/{y} placeholders
+            tiles: [
+              opts.tilesUrl.startsWith('/')
+                ? `${(opts.origin ?? '').replace(/\/+$/, '')}${opts.tilesUrl}`
+                : opts.tilesUrl,
+            ],
+            maxzoom: TILES_MAX_ZOOM,
+            attribution: OSM_ATTRIBUTION,
+          }
+        : {
+            type: 'vector',
+            url: `pmtiles://${opts.pmtilesUrl}`,
+            attribution: OSM_ATTRIBUTION,
+          },
     },
     layers: layers('protomaps', namedFlavor('dark'), { lang: opts.lang }),
   };

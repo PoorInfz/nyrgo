@@ -63,6 +63,8 @@ export default function MapView({
       const created = new maplibregl.Map({
         container: container.current,
         style: buildStyle({
+          tilesUrl: import.meta.env.VITE_TILES_URL,
+          origin: window.location.origin,
           pmtilesUrl: import.meta.env.VITE_PMTILES_URL,
           assetsUrl: import.meta.env.VITE_MAP_ASSETS_URL,
           lang,

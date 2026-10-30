@@ -160,6 +160,20 @@ describe('map style', () => {
     expect(s.layers.length).toBeGreaterThan(20);
   });
 
+  it('uses our own tile files, made absolute, ahead of a PMTiles file', () => {
+    const s = buildStyle({
+      tilesUrl: '/tiles/cordoba/{z}/{x}/{y}.pbf',
+      origin: 'https://app.nyrgo.test',
+      pmtilesUrl: '/tiles/cordoba.pmtiles',
+      lang: 'en',
+    });
+    const src = s.sources.protomaps as { tiles: string[]; maxzoom: number; attribution: string };
+    // braces stay unescaped for MapLibre to fill in
+    expect(src.tiles[0]).toBe('https://app.nyrgo.test/tiles/cordoba/{z}/{x}/{y}.pbf');
+    expect(src.maxzoom).toBe(15);
+    expect(src.attribution).toContain('OpenStreetMap');
+  });
+
   it('turns POIs into GeoJSON with lng/lat order', () => {
     const fc = poisToGeoJSON([
       {

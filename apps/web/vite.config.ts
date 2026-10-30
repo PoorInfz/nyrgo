@@ -49,6 +49,15 @@ export default defineConfig({
             },
           },
           {
+            // The basemap tiles of the pilot city: the map keeps working with a weak signal.
+            urlPattern: /\/tiles\/.*\.pbf$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'map-tiles',
+              expiration: { maxEntries: 2000, maxAgeSeconds: 60 * 60 * 24 * 30 },
+            },
+          },
+          {
             // Static content (the Dex) is versioned with an ETag and safe to show offline.
             urlPattern: ({ url }) => url.pathname === '/v1/dex',
             handler: 'StaleWhileRevalidate',

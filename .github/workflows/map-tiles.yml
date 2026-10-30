@@ -1,0 +1,65 @@
+name: Map tiles (Córdoba)
+
+# Run by hand: cuts Córdoba out of the latest Protomaps daily basemap (OpenStreetMap data, ODbL)
+# and commits it as plain tile files under apps/web/public/tiles/cordoba/, which the app serves
+# itself. Run again to refresh the map.
+
+on:
+  workflow_dispatch:
+    inputs:
+      bbox:
+        description: Area as min_lon,min_lat,max_lon,max_lat
+        default: '-4.90,37.80,-4.68,37.96'
+      maxzoom:
+        description: Most detailed zoom (MapLibre enlarges beyond it)
+        default: '15'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: map-tiles
+  cancel-in-progress: false
+
+jobs:
+  tiles:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install the pmtiles tools
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download -R protomaps/go-pmtiles -p '*Linux_x86_64.tar.gz' -O pmtiles.tgz
+          tar xzf pmtiles.tgz pmtiles
+          pip install --quiet pmtiles
+
+      - name: Cut Córdoba from the latest daily build
+        shell: bash
+        env:
+          BBOX: ${{ inputs.bbox }}
+          MAXZOOM: ${{ inputs.maxzoom }}
+        run: |
+          [[ "$BBOX" =~ ^-?[0-9.]+,-?[0-9.]+,-?[0-9.]+,-?[0-9.]+$ ]] || { echo "::error::bad bbox"; exit 1; }
+          [[ "$MAXZOOM" =~ ^[0-9]+$ ]] || { echo "::error::bad maxzoom"; exit 1; }
+          for d in $(seq 0 10); do
+            day=$(date -u -d "-$d day" +%Y%m%d)
+            if curl -sfI "https://build.protomaps.com/$day.pmtiles" > /dev/null; then build=$day; break; fi
+          done
+          [ -n "$build" ] || { echo "::error title=Map tiles::no Protomaps build in the last 10 days"; exit 1; }
+          ./pmtiles extract "https://build.protomaps.com/$build.pmtiles" cordoba.pmtiles \
+            --bbox="$BBOX" --maxzoom="$MAXZOOM"
+          summary=$(python3 tools/explode-pmtiles.py cordoba.pmtiles apps/web/public/tiles/cordoba)
+          echo "$build $summary" > apps/web/public/tiles/cordoba/SOURCE
+          echo "::notice title=Map tiles::Protomaps build $build: $summary"
+
+      - name: Commit
+        run: |
+          git config user.name "nyrgo-bot"
+          git config user.email "nyrgo-bot@users.noreply.github.com"
+          git add apps/web/public/tiles/cordoba
+          if git diff --cached --quiet; then echo "::notice title=Map tiles::no change"; exit 0; fi
+          git commit -m "Map tiles for Córdoba ($(cut -d' ' -f1 apps/web/public/tiles/cordoba/SOURCE))"
+          git push
