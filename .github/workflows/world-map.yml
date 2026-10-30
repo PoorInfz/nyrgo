@@ -1,9 +1,9 @@
 name: World map upload (Protomaps → R2)
 
 # Run by hand: copies the latest Protomaps daily basemap of the whole planet (OpenStreetMap data,
-# ODbL; ~110 GB) into the R2 bucket nyrgo-tiles as planet.pmtiles, streaming it (nothing is
-# stored on the runner). The tiles Worker (apps/tiles) serves it at tiles.nyrgo.fun. Run again
-# to refresh the map. Needs the secrets R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY (an R2 API token
+# ODbL; ~140 GB) into the R2 bucket nyrgo-tiles as planet.pmtiles, in 256 MB parts each fetched
+# and uploaded with retries (nothing is stored on the runner). The tiles Worker (apps/tiles)
+# serves it at tiles.nyrgo.fun. Run again to refresh the map. Needs the secrets R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY (an R2 API token
 # with Object Read & Write on nyrgo-tiles) and CLOUDFLARE_ACCOUNT_ID.
 
 on:
@@ -25,21 +25,30 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 340
     steps:
-      - name: Install rclone
-        run: curl -fsSL https://rclone.org/install.sh | sudo bash
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --filter @nyrgo/tiles
 
       - name: Copy the planet into R2
         shell: bash
+        working-directory: apps/tiles
         env:
           BUILD: ${{ inputs.build }}
-          RCLONE_CONFIG_R2_TYPE: s3
-          RCLONE_CONFIG_R2_PROVIDER: Cloudflare
-          RCLONE_CONFIG_R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          RCLONE_CONFIG_R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          RCLONE_CONFIG_R2_ENDPOINT: https://${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com
-          RCLONE_CONFIG_R2_NO_CHECK_BUCKET: 'true'
+          BUCKET: nyrgo-tiles
+          KEY: planet.pmtiles
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: https://${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com
         run: |
-          if [ -z "$RCLONE_CONFIG_R2_ACCESS_KEY_ID" ] || [ -z "$RCLONE_CONFIG_R2_SECRET_ACCESS_KEY" ]; then
+          if [ -z "$R2_ACCESS_KEY_ID" ] || [ -z "$R2_SECRET_ACCESS_KEY" ]; then
             echo "::error title=World map::Add the secrets R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY"; exit 1
           fi
           if [ -z "$BUILD" ]; then
@@ -49,14 +58,9 @@ jobs:
             done
           fi
           [[ "$BUILD" =~ ^[0-9]{8}$ ]] || { echo "::error title=World map::no Protomaps build found"; exit 1; }
-          src="https://build.protomaps.com/$BUILD.pmtiles"
-          size=$(curl -sfI "$src" | tr -d '\r' | awk 'tolower($1)=="content-length:"{print $2}')
-          echo "::notice title=World map::Protomaps build $BUILD, $((size / 1000000000)) GB"
-          # streamed in 256 MB parts (R2 allows 10,000 parts: up to 2.5 TB)
-          rclone copyurl "$src" r2:nyrgo-tiles/planet.pmtiles \
-            --s3-chunk-size 256M --s3-upload-concurrency 8 --stats 60s --stats-one-line -v
-          got=$(rclone size r2:nyrgo-tiles/planet.pmtiles --json | jq .bytes)
-          if [ "$got" != "$size" ]; then
-            echo "::error title=World map::uploaded $got bytes, expected $size"; exit 1
+          echo "::notice title=World map::Protomaps build $BUILD"
+          # part by part, each with its own retries: a dropped connection repeats one part only
+          if ! SRC="https://build.protomaps.com/$BUILD.pmtiles" node scripts/upload-planet.mjs 2>&1 | tee upload.log; then
+            tail -3 upload.log | while read -r l; do echo "::error title=World map::${l:0:400}"; done
+            exit 1
           fi
-          echo "::notice title=World map::planet.pmtiles in R2: $got bytes (build $BUILD)"
