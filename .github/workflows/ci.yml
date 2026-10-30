@@ -132,7 +132,7 @@ jobs:
             -e DATABASE_URL=postgres://nyrgo:nyrgo@db:5432/nyrgo \
             -e APP_URL=https://app.nyrgo.test -e PUBLIC_API_URL=https://api.nyrgo.test \
             -e MAIL_DRIVER=resend -e RESEND_API_KEY=re_ci_not_a_real_key -e 'MAIL_FROM=nyrGo! <hola@nyrgo.test>' \
-            -e SPAWN_SECRET=ci-spawn-secret-0123456789abcdef0123456789 \
+            -e SPAWN_SECRET="$(openssl rand -hex 32)" \
             nyrgo-api
           for i in $(seq 1 30); do curl -fsS localhost:8080/health && break; sleep 2; done
           curl -fsS localhost:8080/v1/dex > /dev/null
