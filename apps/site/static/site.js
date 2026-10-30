@@ -1,4 +1,4 @@
-/* global document, window, navigator, localStorage */
+/* global document, window */
 
 // Language: a choice made with the switch is remembered; on a first visit to the English page,
 // a Spanish browser is sent to /es/ once.
