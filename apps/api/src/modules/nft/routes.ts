@@ -5,6 +5,7 @@ import type { AppConfig } from '../../config.js';
 import { withTx, type Db } from '../../db.js';
 import { HttpProblem } from '../../http/problem.js';
 import { requireAuth } from '../auth/sessions.js';
+import { isAttested } from '../attest/routes.js';
 import { listOwned, loadOwned } from '../creatures/owned.js';
 import { renderCard } from './card.js';
 import { ChainUnavailable, editionOf, type NftChain, type TokenView } from './chain.js';
@@ -25,7 +26,12 @@ const MARKET_CACHE_MS = 10_000;
  */
 export async function nftRoutes(
   app: FastifyInstance,
-  { db, config, chain }: { db: Db; config: AppConfig; chain: NftChain },
+  {
+    db,
+    config,
+    chain,
+    requireAttestation = false,
+  }: { db: Db; config: AppConfig; chain: NftChain; requireAttestation?: boolean },
 ) {
   const network = config.near.network;
   const urls = (id: string) => ({
@@ -157,6 +163,12 @@ export async function nftRoutes(
       }
       const account = who[0].account_id;
       if (!account) throw new HttpProblem('wallet_required', 'Link a NEAR account first');
+      if (requireAttestation && !(await isAttested(db, auth.userId))) {
+        throw new HttpProblem(
+          'attest_required',
+          'Open nyrGo! in the Android app to verify this device',
+        );
+      }
 
       // 1. Lock the creature for the mint, so it cannot evolve or be minted twice meanwhile.
       const creature = await withTx(db, async (c) => {

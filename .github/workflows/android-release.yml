@@ -1,0 +1,61 @@
+name: Android release (AAB for Google Play)
+
+# Run by hand: builds the Android app bundle signed with the upload key, ready to upload to a
+# Google Play testing track. Needs the secrets ANDROID_KEYSTORE_BASE64 (the .jks, base64),
+# ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD. See docs/ANDROID.md.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bundle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build the web app and copy it into the Android project
+        working-directory: apps/mobile
+        run: pnpm sync
+
+      - name: Build the signed bundle
+        working-directory: apps/mobile/android
+        shell: bash
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_VERSION_CODE: ${{ github.run_number }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "::error title=Android release::Add the upload key secrets (see docs/ANDROID.md)"; exit 1
+          fi
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          export ANDROID_KEYSTORE_FILE="$RUNNER_TEMP/upload.jks"
+          ./gradlew bundleRelease --no-daemon
+          rm -f "$RUNNER_TEMP/upload.jks"
+          echo "::notice title=Android release::versionCode $ANDROID_VERSION_CODE built"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nyrgo-android-release
+          path: apps/mobile/android/app/build/outputs/bundle/release/*.aab

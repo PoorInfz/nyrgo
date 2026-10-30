@@ -1,6 +1,7 @@
 import type { PoolClient } from 'pg';
 import { DEFAULT_CONFIG, canUseWeb3, type AgeBand } from '@nyrgo/shared';
 import { PLAYER_TZ_SQL } from '../progress/rewards.js';
+import { isAttested } from '../attest/routes.js';
 
 /** A tip in yoctoNEAR. */
 export const tipYocto = () => BigInt(DEFAULT_CONFIG.tips.amountMilliNear) * 10n ** 21n;
@@ -13,7 +14,8 @@ export type NoTip =
   | 'daily_limit'
   | 'too_soon'
   | 'too_close'
-  | 'pool_empty';
+  | 'pool_empty'
+  | 'not_verified';
 
 export interface TipAward {
   id: string;
@@ -36,7 +38,7 @@ export const nearString = (yocto: bigint) => {
  */
 export async function awardTip(
   c: PoolClient,
-  opts: { enabled: boolean; network: string },
+  opts: { enabled: boolean; network: string; requireAttestation?: boolean },
   userId: string,
   spawnId: string,
   captureId: string,
@@ -76,6 +78,7 @@ export async function awardTip(
   if (!u || !canUseWeb3(u.age_band)) return none('not_adult');
   if (!u.account_id) return none('no_wallet');
   if (u.review || u.risk >= cfg.maxRisk) return none('under_review');
+  if (opts.requireAttestation && !(await isAttested(c, userId))) return none('not_verified');
   if (u.today >= cfg.maxPerDay) return none('daily_limit');
   if (u.minutes_since !== null && u.minutes_since < cfg.minIntervalMin) return none('too_soon');
   if (u.metres_from_last !== null && u.metres_from_last < cfg.minDistanceM) {

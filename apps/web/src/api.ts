@@ -395,6 +395,20 @@ export function createApi(baseUrl: string) {
     nearUnlink: () => call<void>('DELETE', '/v1/me/wallet'),
     /** The card image a minted creature NFT shows in wallets. */
     market: () => call<Market>('GET', '/v1/market'),
+    attestStatus: () =>
+      call<{
+        enabled: boolean;
+        verified: boolean;
+        until: string | null;
+        lastReason: string | null;
+      }>('GET', '/v1/me/attest'),
+    attestNonce: () =>
+      call<{ nonce: string; cloudProjectNumber: string; packageName: string }>(
+        'POST',
+        '/v1/me/attest/nonce',
+      ),
+    attest: (nonce: string, token: string) =>
+      call<{ verified: true; until: string }>('POST', '/v1/me/attest', { nonce, token }),
     tips: () => call<MyTips>('GET', '/v1/me/tips'),
     nftCardUrl: (id: string) => `${baseUrl}/v1/nft/cards/${encodeURIComponent(id)}.png`,
     /** 404 when creature NFTs are switched off on this server. */

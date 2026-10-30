@@ -22,7 +22,12 @@ export interface Incoming extends Fix {
 }
 
 export type SignalKind =
-  'teleport' | 'impossible_speed' | 'clock_skew' | 'constant_accuracy' | 'mock_location';
+  | 'teleport'
+  | 'impossible_speed'
+  | 'clock_skew'
+  | 'constant_accuracy'
+  | 'mock_location'
+  | 'attestation_failed';
 
 export interface Signal {
   kind: SignalKind;
@@ -55,6 +60,8 @@ export const SCORES: Record<SignalKind, number> = {
   constant_accuracy: 5,
   // The native app read it from Android itself: a location spoofing app is running.
   mock_location: 40,
+  // Play Integrity said the app or the device is not genuine.
+  attestation_failed: 30,
 };
 
 const EARTH_RADIUS_M = 6_371_008.8;

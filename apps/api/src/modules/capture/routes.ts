@@ -164,7 +164,7 @@ export async function captureRoutes(
     db: Db;
     syncNfts?: (userId: string) => Promise<void>;
     /** NEAR tips for walking to a creature and catching it (see tips/award.ts). */
-    tips?: { enabled: boolean; network: string };
+    tips?: { enabled: boolean; network: string; requireAttestation?: boolean };
   },
 ) {
   const cap = DEFAULT_CONFIG.capture;

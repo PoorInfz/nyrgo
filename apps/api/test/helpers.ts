@@ -7,6 +7,7 @@ import { MemoryMailer } from '../src/modules/auth/mailer.js';
 import type { NearRpc } from '../src/modules/wallet/rpc.js';
 import type { NftChain } from '../src/modules/nft/chain.js';
 import type { TipChain } from '../src/modules/tips/chain.js';
+import type { IntegrityDecoder } from '../src/modules/attest/google.js';
 
 export const TEST_DB_URL = process.env.TEST_DATABASE_URL;
 
@@ -22,6 +23,7 @@ export async function makeTestApp(
     nearRpc?: NearRpc;
     nftChain?: NftChain;
     tipChain?: TipChain;
+    integrityDecoder?: IntegrityDecoder;
     env?: Record<string, string>;
   } = {},
 ): Promise<TestApp> {
@@ -40,6 +42,7 @@ export async function makeTestApp(
     ...(opts.nearRpc ? { nearRpc: opts.nearRpc } : {}),
     ...(opts.nftChain ? { nftChain: opts.nftChain } : {}),
     ...(opts.tipChain ? { tipChain: opts.tipChain } : {}),
+    ...(opts.integrityDecoder ? { integrityDecoder: opts.integrityDecoder } : {}),
   });
   return {
     app,

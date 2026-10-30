@@ -25,6 +25,8 @@ import { nftRoutes } from './modules/nft/routes.js';
 import { Syncer } from './modules/nft/service.js';
 import { nearTipChain, type TipChain } from './modules/tips/chain.js';
 import { tipsRoutes } from './modules/tips/routes.js';
+import { attestRoutes } from './modules/attest/routes.js';
+import { googleDecoder, type IntegrityDecoder } from './modules/attest/google.js';
 
 export interface AppDeps {
   config: AppConfig;
@@ -37,6 +39,8 @@ export interface AppDeps {
   nftChain?: NftChain;
   /** Overrides the treasury client for tips (tests pass a fake chain). */
   tipChain?: TipChain;
+  /** Overrides Google's Play Integrity decoder (tests pass a fake). */
+  integrityDecoder?: IntegrityDecoder;
 }
 
 const STATE_CHANGING = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
@@ -48,6 +52,7 @@ export async function buildApp({
   nearRpc,
   nftChain,
   tipChain,
+  integrityDecoder,
 }: AppDeps): Promise<FastifyInstance> {
   const app = Fastify({
     logger:
@@ -161,9 +166,19 @@ export async function buildApp({
     network: config.near.network,
     treasury: tips?.treasury ?? null,
   });
+  const attest = config.attest;
+  await app.register(attestRoutes, {
+    db,
+    cfg: attest,
+    decode: attest ? (integrityDecoder ?? googleDecoder(attest.serviceAccountJson)) : null,
+  });
   await app.register(captureRoutes, {
     db,
-    tips: { enabled: tips !== null, network: config.near.network },
+    tips: {
+      enabled: tips !== null,
+      network: config.near.network,
+      requireAttestation: config.rewardsRequireAttestation,
+    },
     ...(syncer ? { syncNfts: (userId: string) => syncer.forPlayer(userId) } : {}),
   });
   await app.register(battleRoutes, { db });
@@ -171,7 +186,14 @@ export async function buildApp({
   await app.register(contentRoutes);
   // Own plugin scope: the token hook only applies to /admin/v1/*.
   await app.register(adminRoutes, { db, config });
-  if (chain) await app.register(nftRoutes, { db, config, chain });
+  if (chain) {
+    await app.register(nftRoutes, {
+      db,
+      config,
+      chain,
+      requireAttestation: config.rewardsRequireAttestation,
+    });
+  }
   await app.register(walletRoutes, {
     db,
     config,

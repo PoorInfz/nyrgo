@@ -55,6 +55,16 @@ const EnvSchema = Type.Object({
   NEAR_TREASURY_ACCOUNT: Type.String({ default: '' }),
   /** Who the signed message is for (NEP-413 `recipient`); wallets show it to the player. */
   NEAR_SIGN_RECIPIENT: Type.String({ minLength: 1, maxLength: 64, default: 'nyrgo' }),
+  /** Android package checked by Play Integrity. */
+  PLAY_PACKAGE_NAME: Type.String({ default: 'fun.nyrgo.app' }),
+  /** Google Cloud project number linked to the app in Play Console (public). */
+  PLAY_CLOUD_PROJECT_NUMBER: Type.String({ default: '' }),
+  /** Service account key JSON with the Play Integrity API. Secret. Empty: device checks off. */
+  PLAY_INTEGRITY_SERVICE_ACCOUNT: Type.String({ default: '' }),
+  /** Accept builds not installed from Google Play (testnet test APKs). */
+  PLAY_ALLOW_UNRECOGNIZED_APP: Type.Boolean({ default: false }),
+  /** NEAR tips and NFT mints only for players whose Android app passed the device check. */
+  REWARDS_REQUIRE_ATTESTATION: Type.Boolean({ default: false }),
   /** Seeds wild spawns. Anyone holding it can predict where creatures appear. */
   SPAWN_SECRET: Type.String({ minLength: 16, default: 'dev-only-spawn-secret-change-me' }),
 });
@@ -81,6 +91,14 @@ export interface AppConfig {
   /** Run scheduled jobs (retention, risk decay) in this process. */
   jobsEnabled: boolean;
   worldOnDemand: boolean;
+  /** Null when device checks are off. */
+  attest: {
+    packageName: string;
+    cloudProjectNumber: string;
+    serviceAccountJson: string;
+    allowUnrecognizedApp: boolean;
+  } | null;
+  rewardsRequireAttestation: boolean;
   spawnSecret: string;
   admins: AdminAccount[];
   publicApiUrl: string;
@@ -167,6 +185,23 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
       'NEAR_NFT_CONTRACT, NEAR_MINTER_ACCOUNT and NEAR_MINTER_KEY go together (all set or none)',
     );
   }
+  if (env.PLAY_INTEGRITY_SERVICE_ACCOUNT) {
+    let sa: { client_email?: string; private_key?: string };
+    try {
+      sa = JSON.parse(env.PLAY_INTEGRITY_SERVICE_ACCOUNT);
+    } catch {
+      throw new ConfigError('PLAY_INTEGRITY_SERVICE_ACCOUNT must be the service account key JSON');
+    }
+    if (!sa.client_email || !sa.private_key) {
+      throw new ConfigError('PLAY_INTEGRITY_SERVICE_ACCOUNT needs client_email and private_key');
+    }
+    if (!/^\d{6,20}$/.test(env.PLAY_CLOUD_PROJECT_NUMBER)) {
+      throw new ConfigError('PLAY_CLOUD_PROJECT_NUMBER must be the Google Cloud project number');
+    }
+  }
+  if (env.REWARDS_REQUIRE_ATTESTATION && !env.PLAY_INTEGRITY_SERVICE_ACCOUNT) {
+    throw new ConfigError('REWARDS_REQUIRE_ATTESTATION needs PLAY_INTEGRITY_SERVICE_ACCOUNT');
+  }
   if (env.NEAR_TREASURY_ACCOUNT && !env.NEAR_MINTER_KEY) {
     throw new ConfigError(
       'NEAR_TREASURY_ACCOUNT needs NEAR_MINTER_KEY (it signs for the treasury)',
@@ -206,6 +241,15 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
     secureCookies: prod,
     jobsEnabled: env.JOBS_ENABLED,
     worldOnDemand: env.WORLD_ON_DEMAND,
+    attest: env.PLAY_INTEGRITY_SERVICE_ACCOUNT
+      ? {
+          packageName: env.PLAY_PACKAGE_NAME,
+          cloudProjectNumber: env.PLAY_CLOUD_PROJECT_NUMBER,
+          serviceAccountJson: env.PLAY_INTEGRITY_SERVICE_ACCOUNT,
+          allowUnrecognizedApp: env.PLAY_ALLOW_UNRECOGNIZED_APP,
+        }
+      : null,
+    rewardsRequireAttestation: env.REWARDS_REQUIRE_ATTESTATION,
     spawnSecret: env.SPAWN_SECRET,
     admins: parseAdmins(env.ADMIN_TOKENS),
     publicApiUrl: env.PUBLIC_API_URL.replace(/\/+$/, ''),

@@ -176,6 +176,27 @@ describe.skipIf(!TEST_DB_URL)('NEAR tips for walking to a creature and catching 
     expect(tips.map((x: { status: string }) => x.status)).toEqual(['unknown', 'failed']);
   });
 
+  it('can require a device verified by the Android app', async () => {
+    const p = await player();
+    const strict = { ...on, requireAttestation: true };
+    const spawnAt = somewhere();
+    const { rows } = await t.db.query<{ id: string }>(
+      `INSERT INTO spawns (h3_r9, definition_id, level, geom, seed, window_start, expires_at)
+       VALUES (h3_lat_lng_to_cell(ST_SetSRID(ST_MakePoint($2, $1), 4326), 9), 'gwisp', 4,
+               ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography, $3,
+               now() - interval '1 minute', now() + interval '10 minutes') RETURNING id`,
+      [spawnAt.lat, spawnAt.lng, randomBytes(6).readUIntBE(0, 6)],
+    );
+    const tip = () => withTx(t.db, (c) => awardTip(c, strict, p.id, rows[0]!.id, randomUUID()));
+    expect((await tip()).reason).toBe('not_verified');
+    await t.db.query(
+      `INSERT INTO device_attestations (user_id, ok, verdict, expires_at)
+       VALUES ($1, true, '{}', now() + interval '1 hour')`,
+      [p.id],
+    );
+    expect((await tip()).tip).not.toBeNull();
+  });
+
   it('shows the pot publicly', async () => {
     const res = (await injectAs(t.app, { method: 'GET', url: '/v1/rewards' })).json();
     expect(res).toMatchObject({

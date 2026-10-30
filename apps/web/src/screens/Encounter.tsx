@@ -42,6 +42,7 @@ const TIP_HINTS = new Set([
   'daily_limit',
   'pool_empty',
   'under_review',
+  'not_verified',
 ]);
 
 export function Encounter({

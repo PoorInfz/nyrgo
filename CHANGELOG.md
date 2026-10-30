@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.23.0 — 2026-10-30 — Android app and device checks
+
+- `apps/mobile`: the game as an Android app (Capacitor 8, `fun.nyrgo.app`), built as a debug APK on
+  every CI run; manual workflow "Android release" builds the signed bundle for Google Play.
+- Native location reports Android's own "mocked" flag: the server pauses interactions for 15
+  minutes and records a strong anti-cheat signal (`mock_location`).
+- Play Integrity: single-use nonce, token decoded by Google with a service account, verdict
+  judged on package, nonce, freshness, app recognition and device integrity; a pass lasts 24 h,
+  a failure adds risk. `REWARDS_REQUIRE_ATTESTATION=true` closes NEAR tips and NFT mints to
+  verified Android devices. See `docs/ANDROID.md`.
+
 ## 0.22.0 — 2026-10-30 — Rewards in NEAR from trading fees
 
 - Creatures contract: the game's own market (`market_list`, `market_unlist`, `market_buy`, 5 %

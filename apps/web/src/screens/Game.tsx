@@ -6,6 +6,7 @@ import { Play } from './Play';
 import { DexScreen } from './DexScreen';
 import { Collection } from './Collection';
 import { Bag } from './Bag';
+import { ensureDeviceCheck } from '../near/deviceCheck';
 
 type Tab = 'play' | 'collection' | 'bag' | 'dex' | 'profile';
 
@@ -65,6 +66,10 @@ export function Game({
 }) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>('play');
+  // Android app: today's device check, quietly (rewards may need it; play never does)
+  useEffect(() => {
+    void ensureDeviceCheck(api).catch(() => undefined);
+  }, [api]);
   const panel = useRef<HTMLDivElement>(null);
   const first = useRef(true);
   // Moving focus into the new panel lets keyboard and screen-reader users follow the change.

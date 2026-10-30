@@ -152,6 +152,7 @@ export const resources = {
           daily_limit: 'Ya has ganado todos los tips de hoy.',
           pool_empty: 'El bote de hoy se ha agotado. Mañana habrá más.',
           under_review: 'Tu cuenta está en revisión; los tips están en pausa.',
+          not_verified: 'Los tips en NEAR solo se ganan desde la app de Android verificada.',
         },
       },
       market: {
@@ -216,6 +217,7 @@ export const resources = {
           'Firma con la propia cuenta de NEAR, no con una clave de otra aplicación.',
         wallet_unavailable: 'No se pudo comprobar con NEAR. Inténtalo en un momento.',
         wallet_required: 'Primero vincula tu cuenta de NEAR en el Perfil.',
+        attest_required: 'Abre nyrGo! en la app de Android para verificar tu dispositivo.',
         creature_onchain: 'Esta criatura es un NFT: no puede evolucionar ni volver a enviarse.',
         nft_unavailable:
           'No se pudo conectar con NEAR. Tu criatura sigue en el juego; inténtalo de nuevo.',
@@ -500,6 +502,7 @@ export const resources = {
           daily_limit: 'You have earned all of today’s tips.',
           pool_empty: 'Today’s pot is used up. There will be more tomorrow.',
           under_review: 'Your account is under review; tips are paused.',
+          not_verified: 'NEAR tips are only earned in the verified Android app.',
         },
       },
       market: {
@@ -563,6 +566,7 @@ export const resources = {
         wallet_key_not_full_access: 'Sign with the NEAR account itself, not another app’s key.',
         wallet_unavailable: 'NEAR could not be reached. Try again in a moment.',
         wallet_required: 'Link your NEAR account in the Profile first.',
+        attest_required: 'Open nyrGo! in the Android app to verify your device.',
         creature_onchain: 'This creature is an NFT: it cannot evolve or be sent again.',
         nft_unavailable:
           'NEAR could not be reached. Your creature is still in the game; try again.',
