@@ -20,7 +20,8 @@
   looked up offline from where they play (`players.time_zone`).
 - `apps/tiles`: a Worker serving the street map for anywhere (tiles.nyrgo.fun) from PMTiles
   archives in R2, cached at the edge; workflow "World map upload" streams the planet basemap
-  from Protomaps into R2. The app switches to it once the upload is done.
+  from Protomaps into R2 part by part (139 GB). The app now draws streets anywhere from it; the
+  Córdoba-only tile files are gone.
 
 ## 0.18.0 — 2026-10-30 — Live on testnet
 
