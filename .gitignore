@@ -12,3 +12,4 @@ playwright-report/
 test-results/
 data/osm/
 *.pmtiles
+!apps/tiles/test/fixtures/*.pmtiles
