@@ -25,6 +25,7 @@ import { nftRoutes } from './modules/nft/routes.js';
 import { Syncer } from './modules/nft/service.js';
 import { nearTipChain, type TipChain } from './modules/tips/chain.js';
 import { tipsRoutes } from './modules/tips/routes.js';
+import { socialRoutes } from './modules/social/routes.js';
 import { attestRoutes } from './modules/attest/routes.js';
 import { googleDecoder, type IntegrityDecoder } from './modules/attest/google.js';
 
@@ -182,6 +183,7 @@ export async function buildApp({
     ...(syncer ? { syncNfts: (userId: string) => syncer.forPlayer(userId) } : {}),
   });
   await app.register(battleRoutes, { db });
+  await app.register(socialRoutes, { db });
   await app.register(economyRoutes, { db });
   await app.register(contentRoutes);
   // Own plugin scope: the token hook only applies to /admin/v1/*.

@@ -65,7 +65,7 @@ export async function ensureStarterKit(c: PoolClient, userId: string): Promise<v
   );
 }
 
-async function markDex(c: PoolClient, userId: string, creatureId: string, caught: boolean) {
+export async function markDex(c: PoolClient, userId: string, creatureId: string, caught: boolean) {
   await c.query(
     `INSERT INTO dex_entries (user_id, definition_id, caught_at, caught_count)
      VALUES ($1, $2, CASE WHEN $3 THEN now() END, CASE WHEN $3 THEN 1 ELSE 0 END)
@@ -181,9 +181,11 @@ export async function captureRoutes(
           level: number;
           expires_at: Date;
           live: boolean;
+          event: boolean;
         }>(
           `SELECT definition_id, level, expires_at,
-                  window_start <= now() AND expires_at > now() AS live
+                  window_start <= now() AND expires_at > now() AS live,
+                  event_id IS NOT NULL AS event
              FROM spawns WHERE id = $1`,
           [req.params.id],
         );
@@ -240,7 +242,14 @@ export async function captureRoutes(
               req.params.id,
               spawn.expires_at,
               cap.encounterGraceMin,
-              encounterLevel(DEFAULT_CONFIG.spawns, spawn.level, await playerLevel(c, auth.userId)),
+              // an event's creature is the same for everyone; wild ones follow the player's level
+              spawn.event
+                ? spawn.level
+                : encounterLevel(
+                    DEFAULT_CONFIG.spawns,
+                    spawn.level,
+                    await playerLevel(c, auth.userId),
+                  ),
             ],
           );
           enc = ins.rows[0]!;

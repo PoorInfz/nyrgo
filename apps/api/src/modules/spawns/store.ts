@@ -13,6 +13,8 @@ export interface VisibleSpawn {
   lng: number;
   distanceM: number;
   expiresAt: string;
+  /** The event this creature appears for, if any. */
+  eventId: string | null;
 }
 
 /** The player's cell and the rings around it. */
@@ -121,11 +123,12 @@ export async function visibleSpawns(
     lng: number;
     distance_m: number;
     expires_at: Date;
+    event_id: string | null;
   }>(
-    `SELECT s.id, s.definition_id,
+    `SELECT s.id, s.definition_id, s.event_id,
             COALESCE(
               (SELECT e.level FROM encounters e WHERE e.spawn_id = s.id AND e.user_id = $5),
-              CASE WHEN $6::int IS NULL THEN s.level
+              CASE WHEN $6::int IS NULL OR s.event_id IS NOT NULL THEN s.level
                    ELSE LEAST(s.level, GREATEST(1,
                           COALESCE((SELECT p.level FROM players p WHERE p.user_id = $5), 1) + $6::int))
               END) AS level,
@@ -158,5 +161,6 @@ export async function visibleSpawns(
     lng: r.lng,
     distanceM: Math.round(r.distance_m),
     expiresAt: r.expires_at.toISOString(),
+    eventId: r.event_id,
   }));
 }

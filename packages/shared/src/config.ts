@@ -151,6 +151,20 @@ export interface TipsConfig {
   maxRisk: number;
 }
 
+/** Friends and face-to-face trades. */
+export interface SocialConfig {
+  maxFriends: number;
+  /** Friend requests one player may send per day. */
+  friendRequestsPerDay: number;
+  /** Both players must be this close, with a fix this recent, for a trade. */
+  tradeMaxDistanceM: number;
+  tradeFixMaxAgeS: number;
+  /** A proposed trade lapses after this long. */
+  tradeTtlMin: number;
+  /** Completed trades per player and local day. */
+  tradesPerDay: number;
+}
+
 export interface GameConfig {
   version: number;
   world: WorldConfig;
@@ -159,6 +173,7 @@ export interface GameConfig {
   spawns: SpawnConfig;
   antiCheat: AntiCheatConfig;
   tips: TipsConfig;
+  social: SocialConfig;
 }
 
 export const DEFAULT_CONFIG: GameConfig = {
@@ -238,6 +253,14 @@ export const DEFAULT_CONFIG: GameConfig = {
     encounterGraceMin: 2,
     starterKit: { 'vault-basic': 15, patch: 3 },
     starterLevel: 5,
+  },
+  social: {
+    maxFriends: 200,
+    friendRequestsPerDay: 20,
+    tradeMaxDistanceM: 100,
+    tradeFixMaxAgeS: 120,
+    tradeTtlMin: 10,
+    tradesPerDay: 5,
   },
   tips: {
     amountMilliNear: 5,

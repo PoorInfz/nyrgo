@@ -5,6 +5,7 @@ import { Type, type Static } from '@sinclair/typebox';
 import type { AdminAccount, AdminRole, AppConfig } from '../../config.js';
 import { withTx, type Db } from '../../db.js';
 import { HttpProblem } from '../../http/problem.js';
+import { cancelEvent, createEvent } from '../events/service.js';
 
 /**
  * The admin API: a separate prefix (`/admin/v1`), separate credentials (bearer tokens from
@@ -28,6 +29,18 @@ const CloseBody = Type.Object(
 const ReasonBody = Type.Object({ reason: Reason }, { additionalProperties: false });
 const PoiBody = Type.Object(
   { hidden: Type.Boolean(), reason: Reason },
+  { additionalProperties: false },
+);
+const EventBody = Type.Object(
+  {
+    title: Type.String({ minLength: 3, maxLength: 60 }),
+    poiId: Type.String({ format: 'uuid' }),
+    creatureId: Type.String({ minLength: 2, maxLength: 32 }),
+    level: Type.Integer({ minimum: 1, maximum: 50 }),
+    startsAt: Type.String({ format: 'date-time' }),
+    durationMin: Type.Integer({ minimum: 15, maximum: 240 }),
+    reason: Reason,
+  },
   { additionalProperties: false },
 );
 const ListQuery = Type.Object(
@@ -229,6 +242,50 @@ export async function adminRoutes(
           req.body.reason,
         );
         return after[0];
+      });
+    },
+  );
+
+  // ------------------------------------------------------------------ events
+
+  app.get('/admin/v1/events', async () => {
+    const { rows } = await db.query(
+      `SELECT e.id, e.title, e.definition_id AS "creatureId", e.level, e.starts_at AS "startsAt",
+              e.ends_at AS "endsAt", e.cancelled_at AS "cancelledAt", p.name AS "placeName",
+              (SELECT count(*)::int FROM encounters x WHERE x.spawn_id = e.spawn_id AND x.status = 'caught') AS caught
+         FROM events e JOIN pois p ON p.id = e.poi_id
+        WHERE e.ends_at > now() - interval '7 days'
+        ORDER BY e.starts_at DESC LIMIT 100`,
+    );
+    return { events: rows };
+  });
+
+  /** Schedules an event at a place. Admin role. */
+  app.post<{ Body: Static<typeof EventBody> }>(
+    '/admin/v1/events',
+    { schema: { body: EventBody } },
+    async (req) => {
+      const admin = req.admin!;
+      requireRole(admin, 'admin');
+      return withTx(db, async (c) => {
+        const { reason, ...input } = req.body;
+        const made = await createEvent(c, input, admin.name);
+        await audit(c, admin, 'event.create', null, { ...input, ...made }, reason);
+        return made;
+      });
+    },
+  );
+
+  app.post<{ Params: IdParams; Body: Static<typeof ReasonBody> }>(
+    '/admin/v1/events/:id/cancel',
+    { schema: { params: IdParams, body: ReasonBody } },
+    async (req) => {
+      const admin = req.admin!;
+      requireRole(admin, 'admin');
+      return withTx(db, async (c) => {
+        await cancelEvent(c, req.params.id);
+        await audit(c, admin, 'event.cancel', { id: req.params.id }, null, req.body.reason);
+        return { cancelled: true };
       });
     },
   );

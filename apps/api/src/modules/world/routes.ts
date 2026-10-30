@@ -8,6 +8,7 @@ import { requireAuth } from '../auth/sessions.js';
 import { recordFix } from '../anticheat/movement.js';
 import { cellsAround, ensureSpawns, visibleSpawns } from '../spawns/store.js';
 import { areasOf, requestAreas } from './areas.js';
+import { eventsNear } from '../events/service.js';
 import { updateTimeZone } from '../progress/rewards.js';
 
 export const LocationSample = Type.Object(
@@ -35,6 +36,10 @@ const ReportBody = Type.Object(
 );
 
 const PoiParams = Type.Object({ id: Type.String({ format: 'uuid' }) });
+const NearQuery = Type.Object({
+  lat: Type.Number({ minimum: -90, maximum: 90 }),
+  lng: Type.Number({ minimum: -180, maximum: 180 }),
+});
 
 export const OSM_ATTRIBUTION = '© OpenStreetMap contributors (ODbL)';
 
@@ -145,6 +150,13 @@ export async function worldRoutes(
         })),
       };
     },
+  );
+
+  /** Events running now or soon near a point, for the map (public). */
+  app.get<{ Querystring: Static<typeof NearQuery> }>(
+    '/v1/events',
+    { schema: { querystring: NearQuery } },
+    async (req) => ({ events: await eventsNear(db, req.query.lat, req.query.lng) }),
   );
 
   /** One report per player and POI; enough distinct reports hide the POI pending review. */
