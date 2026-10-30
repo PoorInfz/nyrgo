@@ -1,0 +1,54 @@
+name: Import world (OpenStreetMap → production)
+
+# Run by hand: loads Córdoba's places and exclusion zones from OpenStreetMap into the production
+# database. Safe to run again (the import replaces the area it covers). Needs the repository
+# secret PROD_DATABASE_URL (Neon's direct connection string). Data © OpenStreetMap contributors.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Only fetch and classify, do not write to the database
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: world-import
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared package
+        run: pnpm --filter @nyrgo/shared build
+
+      - name: Import
+        working-directory: apps/api
+        shell: bash
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+        run: |
+          flags=""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then flags="--dry-run"; fi
+          pnpm world:import $flags 2>&1 | tee import.log
+          # the summary as annotations, readable without the log
+          grep -E '^(elements|POIs|exclusion|loaded)' import.log | while read -r l; do
+            echo "::notice title=World import::${l:0:500}"
+          done
