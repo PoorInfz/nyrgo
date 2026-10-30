@@ -9,7 +9,9 @@
   time…" meanwhile. At most 200 areas wait at once.
 - The game day (daily gold cap, missions, rewarded wins) follows each player's local time zone,
   looked up offline from where they play (`players.time_zone`).
-- Still Córdoba-only: the street map (tiles).
+- `apps/tiles`: a Worker serving the street map for anywhere (tiles.nyrgo.fun) from PMTiles
+  archives in R2, cached at the edge; workflow "World map upload" streams the planet basemap
+  from Protomaps into R2. The app switches to it once the upload is done.
 
 ## 0.18.0 — 2026-10-30 — Live on testnet
 

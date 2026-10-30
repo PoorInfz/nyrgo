@@ -1,0 +1,11 @@
+// The street map for anywhere (tiles.nyrgo.fun): vector tiles read from PMTiles archives in the
+// R2 bucket nyrgo-tiles (planet.pmtiles, uploaded by the "World map upload" workflow).
+//   deploy: npx wrangler deploy --config apps/tiles/wrangler.jsonc
+{
+  "name": "nyrgo-tiles",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "routes": [{ "pattern": "tiles.nyrgo.fun", "custom_domain": true }],
+  "r2_buckets": [{ "binding": "BUCKET", "bucket_name": "nyrgo-tiles" }],
+  "vars": { "ALLOWED_ORIGINS": "https://app.nyrgo.fun,http://localhost:5173" },
+}

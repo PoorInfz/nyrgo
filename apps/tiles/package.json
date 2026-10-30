@@ -1,0 +1,17 @@
+{
+  "name": "@nyrgo/tiles",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "pmtiles": "4.5.0"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.5"
+  }
+}

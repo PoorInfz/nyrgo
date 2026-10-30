@@ -1,6 +1,7 @@
 name: Deploy to Cloudflare
 
-# Run by hand: builds and deploys the game app (app.nyrgo.fun) or the website (nyrgo.fun) as
+# Run by hand: builds and deploys the game app (app.nyrgo.fun), the website (nyrgo.fun) or the
+# street map service (tiles.nyrgo.fun) as
 # Cloudflare Workers. Needs the repository secrets CLOUDFLARE_API_TOKEN (template "Edit Cloudflare
 # Workers") and CLOUDFLARE_ACCOUNT_ID. Pushes to main also deploy through Cloudflare's own builds.
 
@@ -10,7 +11,7 @@ on:
       target:
         description: What to deploy
         type: choice
-        options: [app, site]
+        options: [app, site, tiles]
         default: app
 
 permissions:
@@ -47,9 +48,11 @@ jobs:
           if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
             echo "::error title=Cloudflare::Add the secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID"; exit 1
           fi
-          if [ "$TARGET" = app ]; then pkg=@nyrgo/web; cfg=apps/web/wrangler.jsonc
-          else pkg=@nyrgo/site; cfg=apps/site/wrangler.jsonc; fi
-          pnpm --filter "$pkg..." build
+          case "$TARGET" in
+            app) pnpm --filter "@nyrgo/web..." build; cfg=apps/web/wrangler.jsonc ;;
+            site) pnpm --filter "@nyrgo/site..." build; cfg=apps/site/wrangler.jsonc ;;
+            tiles) cfg=apps/tiles/wrangler.jsonc ;; # wrangler bundles it
+          esac
           if npx --yes wrangler@4 deploy --config "$cfg" > deploy.log 2>&1; then status=notice; else status=error; fi
           cat deploy.log
           # the outcome as annotations, readable without the log
