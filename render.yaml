@@ -1,0 +1,45 @@
+# Render Blueprint for the game API (api.nyrgo.fun). Render → New → Blueprint → this repository.
+# Values marked sync: false are asked for in Render's dashboard and never stored in the repo.
+services:
+  - type: web
+    name: nyrgo-api
+    runtime: docker
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: .
+    plan: starter
+    region: frankfurt
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: '8080'
+      - key: API_PORT
+        value: '8080'
+      - key: APP_URL
+        value: https://app.nyrgo.fun
+      - key: CORS_ORIGINS
+        value: https://app.nyrgo.fun
+      - key: PUBLIC_API_URL
+        value: https://api.nyrgo.fun
+      - key: DEFAULT_REGION
+        value: ES
+      - key: MAIL_DRIVER
+        value: resend
+      - key: MAIL_FROM
+        value: nyrGo! <hola@nyrgo.fun>
+      - key: NEAR_NETWORK
+        value: testnet
+      - key: NEAR_RPC_URL
+        value: https://rpc.testnet.near.org
+      - key: NEAR_NFT_CONTRACT
+        value: creatures.nyrgo.testnet
+      - key: NEAR_MINTER_ACCOUNT
+        value: nyrgo.testnet
+      - key: SPAWN_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: NEAR_MINTER_KEY
+        sync: false

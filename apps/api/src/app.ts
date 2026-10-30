@@ -8,7 +8,7 @@ import type { AppConfig } from './config.js';
 import type { Db } from './db.js';
 import { HttpProblem } from './http/problem.js';
 import { accountRoutes } from './modules/account/routes.js';
-import { LogMailer, MemoryMailer, type Mailer } from './modules/auth/mailer.js';
+import { LogMailer, MemoryMailer, ResendMailer, type Mailer } from './modules/auth/mailer.js';
 import { authRoutes } from './modules/auth/routes.js';
 import { sessionLoader } from './modules/auth/sessions.js';
 import { healthRoutes } from './routes/health.js';
@@ -68,7 +68,12 @@ export async function buildApp({
   });
 
   const mail: Mailer =
-    mailer ?? (config.mailDriver === 'memory' ? new MemoryMailer() : new LogMailer(app.log));
+    mailer ??
+    (config.resend
+      ? new ResendMailer(config.resend)
+      : config.mailDriver === 'memory'
+        ? new MemoryMailer()
+        : new LogMailer(app.log));
 
   await app.register(helmet, { contentSecurityPolicy: false });
   await app.register(cors, {

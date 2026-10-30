@@ -42,6 +42,26 @@ describe('loadConfig', () => {
     ).toThrow(/MAIL_DRIVER/);
   });
 
+  it('accepts Resend in production, and checks its key and sender', () => {
+    const prod = {
+      ...base,
+      NODE_ENV: 'production',
+      APP_URL: 'https://app.nyrgo.test',
+      SPAWN_SECRET: 'x'.repeat(40),
+      MAIL_DRIVER: 'resend',
+      RESEND_API_KEY: 're_abcdefghijklmnop',
+      MAIL_FROM: 'nyrGo! <hola@nyrgo.test>',
+    };
+    expect(loadConfig(prod)).toMatchObject({
+      mailDriver: 'resend',
+      resend: { apiKey: 're_abcdefghijklmnop', from: 'nyrGo! <hola@nyrgo.test>' },
+      secureCookies: true,
+    });
+    expect(() => loadConfig({ ...prod, RESEND_API_KEY: '' })).toThrow(/RESEND_API_KEY/);
+    expect(() => loadConfig({ ...prod, MAIL_FROM: 'hola' })).toThrow(/MAIL_FROM/);
+    expect(loadConfig(base).resend).toBeNull();
+  });
+
   it('sets auth defaults and secure cookies only in production', () => {
     const c = loadConfig({ ...base, APP_URL: 'http://localhost:5173/' });
     expect(c).toMatchObject({

@@ -112,9 +112,9 @@ export async function authRoutes(app: FastifyInstance, { db, config, mailer }: A
       if (!purpose || !userId) {
         await mailer.send({
           to: email,
-          subject: 'nyrgo',
+          subject: 'nyrGo!',
           text:
-            'Alguien pidió entrar en nyrgo con este email, pero no hay ninguna cuenta asociada. ' +
+            'Alguien pidió entrar en nyrGo! con este email, pero no hay ninguna cuenta asociada. ' +
             `Para crear una, empieza como invitado en ${config.appUrl} y guarda tu progreso con tu email. ` +
             'Si no fuiste tú, ignora este mensaje.',
         });
@@ -131,7 +131,7 @@ export async function authRoutes(app: FastifyInstance, { db, config, mailer }: A
       await mailer.send({
         to: email,
         subject:
-          purpose === 'login' ? 'Tu enlace para entrar en nyrgo' : 'Guarda tu progreso en nyrgo',
+          purpose === 'login' ? 'Tu enlace para entrar en nyrGo!' : 'Guarda tu progreso en nyrGo!',
         text:
           `Abre este enlace en los próximos ${config.magicLinkTtlMin} minutos: ${link}\n` +
           'Si no lo pediste tú, ignora este mensaje.',

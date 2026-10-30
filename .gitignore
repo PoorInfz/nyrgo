@@ -4,6 +4,7 @@ coverage/
 *.log
 .env
 .env.*
+!apps/web/.env.production
 !.env.example
 .DS_Store
 .vite/

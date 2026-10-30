@@ -1,0 +1,57 @@
+# Deploying nyrGo! (testnet beta)
+
+| Part           | Where                                          | Address                   |
+| -------------- | ---------------------------------------------- | ------------------------- |
+| Website        | Cloudflare Worker `nyrgo` (`apps/site`)        | https://nyrgo.fun         |
+| Game app (PWA) | Cloudflare Worker `nyrgo-app` (`apps/web`)     | https://app.nyrgo.fun     |
+| API            | Render web service `nyrgo-api` (`render.yaml`) | https://api.nyrgo.fun     |
+| Database       | Neon Postgres (PostGIS, h3, citext)            | —                         |
+| Email          | Resend, domain `nyrgo.fun`                     | `hola@nyrgo.fun`          |
+| NFT contract   | NEAR testnet                                   | `creatures.nyrgo.testnet` |
+
+Secrets (database URL, Resend key, NEAR key) are only typed into the provider's dashboard; none
+is in the repository.
+
+## 1. Database (Neon)
+
+1. Create a project (region: Frankfurt, Postgres 17).
+2. Copy the **direct** connection string (not the `-pooler` one: the job queue keeps a
+   connection open). It ends in `?sslmode=require`.
+3. Nothing else: the API creates the extensions and tables on start (migrations).
+
+## 2. Email (Resend)
+
+1. Add the domain `nyrgo.fun` and create the DNS records it shows (in Cloudflare → DNS; Resend
+   can also add them for you with "Sign in to Cloudflare").
+2. Wait until the domain shows **Verified**, then create an API key with "Sending access"
+   (`re_…`).
+
+## 3. API (Render)
+
+1. New → Blueprint → this repository (reads `render.yaml`).
+2. Fill in `DATABASE_URL` (Neon), `RESEND_API_KEY` (Resend) and `NEAR_MINTER_KEY` (the
+   `nyrgo.testnet` key, the same as the GitHub secret).
+3. When it is live (`/health` answers `{"status":"ok"}`), Settings → Custom Domains → add
+   `api.nyrgo.fun`, and create the CNAME it shows in Cloudflare DNS with the proxy **off**
+   (grey cloud), so Render can issue the certificate.
+
+## 4. Game app (Cloudflare)
+
+Workers & Pages → Create → Import a repository → `PoorInfz/nyrgo`:
+
+- Project name: `nyrgo-app`
+- Build command: `pnpm --filter "@nyrgo/web..." build`
+- Deploy command: `npx wrangler deploy --config apps/web/wrangler.jsonc`
+
+Then Settings → Domains & Routes → add `app.nyrgo.fun`. The app talks to
+`https://api.nyrgo.fun` (`apps/web/.env.production`).
+
+## 5. Open the beta
+
+When the app works end to end, set `SITE_APP_OPEN=true` as a build variable of the `nyrgo`
+(website) Worker and redeploy: the "coming soon" button becomes "Play now!".
+
+## Still to do before players
+
+- Map tiles for Córdoba (PMTiles): without them the map is a plain background.
+- Load Córdoba's places from OpenStreetMap into the database (`world:import`).

@@ -110,3 +110,31 @@ jobs:
         with:
           name: nyrgo-creatures-wasm
           path: contracts/creatures/target/near/*.wasm
+
+  api-image:
+    name: API image (build and boot)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the image
+        run: docker build -f apps/api/Dockerfile -t nyrgo-api .
+
+      - name: Boot it against an empty database, as in production
+        run: |
+          docker network create net
+          docker build -t nyrgo-db:17 infra/db
+          docker run -d --name db --network net -e POSTGRES_USER=nyrgo -e POSTGRES_PASSWORD=nyrgo \
+            -e POSTGRES_DB=nyrgo nyrgo-db:17
+          for i in $(seq 1 30); do docker exec db pg_isready -U nyrgo -d nyrgo && break; sleep 2; done
+          docker run -d --name api --network net -p 8080:8080 \
+            -e DATABASE_URL=postgres://nyrgo:nyrgo@db:5432/nyrgo \
+            -e APP_URL=https://app.nyrgo.test -e PUBLIC_API_URL=https://api.nyrgo.test \
+            -e MAIL_DRIVER=resend -e RESEND_API_KEY=re_ci_not_a_real_key -e 'MAIL_FROM=nyrGo! <hola@nyrgo.test>' \
+            -e SPAWN_SECRET=ci-spawn-secret-0123456789abcdef0123456789 \
+            nyrgo-api
+          for i in $(seq 1 30); do curl -fsS localhost:8080/health && break; sleep 2; done
+          curl -fsS localhost:8080/v1/dex > /dev/null
+          docker logs api 2>&1 | tail -20
+          curl -fsS localhost:8080/health

@@ -12,7 +12,13 @@ const EnvSchema = Type.Object({
   DATABASE_URL: Type.String({ minLength: 1 }),
   ENABLE_DEV_ROUTES: Type.Boolean({ default: false }),
   APP_URL: Type.String({ default: 'http://localhost:5173' }),
-  MAIL_DRIVER: Type.Union([Type.Literal('log'), Type.Literal('memory')], { default: 'log' }),
+  MAIL_DRIVER: Type.Union([Type.Literal('log'), Type.Literal('memory'), Type.Literal('resend')], {
+    default: 'log',
+  }),
+  /** Resend (resend.com) API key, for MAIL_DRIVER=resend. Secret. */
+  RESEND_API_KEY: Type.String({ default: '' }),
+  /** Sender of sign-in emails, on a domain verified in Resend: `nyrGo! <hola@nyrgo.fun>`. */
+  MAIL_FROM: Type.String({ default: '' }),
   DEFAULT_REGION: Type.String({ minLength: 2, maxLength: 2, default: 'ES' }),
   SESSION_TTL_DAYS: Type.Integer({ minimum: 1, maximum: 90, default: 30 }),
   MAGIC_LINK_TTL_MIN: Type.Integer({ minimum: 5, maximum: 60, default: 15 }),
@@ -54,6 +60,8 @@ export interface AppConfig {
   devRoutes: boolean;
   appUrl: string;
   mailDriver: Env['MAIL_DRIVER'];
+  /** Set for MAIL_DRIVER=resend. */
+  resend: { apiKey: string; from: string } | null;
   defaultRegion: string;
   sessionTtlDays: number;
   magicLinkTtlMin: number;
@@ -116,12 +124,19 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
   if (prod && env.ENABLE_DEV_ROUTES) {
     throw new ConfigError('ENABLE_DEV_ROUTES must not be set in production');
   }
-  // Only development drivers exist so far, and both expose sign-in links. Adding a real
-  // provider (Phase 1 open item) is what will let the API start in production.
-  if (prod) {
+  // The log and memory drivers expose sign-in links: production must really send email.
+  if (prod && env.MAIL_DRIVER !== 'resend') {
     throw new ConfigError(
       `MAIL_DRIVER=${env.MAIL_DRIVER} writes sign-in links to logs or memory; configure a real email provider for production`,
     );
+  }
+  if (env.MAIL_DRIVER === 'resend') {
+    if (!/^re_[A-Za-z0-9_]{10,}$/.test(env.RESEND_API_KEY)) {
+      throw new ConfigError('MAIL_DRIVER=resend needs RESEND_API_KEY (re_…)');
+    }
+    if (!/^(.+<)?[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+>?$/.test(env.MAIL_FROM.trim())) {
+      throw new ConfigError('MAIL_DRIVER=resend needs MAIL_FROM, e.g. "nyrGo! <hola@nyrgo.fun>"');
+    }
   }
   if (prod && (env.SPAWN_SECRET.startsWith('dev-only') || env.SPAWN_SECRET.length < 32)) {
     throw new ConfigError(
@@ -162,6 +177,10 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
     devRoutes: env.ENABLE_DEV_ROUTES,
     appUrl: env.APP_URL.replace(/\/+$/, ''),
     mailDriver: env.MAIL_DRIVER,
+    resend:
+      env.MAIL_DRIVER === 'resend'
+        ? { apiKey: env.RESEND_API_KEY, from: env.MAIL_FROM.trim() }
+        : null,
     defaultRegion: env.DEFAULT_REGION.toUpperCase(),
     sessionTtlDays: env.SESSION_TTL_DAYS,
     magicLinkTtlMin: env.MAGIC_LINK_TTL_MIN,

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.17.0 — 2026-10-30 — Ready to deploy the game
+
+- Email through Resend (`MAIL_DRIVER=resend`, `RESEND_API_KEY`, `MAIL_FROM`): the API can now
+  start in production. Sign-in emails say nyrGo!.
+- `apps/api/Dockerfile` (runs migrations, then the server; checked in CI by booting it against an
+  empty database), `render.yaml` for Render, `apps/web/wrangler.jsonc` and `.env.production` for
+  the app at app.nyrgo.fun, and `docs/DEPLOY.md` with every step.
+
 ## 0.16.0 — 2026-10-30 — Website
 
 - `apps/site`: the public page for nyrgo.fun (how to play, the 50 creatures with an element
