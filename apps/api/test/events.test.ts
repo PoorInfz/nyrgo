@@ -88,6 +88,17 @@ describe.skipIf(!TEST_DB_URL)('events at places', () => {
     expect(enc.json()).toMatchObject({ creatureId: 'genesaur', level: 30 });
   });
 
+  it('finds places by name for the event form, nearest first', async () => {
+    const p = await place();
+    const r = (
+      await admin('GET', `/admin/v1/pois/search?q=del%20Evento&lat=${p.lat}&lng=${p.lng}`)
+    ).json();
+    expect(r.pois[0]).toMatchObject({ id: p.id, name: 'Plaza del Evento', distanceM: 0 });
+    // wildcards are literal
+    const none = (await admin('GET', '/admin/v1/pois/search?q=%25%25')).json();
+    expect(none.pois).toEqual([]);
+  });
+
   it('only admins schedule, everything is audited, and cancelling removes the creature', async () => {
     const p = await place();
     const body = {

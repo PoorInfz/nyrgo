@@ -141,7 +141,7 @@ Stated openly so nobody relies on something that is not there.
 
 ## Friends, trades and events
 
-- Events are scheduled through the admin API only; there is no admin screen for them yet.
+- Events are created by hand in the admin panel; there are no recurring or automatic events.
 - Trade proximity trusts each player's reported location, guarded by the same anti-cheat signals
   as the rest of the game. Neither trades nor friends have been tried by two people on real phones yet.
 - The app refreshes friends and offers every 8 seconds while the tab is open; there are no push

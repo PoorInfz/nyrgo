@@ -22,8 +22,10 @@
 
 ## Events at places
 
-- An admin schedules an event: a creature and level at a place (POI), with a start time and a
-  15–240 minute duration. Every action is audited:
+- An admin schedules an event from the admin panel (`app.nyrgo.fun/admin`, **Events** section):
+  find the place by name (optionally near a `lat, lng`), pick the creature, level, start and
+  duration, write the reason and create it. Every action is audited. The same through the API:
+  - `GET /admin/v1/pois/search?q=&lat=&lng=` finds places by name, nearest first
   - `POST /admin/v1/events` with `{title, poiId, creatureId, level, startsAt, durationMin, reason}`
   - `POST /admin/v1/events/:id/cancel` with `{reason}`
   - `GET /admin/v1/events`
@@ -34,7 +36,6 @@
 
 ## Not done yet
 
-- There is no admin screen for events yet; use the API with an admin token.
 - Trades do not involve NEAR or NFTs.
 - Proximity relies on each player's reported location. The anti-cheat signals (speed,
   teleport, mock location, device check) apply as they do everywhere else.

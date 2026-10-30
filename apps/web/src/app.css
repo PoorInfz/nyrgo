@@ -1643,3 +1643,19 @@ button.skill:active:not(:disabled) {
   padding: 0 8px;
   font: inherit;
 }
+
+.radio-option {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  font-weight: 400;
+}
+
+.radio-option input[type='radio'] {
+  width: 20px;
+  height: 20px;
+  min-height: 0;
+  margin: 2px 0 0;
+  flex: none;
+}

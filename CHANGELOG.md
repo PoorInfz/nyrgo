@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.25.0 — 2026-10-30 — Events in the admin panel
+
+- Admin panel: **Events** section to find a place by name (nearest to a point first), schedule a
+  creature there (level, start, duration) and cancel it, each with a recorded reason.
+- `GET /admin/v1/pois/search` (names matched literally, hidden places excluded).
+
 ## 0.24.0 — 2026-10-30 — Friends, face-to-face trades and events
 
 - Friends by code, shared in person (200 at most, 20 requests a day, never across the adult and

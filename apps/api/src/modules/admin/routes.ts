@@ -43,6 +43,14 @@ const EventBody = Type.Object(
   },
   { additionalProperties: false },
 );
+const PoiSearch = Type.Object(
+  {
+    q: Type.String({ minLength: 2, maxLength: 60 }),
+    lat: Type.Optional(Type.Number({ minimum: -90, maximum: 90 })),
+    lng: Type.Optional(Type.Number({ minimum: -180, maximum: 180 })),
+  },
+  { additionalProperties: false },
+);
 const ListQuery = Type.Object(
   {
     status: Type.Optional(Type.Union([Type.Literal('open'), Type.Literal('closed')])),
@@ -247,6 +255,32 @@ export async function adminRoutes(
   );
 
   // ------------------------------------------------------------------ events
+
+  /** Finds places by name to hold an event at, nearest to a point when one is given. */
+  app.get<{ Querystring: Static<typeof PoiSearch> }>(
+    '/admin/v1/pois/search',
+    { schema: { querystring: PoiSearch } },
+    async (req) => {
+      const { lat, lng } = req.query;
+      // the name is matched literally: % and _ typed by the admin are not wildcards
+      const q = req.query.q.replace(/[\\%_]/g, (c) => `\\${c}`);
+      const near = lat !== undefined && lng !== undefined;
+      const { rows } = await db.query(
+        `SELECT p.id, p.name, p.kind, ST_Y(p.geom::geometry) AS lat, ST_X(p.geom::geometry) AS lng
+           ${near ? `, round(ST_Distance(p.geom, ST_SetSRID(ST_MakePoint($3, $2), 4326)::geography)) AS "distanceM"` : ''}
+           FROM pois p
+          WHERE NOT p.hidden AND p.name ILIKE '%' || $1 || '%'
+          ORDER BY ${near ? '"distanceM"' : 'p.name'} LIMIT 20`,
+        near ? [q, lat, lng] : [q],
+      );
+      return {
+        pois: rows.map((r) => ({
+          ...r,
+          distanceM: r.distanceM == null ? null : Number(r.distanceM),
+        })),
+      };
+    },
+  );
 
   app.get('/admin/v1/events', async () => {
     const { rows } = await db.query(

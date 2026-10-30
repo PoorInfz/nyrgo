@@ -36,7 +36,33 @@ interface AuditEntry {
   created_at: string;
 }
 
+interface AdminEvent {
+  id: string;
+  title: string;
+  creatureId: string;
+  level: number;
+  startsAt: string;
+  endsAt: string;
+  cancelledAt: string | null;
+  placeName: string;
+  caught: number;
+}
+interface PoiHit {
+  id: string;
+  name: string;
+  kind: string;
+  lat: number;
+  lng: number;
+  distanceM: number | null;
+}
+
 const KEY = 'nyrgo_admin_token';
+
+/** `YYYY-MM-DDTHH:mm` in local time, for a datetime-local input. */
+function localInput(d: Date): string {
+  const z = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`;
+}
 
 export function Admin({ apiUrl }: { apiUrl: string }) {
   const { t } = useTranslation();
@@ -52,6 +78,7 @@ export function Admin({ apiUrl }: { apiUrl: string }) {
   const [cases, setCases] = useState<ReviewCase[]>([]);
   const [pois, setPois] = useState<ReportedPoi[]>([]);
   const [audit, setAudit] = useState<AuditEntry[]>([]);
+  const [events, setEvents] = useState<AdminEvent[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [reason, setReason] = useState('');
 
@@ -76,16 +103,19 @@ export function Admin({ apiUrl }: { apiUrl: string }) {
   );
 
   const reload = useCallback(async () => {
-    const [m, c, p, a] = await Promise.all([
+    const [m, c, p, a, e] = await Promise.all([
       call<{ name: string; role: string }>('GET', '/admin/v1/me'),
       call<{ cases: ReviewCase[] }>('GET', '/admin/v1/review-cases'),
       call<{ pois: ReportedPoi[] }>('GET', '/admin/v1/pois/reported'),
       call<{ entries: AuditEntry[] }>('GET', '/admin/v1/audit'),
+      // events are optional: a server without them still shows the rest
+      call<{ events: AdminEvent[] }>('GET', '/admin/v1/events').catch(() => ({ events: [] })),
     ]);
     setMe(m);
     setCases(c.cases);
     setPois(p.pois);
     setAudit(a.entries);
+    setEvents(e.events);
   }, [call]);
 
   useEffect(() => {
@@ -243,6 +273,15 @@ export function Admin({ apiUrl }: { apiUrl: string }) {
         </ul>
       </section>
 
+      <EventsAdmin
+        apiUrl={apiUrl}
+        call={call}
+        act={act}
+        reason={reason}
+        canEdit={me.role === 'admin'}
+        events={events}
+      />
+
       <section className="card stack" aria-labelledby="audit-title">
         <h3 id="audit-title">{t('admin.audit')}</h3>
         <ul className="plain stack">
@@ -254,5 +293,237 @@ export function Admin({ apiUrl }: { apiUrl: string }) {
         </ul>
       </section>
     </div>
+  );
+}
+
+/** Events at places: schedule one (admin role) and cancel it; both need a reason, like every change. */
+function EventsAdmin({
+  apiUrl,
+  call,
+  act,
+  reason,
+  canEdit,
+  events,
+}: {
+  apiUrl: string;
+  call: <T>(method: string, path: string, body?: unknown) => Promise<T>;
+  act: (fn: () => Promise<unknown>) => Promise<void>;
+  reason: string;
+  canEdit: boolean;
+  events: AdminEvent[];
+}) {
+  const { t, i18n } = useTranslation();
+  const [creatures, setCreatures] = useState<{ id: string; name: string }[]>([]);
+  const [q, setQ] = useState('');
+  const [near, setNear] = useState('');
+  const [hits, setHits] = useState<PoiHit[] | null>(null);
+  const [place, setPlace] = useState<PoiHit | null>(null);
+  const [title, setTitle] = useState('');
+  const [creatureId, setCreatureId] = useState('');
+  const [level, setLevel] = useState(20);
+  const [startsAt, setStartsAt] = useState(() => localInput(new Date()));
+  const [duration, setDuration] = useState(60);
+  const [searchError, setSearchError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let live = true;
+    fetch(`${apiUrl}/v1/dex`)
+      .then((r) => r.json() as Promise<{ creatures: { id: string; name: string }[] }>)
+      .then((d) => live && setCreatures(d.creatures.map(({ id, name }) => ({ id, name }))))
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [apiUrl]);
+
+  async function search() {
+    setSearchError(null);
+    const params = new URLSearchParams({ q: q.trim() });
+    // optional "lat, lng" to sort by distance
+    const m = near.match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);
+    if (m) {
+      params.set('lat', m[1]!);
+      params.set('lng', m[2]!);
+    }
+    try {
+      setHits((await call<{ pois: PoiHit[] }>('GET', `/admin/v1/pois/search?${params}`)).pois);
+    } catch (e) {
+      setSearchError((e as Error).message);
+    }
+  }
+
+  const when = (iso: string) =>
+    new Date(iso).toLocaleString(i18n.language, { dateStyle: 'short', timeStyle: 'short' });
+  const ready = canEdit && place && title.trim().length >= 3 && creatureId && startsAt;
+
+  return (
+    <section className="card stack" aria-labelledby="events-admin-title">
+      <h3 id="events-admin-title">{t('admin.events.title')}</h3>
+      {!canEdit && <p className="muted">{t('admin.events.adminOnly')}</p>}
+
+      <ul className="plain stack">
+        {events.length === 0 && <li className="muted">{t('admin.events.none')}</li>}
+        {events.map((e) => (
+          <li key={e.id} className="admin-item">
+            <strong>
+              {e.title}{' '}
+              {e.cancelledAt && <span className="badge">{t('admin.events.cancelled')}</span>}
+            </strong>
+            <span className="muted small">
+              {t('admin.events.line', {
+                creature: creatures.find((c) => c.id === e.creatureId)?.name ?? e.creatureId,
+                level: e.level,
+                place: e.placeName,
+                from: when(e.startsAt),
+                to: when(e.endsAt),
+                caught: e.caught,
+              })}
+            </span>
+            {!e.cancelledAt && Date.parse(e.endsAt) > Date.parse(new Date().toISOString()) && (
+              <span className="row tight">
+                <button
+                  type="button"
+                  className="danger small"
+                  disabled={!canEdit}
+                  onClick={() =>
+                    act(() => call('POST', `/admin/v1/events/${e.id}/cancel`, { reason }))
+                  }
+                >
+                  {t('admin.events.cancel')}
+                </button>
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+
+      {canEdit && (
+        <form
+          className="stack"
+          onSubmit={(ev) => {
+            ev.preventDefault();
+            if (!ready || !place) return;
+            void act(async () => {
+              await call('POST', '/admin/v1/events', {
+                title: title.trim(),
+                poiId: place.id,
+                creatureId,
+                level,
+                startsAt: new Date(startsAt).toISOString(),
+                durationMin: duration,
+                reason,
+              });
+              setTitle('');
+              setPlace(null);
+              setHits(null);
+            });
+          }}
+        >
+          <h4>{t('admin.events.new')}</h4>
+          <label>
+            {t('admin.events.place')}
+            <input value={q} onChange={(e) => setQ(e.target.value)} maxLength={60} />
+          </label>
+          <label>
+            {t('admin.events.near')}
+            <input
+              value={near}
+              onChange={(e) => setNear(e.target.value)}
+              placeholder="37.8847, -4.7792"
+              inputMode="decimal"
+            />
+          </label>
+          <button
+            type="button"
+            className="secondary"
+            disabled={q.trim().length < 2}
+            onClick={() => void search()}
+          >
+            {t('admin.events.search')}
+          </button>
+          {searchError && <p role="alert">{searchError}</p>}
+          {hits && hits.length === 0 && <p className="muted">{t('admin.events.noPlaces')}</p>}
+          {hits && hits.length > 0 && (
+            <fieldset className="stack">
+              <legend>{t('admin.events.pick')}</legend>
+              {hits.map((h) => (
+                <label key={h.id} className="radio-option">
+                  <input
+                    type="radio"
+                    name="event-place"
+                    checked={place?.id === h.id}
+                    onChange={() => setPlace(h)}
+                  />
+                  <span>
+                    {h.name} <span className="muted small">({h.kind}</span>
+                    {h.distanceM !== null && (
+                      <span className="muted small"> · {t('metres', { m: h.distanceM })}</span>
+                    )}
+                    <span className="muted small">)</span>{' '}
+                    <a
+                      href={`https://www.openstreetmap.org/?mlat=${h.lat}&mlon=${h.lng}#map=18/${h.lat}/${h.lng}`}
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      {t('admin.map')}
+                    </a>
+                  </span>
+                </label>
+              ))}
+            </fieldset>
+          )}
+          <label>
+            {t('admin.events.eventTitle')}
+            <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={60} />
+          </label>
+          <label>
+            {t('admin.events.creature')}
+            <select value={creatureId} onChange={(e) => setCreatureId(e.target.value)}>
+              <option value="">—</option>
+              {creatures.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            {t('admin.events.level')}
+            <input
+              type="number"
+              min={1}
+              max={50}
+              value={level}
+              onChange={(e) => setLevel(Math.min(50, Math.max(1, Number(e.target.value) || 1)))}
+            />
+          </label>
+          <label>
+            {t('admin.events.starts')}
+            <input
+              type="datetime-local"
+              value={startsAt}
+              onChange={(e) => setStartsAt(e.target.value)}
+            />
+          </label>
+          <label>
+            {t('admin.events.duration')}
+            <input
+              type="number"
+              min={15}
+              max={240}
+              step={15}
+              value={duration}
+              onChange={(e) =>
+                setDuration(Math.min(240, Math.max(15, Number(e.target.value) || 15)))
+              }
+            />
+          </label>
+          <p className="muted small">{t('admin.events.hint')}</p>
+          <button type="submit" disabled={!ready}>
+            {t('admin.events.create')}
+          </button>
+        </form>
+      )}
+    </section>
   );
 }
