@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.15.0 — 2026-10-30 — Testnet deploy of the NFT contract
+
+- `pnpm --filter @nyrgo/api nft:deploy` and the manual workflow "Deploy NFT contract (testnet)":
+  create `creatures.<game account>`, deploy and initialise the contract and register every
+  species, doing only what is missing (dry run, upgrade). Testnet only; the key comes from the
+  `NEAR_TESTNET_GAME_KEY` secret and is never printed. Not yet run against testnet.
+
 ## 0.14.1 — 2026-10-29 — NFT cards framed
 
 - Each card's portrait is framed on the creature's real outline (from its cut-out mask, in

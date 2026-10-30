@@ -20,30 +20,28 @@ rustup target add wasm32-unknown-unknown
 cargo near build non-reproducible-wasm      # → target/near/nyrgo_creatures.wasm
 ```
 
-## Deploy to testnet (not done yet)
+## Deploy to testnet
 
-With [near-cli-rs](https://github.com/near/near-cli-rs), from accounts you control:
+One game account does everything: it owns the contract, mints and pays each token's storage.
+
+1. Create the game account in a testnet wallet (e.g. `nyrgo-game.testnet`, funded by the testnet
+   faucet with at least 7 NEAR) and export its secret key (`ed25519:…`).
+2. Save that key as the repository secret `NEAR_TESTNET_GAME_KEY` (GitHub → Settings → Secrets and
+   variables → Actions). It is only read by the deploy workflow and never printed.
+3. Run **Actions → Deploy NFT contract (testnet) → Run workflow**, first with "dry run" on to see
+   what it would do, then off. It creates `creatures.<game account>` (5 NEAR for storage, same key),
+   deploys and initialises the contract with the game account as owner, and registers all 50
+   species with their fixed supply. Running it again only does what is missing; "upgrade" replaces
+   the code and keeps the state.
+
+The same can be run locally:
 
 ```bash
-# 1. a game account that mints and pays storage (fund it from the testnet faucet)
-near account create-account sponsor-by-faucet-service nyrgo-game.testnet autogenerate-new-keypair save-to-keychain network-config testnet create
-
-# 2. the contract account, deploy and initialise with the game account as owner
-near account create-account sponsor-by-faucet-service nyrgo-creatures.testnet autogenerate-new-keypair save-to-keychain network-config testnet create
-near contract deploy nyrgo-creatures.testnet use-file target/near/nyrgo_creatures.wasm \
-  with-init-call new json-args '{"owner_id":"nyrgo-game.testnet","metadata":{"spec":"nft-1.0.0","name":"nyrGo! Creatures (testnet)","symbol":"NYRGO"}}' \
-  prepaid-gas '100 Tgas' attached-deposit '0 NEAR' network-config testnet sign-with-keychain send
+NEAR_GAME_ACCOUNT=nyrgo-game.testnet NEAR_GAME_KEY=ed25519:… \
+  pnpm --filter @nyrgo/api nft:deploy --wasm ../../contracts/creatures/target/near/nyrgo_creatures.wasm --dry-run
 ```
 
-Register every species with its fixed supply (once; it can never be raised):
-
-```bash
-pnpm --filter @nyrgo/api nft:species > species.json
-near contract call-function as-transaction nyrgo-creatures.testnet register_species \
-  file-args species.json prepaid-gas '300 Tgas' attached-deposit '0 NEAR' \
-  sign-as nyrgo-game.testnet network-config testnet sign-with-keychain send
-```
-
-Then set in the API's environment: `NEAR_NFT_CONTRACT=nyrgo-creatures.testnet`,
-`NEAR_MINTER_ACCOUNT=nyrgo-game.testnet` and `NEAR_MINTER_KEY=ed25519:…` (the game account's key;
-better, a function-call key limited to `nft_mint` on the contract with an allowance).
+Then set in the API's environment: `NEAR_NFT_CONTRACT=creatures.nyrgo-game.testnet`,
+`NEAR_MINTER_ACCOUNT=nyrgo-game.testnet` and `NEAR_MINTER_KEY` (the same key). Minting attaches a
+storage deposit, which NEAR only allows from a full-access key, so this key cannot be narrowed to
+a function-call key; keep the game account's balance small and top it up as needed.
