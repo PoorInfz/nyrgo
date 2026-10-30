@@ -402,3 +402,37 @@ export function resolveTurn(
   }
   return { state, events };
 }
+
+/** One turn of a duel, as both players see it. */
+export interface DuelTurn {
+  turn: number;
+  events: BattleEvent[];
+}
+
+export interface DuelResult {
+  /** `player` is the challenger, `foe` the friend who accepted. */
+  winner: Side | null;
+  turns: DuelTurn[];
+  /** HP left on each side at the end. */
+  hp: { player: number; foe: number };
+}
+
+/**
+ * A friendly duel between two players' creatures, fought by the game: each side picks moves the
+ * way a wild creature does. Deterministic for a given seed, so the result can be replayed.
+ */
+export function simulateDuel(challenger: Fighter, friend: Fighter, rand: () => number): DuelResult {
+  const start = startBattle(challenger, friend, {}, rand);
+  let state = start.state;
+  const turns: DuelTurn[] = [{ turn: 0, events: start.events }];
+  while (!state.result) {
+    // the challenger's move, chosen as if it were the wild side
+    const mirror: BattleState = { ...state, player: state.foe, foe: state.player };
+    const action = foeAction(mirror, rand);
+    const next = resolveTurn(state, action, rand);
+    state = next.state;
+    turns.push({ turn: state.turn, events: next.events });
+  }
+  const winner = state.result === 'win' ? 'player' : state.result === 'loss' ? 'foe' : null;
+  return { winner, turns, hp: { player: state.player.hp, foe: state.foe.hp } };
+}

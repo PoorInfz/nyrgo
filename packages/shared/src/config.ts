@@ -163,6 +163,10 @@ export interface SocialConfig {
   tradeTtlMin: number;
   /** Completed trades per player and local day. */
   tradesPerDay: number;
+  /** A duel challenge lapses after this long. */
+  duelTtlMin: number;
+  /** Finished duels per player and local day. */
+  duelsPerDay: number;
 }
 
 export interface GameConfig {
@@ -261,6 +265,8 @@ export const DEFAULT_CONFIG: GameConfig = {
     tradeFixMaxAgeS: 120,
     tradeTtlMin: 10,
     tradesPerDay: 5,
+    duelTtlMin: 10,
+    duelsPerDay: 10,
   },
   tips: {
     amountMilliNear: 5,

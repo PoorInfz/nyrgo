@@ -20,6 +20,19 @@
 - 5 completed trades a day per player. The swap happens in one transaction. Each creature
   keeps its level and values, and new species are added to the receiver's dex.
 
+## Friendly duels
+
+- A player challenges a friend with one creature (`POST /v1/duels {to, creature}`); the challenge
+  lasts 10 minutes, and a new one to the same friend replaces it.
+- The friend answers with one of theirs (`POST /v1/duels/:id/accept {creature}`) while both stand
+  together (the same 100 m / 2 minute rule as trades). The server then fights it out with the
+  normal combat rules, each side choosing moves like a wild creature, from a random seed that is
+  kept with the result.
+- Creatures fight at full health. Nothing changes hands and no HP, XP or items are won or lost, so
+  there is nothing to farm. 10 duels a day per player.
+- `GET /v1/duels` returns open challenges and the last day's results with the full turn log, so
+  both players can replay the same fight.
+
 ## Events at places
 
 - An admin schedules an event from the admin panel (`app.nyrgo.fun/admin`, **Events** section):
@@ -36,6 +49,6 @@
 
 ## Not done yet
 
-- Trades do not involve NEAR or NFTs.
+- Trades and duels do not involve NEAR or NFTs. Duels give no rewards on purpose.
 - Proximity relies on each player's reported location. The anti-cheat signals (speed,
   teleport, mock location, device check) apply as they do everywhere else.

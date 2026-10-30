@@ -10,6 +10,7 @@ import {
   invalidAction,
   resolveTurn,
   seededRandom,
+  simulateDuel,
   startBattle,
   type BattleState,
   type Fighter,
@@ -302,5 +303,31 @@ describe('balance (simulated)', () => {
     const even = rate('gwisp', 10, 'fuddle', 10);
     expect(even).toBeGreaterThan(0.3);
     expect(even).toBeLessThan(0.7);
+  });
+});
+
+describe('friendly duels', () => {
+  it('always ends, with the same result for the same seed', () => {
+    for (const [a, b] of [
+      ['genesaur', 'zeroknowl'],
+      [CREATURES[0]!.id, CREATURES[1]!.id],
+    ] as const) {
+      const one = simulateDuel(fighter(a, 12), fighter(b, 12), seededRandom('d1'));
+      const two = simulateDuel(fighter(a, 12), fighter(b, 12), seededRandom('d1'));
+      expect(one).toEqual(two);
+      expect(one.turns.length).toBeGreaterThan(1);
+      expect(one.turns.length).toBeLessThanOrEqual(COMBAT.maxTurns + 1);
+      if (one.winner === 'player') expect(one.hp.foe).toBe(0);
+      if (one.winner === 'foe') expect(one.hp.player).toBe(0);
+    }
+  });
+
+  it('favours the much stronger creature', () => {
+    let wins = 0;
+    for (let i = 0; i < 40; i++) {
+      const r = simulateDuel(plain('genesaur', 30), plain('genesaur', 5), seededRandom(`s${i}`));
+      if (r.winner === 'player') wins++;
+    }
+    expect(wins).toBeGreaterThanOrEqual(38);
   });
 });

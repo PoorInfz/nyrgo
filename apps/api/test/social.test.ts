@@ -166,4 +166,82 @@ describe.skipIf(!TEST_DB_URL)('friends and face-to-face trades', () => {
     const trades = (await a.call('GET', '/v1/trades')).json().trades;
     expect(trades.find((tr: { id: string }) => tr.id === p.id).status).toBe('cancelled');
   });
+  it('fights a friendly duel side by side, the same for both, with nothing lost', async () => {
+    const { a, b } = await friends();
+    const ca = await a.creature('gwisp', 12);
+    const cb = await b.creature('dropling', 8);
+    const ch = (await a.call('POST', '/v1/duels', { to: b.id, creature: ca })).json();
+    expect(ch.status).toBe('pending');
+    // nobody has sent a location yet: not together
+    expect((await b.call('POST', `/v1/duels/${ch.id}/accept`, { creature: cb })).json().code).toBe(
+      'trade_too_far',
+    );
+
+    await a.at(HERE);
+    await b.at(north(500));
+    expect((await b.call('POST', `/v1/duels/${ch.id}/accept`, { creature: cb })).json().code).toBe(
+      'trade_too_far',
+    );
+    await b.at(north(20));
+    // a creature that is not theirs cannot answer
+    expect((await b.call('POST', `/v1/duels/${ch.id}/accept`, { creature: ca })).json().code).toBe(
+      'not_found',
+    );
+    const r = (await b.call('POST', `/v1/duels/${ch.id}/accept`, { creature: cb })).json();
+    expect(r.status).toBe('done');
+    expect(r.fight.turns.length).toBeGreaterThan(1);
+
+    // both see the same fight, each from their side
+    const da = (await a.call('GET', '/v1/duels')).json().duels[0];
+    const db = (await b.call('GET', '/v1/duels')).json().duels[0];
+    expect(da).toMatchObject({
+      id: ch.id,
+      mine: true,
+      fromCreatureId: 'gwisp',
+      toCreatureId: 'dropling',
+    });
+    expect(db).toMatchObject({ id: ch.id, mine: false });
+    expect(da.fight.turns).toEqual(db.fight.turns);
+    if (r.winner) expect(db.winner).toBe(r.winner);
+    if (da.winner) expect(da.winner).not.toBe(db.winner);
+
+    // nothing changes hands, nobody gets hurt
+    expect(await a.owner(ca)).toBe(a.id);
+    expect(await b.owner(cb)).toBe(b.id);
+    const hp = await t.db.query<{ hp: number }>(
+      `SELECT hp_current AS hp FROM creature_instances WHERE id = $1`,
+      [ca],
+    );
+    expect(hp.rows[0]!.hp).toBe(30);
+    // and it is over
+    expect((await b.call('POST', `/v1/duels/${ch.id}/accept`, { creature: cb })).json().code).toBe(
+      'not_found',
+    );
+  });
+
+  it('only between friends, within the daily limit', async () => {
+    const x = await player();
+    const y = await player();
+    const cx = await x.creature();
+    expect((await x.call('POST', '/v1/duels', { to: y.id, creature: cx })).json().code).toBe(
+      'not_friends',
+    );
+    const { a, b } = await friends();
+    const ca = await a.creature();
+    const cb = await b.creature();
+    await a.at(HERE);
+    await b.at(north(10));
+    for (let i = 0; i < DEFAULT_CONFIG.social.duelsPerDay; i++) {
+      const ch = (await a.call('POST', '/v1/duels', { to: b.id, creature: ca })).json();
+      const r = await b.call('POST', `/v1/duels/${ch.id}/accept`, { creature: cb });
+      expect(r.statusCode).toBe(200);
+    }
+    const last = (await a.call('POST', '/v1/duels', { to: b.id, creature: ca })).json();
+    expect(
+      (await b.call('POST', `/v1/duels/${last.id}/accept`, { creature: cb })).json().code,
+    ).toBe('duel_limit');
+    expect((await a.call('POST', `/v1/duels/${last.id}/decline`)).json()).toEqual({
+      status: 'closed',
+    });
+  });
 });

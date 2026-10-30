@@ -48,6 +48,7 @@ export const ERROR_CODES = {
   trade_too_far: 422,
   trade_limit: 429,
   trade_unavailable: 409,
+  duel_limit: 429,
   attest_unavailable: 503,
   attest_failed: 403,
   attest_required: 403,

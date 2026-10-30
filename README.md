@@ -3,7 +3,7 @@
 Mobile-first geolocation creature-collection RPG with an original IP and optional NEAR integration.
 The full game is playable without a wallet, crypto or purchases.
 
-Status: **Phase 3 in progress: NEAR accounts can be linked and creatures taken out as NFTs (testnet, contract not deployed yet)**. See [CHANGELOG.md](CHANGELOG.md).
+Status: **live on NEAR testnet at app.nyrgo.fun: map, capture, battles, economy, NFTs, market, NEAR tips, Android app, friends, trades, duels and events**. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Layout
 

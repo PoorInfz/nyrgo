@@ -325,6 +325,30 @@ export interface Trade {
   wantLevel: number;
 }
 
+export interface DuelFight {
+  /** `player` is the challenger, `foe` the friend who answered. */
+  winner: 'player' | 'foe' | null;
+  turns: { turn: number; events: BattleEvent[] }[];
+  hp: { player: number; foe: number };
+}
+
+export interface Duel {
+  id: string;
+  status: 'pending' | 'done' | 'declined' | 'cancelled' | 'expired';
+  /** True when this player made the challenge. */
+  mine: boolean;
+  expiresAt: string;
+  finishedAt: string | null;
+  friendId: string;
+  friendName: string;
+  winner: 'me' | 'friend' | null;
+  fromCreatureId: string;
+  fromLevel: number;
+  toCreatureId: string | null;
+  toLevel: number | null;
+  fight: DuelFight | null;
+}
+
 export interface GameEvent {
   id: string;
   title: string;
@@ -483,6 +507,20 @@ export function createApi(baseUrl: string) {
       call<{ status: 'done' }>('POST', `/v1/trades/${encodeURIComponent(id)}/accept`),
     declineTrade: (id: string) =>
       call<{ status: 'closed' }>('POST', `/v1/trades/${encodeURIComponent(id)}/decline`),
+    duels: () => call<{ duels: Duel[] }>('GET', '/v1/duels'),
+    challenge: (to: string, creature: string) =>
+      call<{ id: string; status: 'pending'; expiresAt: string }>('POST', '/v1/duels', {
+        to,
+        creature,
+      }),
+    acceptDuel: (id: string, creature: string) =>
+      call<{ id: string; status: 'done'; winner: 'me' | 'friend' | null; fight: DuelFight }>(
+        'POST',
+        `/v1/duels/${encodeURIComponent(id)}/accept`,
+        { creature },
+      ),
+    declineDuel: (id: string) =>
+      call<{ status: 'closed' }>('POST', `/v1/duels/${encodeURIComponent(id)}/decline`),
     events: (lat: number, lng: number) =>
       call<{ events: GameEvent[] }>(
         'GET',

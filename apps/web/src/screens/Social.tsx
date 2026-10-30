@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   ApiError,
   type Api,
+  type Duel,
   type Friend,
   type FriendCreature,
   type Friends,
@@ -10,10 +11,11 @@ import {
   type Trade,
 } from '../api';
 import { useContent } from '../content';
+import { DuelReplay } from './DuelReplay';
 
 /**
- * Friends by code (shared in person) and face-to-face trades: one creature for one, accepted
- * only while both players stand within 100 m of each other with the map open.
+ * Friends by code (shared in person), face-to-face trades (one creature for one) and friendly
+ * duels, both only while the two players stand within 100 m of each other with the map open.
  */
 export function Social({ api }: { api: Api }) {
   const { t } = useTranslation();
@@ -26,6 +28,12 @@ export function Social({ api }: { api: Api }) {
   const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [trading, setTrading] = useState<Friend | null>(null);
+  const [duels, setDuels] = useState<Duel[]>([]);
+  const [challenging, setChallenging] = useState<Friend | null>(null);
+  const [mine, setMine] = useState<OwnedCreature[]>([]);
+  /** The creature chosen to answer each incoming challenge. */
+  const [answer, setAnswer] = useState<Record<string, string>>({});
+  const [opened, setOpened] = useState<string | null>(null);
 
   const fail = useCallback(
     (err: unknown) => {
@@ -37,9 +45,10 @@ export function Social({ api }: { api: Api }) {
 
   const reload = useCallback(async () => {
     try {
-      const [f, tr] = await Promise.all([api.friends(), api.trades()]);
+      const [f, tr, du] = await Promise.all([api.friends(), api.trades(), api.duels()]);
       setData(f);
       setTrades(tr.trades);
+      setDuels(du.duels);
     } catch (err) {
       fail(err);
     }
@@ -55,13 +64,25 @@ export function Social({ api }: { api: Api }) {
     };
   }, [reload]);
 
+  const loadMine = useCallback(async () => {
+    try {
+      setMine((await api.myCreatures()).creatures);
+    } catch {
+      /* the lists below say so when empty */
+    }
+  }, [api]);
+  useEffect(() => {
+    const first = setTimeout(() => void loadMine(), 0);
+    return () => clearTimeout(first);
+  }, [loadMine]);
+
   async function run(action: () => Promise<unknown>, ok?: string) {
     setBusy(true);
     setNotice(null);
     try {
       await action();
       if (ok) setNotice({ ok: true, text: ok });
-      await reload();
+      await Promise.all([reload(), loadMine()]);
     } catch (err) {
       fail(err);
     } finally {
@@ -185,6 +206,14 @@ export function Social({ api }: { api: Api }) {
                 </button>
                 <button
                   type="button"
+                  className="small secondary"
+                  disabled={busy || mine.length === 0}
+                  onClick={() => setChallenging(f)}
+                >
+                  {t('duel.challenge')}
+                </button>
+                <button
+                  type="button"
                   className="link small"
                   disabled={busy}
                   onClick={() => {
@@ -224,6 +253,125 @@ export function Social({ api }: { api: Api }) {
           }
         />
       )}
+
+      {challenging && (
+        <ChallengeBuilder
+          friend={challenging}
+          mine={mine}
+          name={name}
+          busy={busy}
+          onCancel={() => setChallenging(null)}
+          onChallenge={(creature) =>
+            run(
+              async () => {
+                await api.challenge(challenging.id, creature);
+                setChallenging(null);
+              },
+              t('duel.sent', { name: challenging.name }),
+            )
+          }
+        />
+      )}
+
+      <section className="card stack" aria-labelledby="duels-title">
+        <h2 id="duels-title">{t('duel.title')}</h2>
+        <p className="muted">{t('duel.why')}</p>
+        {duels.length === 0 && <p className="muted">{t('duel.none')}</p>}
+        <ul className="plain stack">
+          {duels.map((d) => (
+            <li key={d.id} className="admin-item">
+              {d.status === 'pending' && d.mine && (
+                <>
+                  <span>
+                    {t('duel.waiting', {
+                      name: d.friendName,
+                      creature: `${name(d.fromCreatureId)} ${t('levelShort', { level: d.fromLevel })}`,
+                    })}
+                  </span>
+                  <button
+                    type="button"
+                    className="link small"
+                    disabled={busy}
+                    onClick={() => run(() => api.declineDuel(d.id))}
+                  >
+                    {t('social.cancel')}
+                  </button>
+                </>
+              )}
+              {d.status === 'pending' && !d.mine && (
+                <>
+                  <span>
+                    {t('duel.incoming', {
+                      name: d.friendName,
+                      creature: `${name(d.fromCreatureId)} ${t('levelShort', { level: d.fromLevel })}`,
+                    })}
+                  </span>
+                  <label>
+                    {t('duel.answerWith')}
+                    <select
+                      value={answer[d.id] ?? ''}
+                      onChange={(e) => setAnswer((a) => ({ ...a, [d.id]: e.target.value }))}
+                    >
+                      <option value="">—</option>
+                      {mine.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {name(c.creatureId)} {t('levelShort', { level: c.level })}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <span className="row tight">
+                    <button
+                      type="button"
+                      className="small"
+                      disabled={busy || !answer[d.id]}
+                      onClick={() =>
+                        run(async () => {
+                          await api.acceptDuel(d.id, answer[d.id]!);
+                          setOpened(d.id);
+                        })
+                      }
+                    >
+                      {t('duel.fight')}
+                    </button>
+                    <button
+                      type="button"
+                      className="link small"
+                      disabled={busy}
+                      onClick={() => run(() => api.declineDuel(d.id))}
+                    >
+                      {t('social.decline')}
+                    </button>
+                  </span>
+                </>
+              )}
+              {d.status === 'done' && (
+                <>
+                  <button
+                    type="button"
+                    className="link small"
+                    aria-expanded={opened === d.id}
+                    onClick={() => setOpened(opened === d.id ? null : d.id)}
+                  >
+                    {t('duel.against', { name: d.friendName })} ·{' '}
+                    {d.winner === 'me'
+                      ? t('duel.won')
+                      : d.winner === 'friend'
+                        ? t('duel.lost')
+                        : t('duel.draw')}
+                  </button>
+                  {opened === d.id && <DuelReplay duel={d} dex={dex} />}
+                </>
+              )}
+              {d.status !== 'pending' && d.status !== 'done' && (
+                <span className="muted small">
+                  {t('duel.against', { name: d.friendName })} · {t(`social.status.${d.status}`)}
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <section className="card stack" aria-labelledby="trades-title">
         <h2 id="trades-title">{t('social.tradesTitle')}</h2>
@@ -368,6 +516,51 @@ function TradeBuilder({
           </div>
         </>
       )}
+    </section>
+  );
+}
+
+/** Pick which of your creatures goes to the duel. */
+function ChallengeBuilder({
+  friend,
+  mine,
+  name,
+  busy,
+  onCancel,
+  onChallenge,
+}: {
+  friend: Friend;
+  mine: OwnedCreature[];
+  name: (id: string) => string;
+  busy: boolean;
+  onCancel: () => void;
+  onChallenge: (creature: string) => void;
+}) {
+  const { t } = useTranslation();
+  const [pick, setPick] = useState('');
+  return (
+    <section className="card stack" aria-labelledby="challenge-title">
+      <h2 id="challenge-title">{t('duel.challengeTitle', { name: friend.name })}</h2>
+      <label className="stack">
+        <span>{t('duel.yourFighter')}</span>
+        <select value={pick} onChange={(e) => setPick(e.target.value)}>
+          <option value="">—</option>
+          {mine.map((c) => (
+            <option key={c.id} value={c.id}>
+              {name(c.creatureId)} {t('levelShort', { level: c.level })}
+            </option>
+          ))}
+        </select>
+      </label>
+      <p className="muted small">{t('duel.hint')}</p>
+      <div className="row">
+        <button type="button" disabled={busy || !pick} onClick={() => onChallenge(pick)}>
+          {t('duel.send')}
+        </button>
+        <button type="button" className="link" onClick={onCancel}>
+          {t('social.cancel')}
+        </button>
+      </div>
     </section>
   );
 }

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.26.0 — 2026-10-30 — Friendly duels
+
+- Friendly duels between friends standing together: challenge with one creature, the friend
+  answers with one of theirs, and the server fights it out (deterministic `simulateDuel` in the
+  shared combat engine, seed kept). Full health, no rewards or losses, 10 a day.
+- App: **Duel** button per friend, challenges to answer, results with a turn-by-turn replay.
+
 ## 0.25.0 — 2026-10-30 — Events in the admin panel
 
 - Admin panel: **Events** section to find a place by name (nearest to a point first), schedule a

@@ -87,6 +87,24 @@ async function tradeable(c: PoolClient, owner: string, id: string) {
   return r && r.ok && r.total > 1 ? r : null;
 }
 
+/**
+ * Both players have sent a location in the last two minutes and stand within 100 m of each
+ * other: what trades and duels need. Throws `trade_too_far` otherwise.
+ */
+export async function assertTogether(c: PoolClient, a: string, b: string): Promise<void> {
+  const { rows } = await c.query<{ metres: number | null }>(
+    `SELECT ST_Distance(a.geom, b.geom) AS metres
+       FROM (SELECT geom FROM location_samples WHERE user_id = $1 AND geom IS NOT NULL
+               AND created_at > now() - make_interval(secs => $3) ORDER BY created_at DESC LIMIT 1) a,
+            (SELECT geom FROM location_samples WHERE user_id = $2 AND geom IS NOT NULL
+               AND created_at > now() - make_interval(secs => $3) ORDER BY created_at DESC LIMIT 1) b`,
+    [a, b, cfg().tradeFixMaxAgeS],
+  );
+  if (!rows[0] || rows[0].metres === null || rows[0].metres > cfg().tradeMaxDistanceM) {
+    throw new HttpProblem('trade_too_far', 'Side by side only: both players within 100 m');
+  }
+}
+
 export async function socialRoutes(app: FastifyInstance, { db }: { db: Db }) {
   // ------------------------------------------------------------------ friends
 
@@ -326,17 +344,7 @@ export async function socialRoutes(app: FastifyInstance, { db }: { db: Db }) {
           throw new HttpProblem('not_friends', 'Only friends can trade');
 
         // together: both have a recent fix, close to each other
-        const { rows: near } = await c.query<{ metres: number | null }>(
-          `SELECT ST_Distance(a.geom, b.geom) AS metres
-             FROM (SELECT geom FROM location_samples WHERE user_id = $1 AND geom IS NOT NULL
-                     AND created_at > now() - make_interval(secs => $3) ORDER BY created_at DESC LIMIT 1) a,
-                  (SELECT geom FROM location_samples WHERE user_id = $2 AND geom IS NOT NULL
-                     AND created_at > now() - make_interval(secs => $3) ORDER BY created_at DESC LIMIT 1) b`,
-          [auth.userId, t.from_user, cfg().tradeFixMaxAgeS],
-        );
-        if (!near[0] || near[0].metres === null || near[0].metres > cfg().tradeMaxDistanceM) {
-          throw new HttpProblem('trade_too_far', 'Trade side by side: both players within 100 m');
-        }
+        await assertTogether(c, auth.userId, t.from_user);
 
         // daily limit, each player in their own local day
         for (const who of [auth.userId, t.from_user]) {
