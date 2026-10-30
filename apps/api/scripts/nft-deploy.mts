@@ -41,6 +41,7 @@ const species = CREATURES.map((c) => ({
   species: c.id,
   max_supply: NFT_SUPPLY_BY_RARITY[c.rarity],
 }));
+const lines: string[] = [];
 const report = await deployCreatures(nearDeployTarget(rpc, game, key), {
   game,
   contract,
@@ -48,7 +49,10 @@ const report = await deployCreatures(nearDeployTarget(rpc, game, key), {
   species,
   upgrade: values.upgrade,
   dryRun: values['dry-run'],
-  log: (l) => process.stdout.write(`${l}\n`),
+  log: (l) => {
+    lines.push(l);
+    process.stdout.write(`${l}\n`);
+  },
 });
 
 process.stdout.write(
@@ -66,4 +70,19 @@ process.stdout.write(
     '',
   ].join('\n'),
 );
+// in GitHub Actions, also as annotations: readable from the run page and the API without the log
+if (process.env.GITHUB_ACTIONS) {
+  const notice = (m: string) => process.stdout.write(`::notice title=NFT deploy::${m}\n`);
+  notice(
+    `${contract}: ${report.deployed}${report.created ? ', account created' : ''}; ` +
+      `species registered now ${report.registered}, before ${report.alreadyRegistered}` +
+      `${values['dry-run'] ? ' (dry run)' : ''}`,
+  );
+  for (const l of lines) notice(l);
+  if (report.mismatched.length) {
+    process.stdout.write(
+      `::warning title=NFT deploy::supply differs: ${report.mismatched.join(', ')}\n`,
+    );
+  }
+}
 if (report.mismatched.length) process.exit(2);
