@@ -1,0 +1,13 @@
+// The website as a Cloudflare Worker with static assets (no code): serves apps/site/dist,
+// including the _headers file. Built and deployed from the repository root:
+//   build:  pnpm --filter "@nyrgo/site..." build
+//   deploy: npx wrangler deploy --config apps/site/wrangler.jsonc
+{
+  "name": "nyrgo",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none",
+  },
+}
