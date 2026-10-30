@@ -1,6 +1,7 @@
 /**
- * Builds the public website (nyrgo.fun) into dist/: the static page from static/, filled with the
- * game's real creatures, elements and NFT supplies from @nyrgo/shared, and the art copied from the
+ * Builds the public website (nyrgo.fun) into dist/: page.html once per language (English at /,
+ * Spanish at /es/, text in i18n.mts), filled with the game's creatures, elements and NFT supplies
+ * from @nyrgo/shared, plus static/ and the art copied from the
  * web app, so the site never drifts from the game.
  *
  *   pnpm --filter @nyrgo/shared build && pnpm --filter @nyrgo/site build
@@ -8,6 +9,7 @@
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
+import { LANGS, RARITY, TEXT, type Lang, type TextKey } from './i18n.mjs';
 import {
   CREATURES,
   ELEMENT_INFO,
@@ -22,15 +24,6 @@ const ART = '../web/public';
 const APP_URL = process.env.SITE_APP_URL ?? 'https://app.nyrgo.fun';
 /** Set when the game is open to players; until then the play button says "coming soon". */
 const APP_OPEN = process.env.SITE_APP_OPEN === 'true';
-
-const RARITY: Record<Rarity, string> = {
-  common: 'Común',
-  uncommon: 'Poco común',
-  rare: 'Rara',
-  epic: 'Épica',
-  legendary: 'Legendaria',
-  mythic: 'Mítica',
-};
 
 const esc = (s: string) =>
   s.replace(
@@ -68,66 +61,102 @@ const font = dirname(
 );
 cpSync(join(font, 'files/fredoka-latin-wght-normal.woff2'), join(OUT, 'assets/fredoka.woff2'));
 
-const chip = (e: keyof typeof ELEMENT_INFO) =>
-  `<span class="chip" style="--el:${ELEMENT_INFO[e].color}">${esc(ELEMENT_INFO[e].es)}</span>`;
+function render(lang: Lang): string {
+  const t = TEXT[lang];
+  const { locale } = LANGS[lang];
+  const name = (e: keyof typeof ELEMENT_INFO) => ELEMENT_INFO[e][lang];
+  const chip = (e: keyof typeof ELEMENT_INFO) =>
+    `<span class="chip" style="--el:${ELEMENT_INFO[e].color}">${esc(name(e))}</span>`;
 
-const startersHtml = starters
-  .map(
-    (c) => `
+  const startersHtml = starters
+    .map(
+      (c) => `
         <figure class="starter">
-          <div class="sprite" style="--sheet:url(assets/sprites/${c.id}-idle.webp)" role="img" aria-label="${esc(c.name)}"></div>
+          <div class="sprite" style="--sheet:url(/assets/sprites/${c.id}-idle.webp)" role="img" aria-label="${esc(c.name)}"></div>
           <div class="platform"></div>
           <figcaption>${esc(c.name)} ${chip(c.element)}</figcaption>
         </figure>`,
-  )
-  .join('');
+    )
+    .join('');
 
-const creaturesHtml = CREATURES.map(
-  (c) => `
+  const creaturesHtml = CREATURES.map(
+    (c) => `
         <article class="creature" data-element="${c.element}" data-rarity="${c.rarity}">
-          <img src="assets/creatures/${c.id}.webp" alt="${esc(c.name)}" loading="lazy" decoding="async" width="384" height="567">
+          <img src="/assets/creatures/${c.id}.webp" alt="${esc(c.name)}" loading="lazy" decoding="async" width="384" height="567">
           <div class="info">
             <h3><span class="dexno">#${String(c.dex).padStart(3, '0')}</span> ${esc(c.name)}</h3>
-            <p class="tags">${chip(c.element)}<span class="rar rar-${c.rarity}">${RARITY[c.rarity]}</span></p>
-            <p class="lore">${esc(c.lore.es)}</p>
+            <p class="tags">${chip(c.element)}<span class="rar rar-${c.rarity}">${RARITY[lang][c.rarity]}</span></p>
+            <p class="lore">${esc(c.lore[lang])}</p>
           </div>
         </article>`,
-).join('');
+  ).join('');
 
-const filtersHtml = [
-  `<button type="button" class="filter on" data-filter="all">Todas</button>`,
-  ...ELEMENTS.map(
-    (e) =>
-      `<button type="button" class="filter" data-filter="${e}" style="--el:${ELEMENT_INFO[e].color}">${esc(ELEMENT_INFO[e].es)}</button>`,
-  ),
-].join('');
+  const filtersHtml = [
+    `<button type="button" class="filter on" data-filter="all" aria-pressed="true">${esc(t.all)}</button>`,
+    ...ELEMENTS.map(
+      (e) =>
+        `<button type="button" class="filter" data-filter="${e}" aria-pressed="false" style="--el:${ELEMENT_INFO[e].color}">${esc(name(e))}</button>`,
+    ),
+  ].join('');
 
-const rarities = Object.keys(NFT_SUPPLY_BY_RARITY) as Rarity[];
-const supplyHtml = rarities
-  .map((r) => {
-    const species = CREATURES.filter((c) => c.rarity === r).length;
-    return `
-            <tr class="rar-row-${r}"><th scope="row"><span class="rar rar-${r}">${RARITY[r]}</span></th><td>${species}</td><td>${NFT_SUPPLY_BY_RARITY[r].toLocaleString('es-ES')}</td></tr>`;
-  })
-  .join('');
-const total = CREATURES.reduce((n, c) => n + NFT_SUPPLY_BY_RARITY[c.rarity], 0);
+  const rarities = Object.keys(NFT_SUPPLY_BY_RARITY) as Rarity[];
+  const supplyHtml = rarities
+    .map((r) => {
+      const species = CREATURES.filter((c) => c.rarity === r).length;
+      return `
+            <tr><th scope="row"><span class="rar rar-${r}">${RARITY[lang][r]}</span></th><td>${species}</td><td>${NFT_SUPPLY_BY_RARITY[r].toLocaleString(locale)}</td></tr>`;
+    })
+    .join('');
+  const total = CREATURES.reduce((n, c) => n + NFT_SUPPLY_BY_RARITY[c.rarity], 0);
 
-const play = APP_OPEN
-  ? `<a class="btn btn-play" href="${esc(APP_URL)}">¡Jugar ahora!</a>`
-  : `<span class="btn btn-play soon" aria-disabled="true">Beta en Córdoba · muy pronto</span>`;
+  const play = APP_OPEN
+    ? `<a class="btn btn-play" href="${esc(APP_URL)}">${esc(t.playNow)}</a>`
+    : `<span class="btn btn-play soon" aria-disabled="true">${esc(t.soon)}</span>`;
 
-const html = readFileSync(join(OUT, 'index.html'), 'utf8')
-  .replaceAll('{{PLAY}}', play)
-  .replaceAll('{{COUNT}}', String(CREATURES.length))
-  .replaceAll('{{ELEMENTS}}', String(ELEMENTS.length))
-  .replaceAll('{{STARTERS}}', startersHtml)
-  .replaceAll('{{FILTERS}}', filtersHtml)
-  .replaceAll('{{CREATURES}}', creaturesHtml)
-  .replaceAll('{{SUPPLY}}', supplyHtml)
-  .replaceAll('{{TOTAL}}', total.toLocaleString('es-ES'))
-  .replaceAll('{{YEAR}}', String(new Date().getFullYear()));
-if (/\{\{[A-Z]+\}\}/.test(html)) throw new Error('unfilled placeholder in index.html');
-writeFileSync(join(OUT, 'index.html'), html);
+  const langs = Object.keys(LANGS) as Lang[];
+  const switchHtml = langs
+    .map((l) =>
+      l === lang
+        ? `<span class="on" aria-current="true" lang="${l}" title="${LANGS[l].name}">${LANGS[l].label}</span>`
+        : `<a href="${LANGS[l].path}" hreflang="${l}" lang="${l}" data-lang="${l}" title="${LANGS[l].name}">${LANGS[l].label}</a>`,
+    )
+    .join('');
+  const alternates = [
+    ...langs.map(
+      (l) => `<link rel="alternate" hreflang="${l}" href="https://nyrgo.fun${LANGS[l].path}" />`,
+    ),
+    `<link rel="alternate" hreflang="x-default" href="https://nyrgo.fun/" />`,
+  ].join('\n    ');
+
+  // text first (it may hold the data placeholders), then the data
+  return readFileSync('page.html', 'utf8')
+    .replace(/\{\{t:(\w+)\}\}/g, (_, k: string) => {
+      if (!(k in t)) throw new Error(`missing text ${k} (${lang})`);
+      return t[k as TextKey];
+    })
+    .replaceAll('{{LANG}}', lang)
+    .replaceAll('{{PATH}}', LANGS[lang].path)
+    .replaceAll('{{OGLOCALE}}', locale.replace('-', '_'))
+    .replaceAll('{{ALTERNATES}}', alternates)
+    .replaceAll('{{LANGSWITCH}}', switchHtml)
+    .replaceAll('{{PLAY}}', play)
+    .replaceAll('{{COUNT}}', String(CREATURES.length))
+    .replaceAll('{{ELEMENTS}}', String(ELEMENTS.length))
+    .replaceAll('{{STARTERS}}', startersHtml)
+    .replaceAll('{{FILTERS}}', filtersHtml)
+    .replaceAll('{{CREATURES}}', creaturesHtml)
+    .replaceAll('{{SUPPLY}}', supplyHtml)
+    .replaceAll('{{TOTAL}}', total.toLocaleString(locale))
+    .replaceAll('{{YEAR}}', String(new Date().getFullYear()));
+}
+
+for (const lang of Object.keys(LANGS) as Lang[]) {
+  const html = render(lang);
+  if (/\{\{[\w:]+\}\}/.test(html)) throw new Error(`unfilled placeholder in the ${lang} page`);
+  const dir = join(OUT, LANGS[lang].path);
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, 'index.html'), html);
+}
 process.stdout.write(
-  `site built in ${OUT}/ (${CREATURES.length} creatures, app ${APP_OPEN ? 'open' : 'coming soon'})\n`,
+  `site built in ${OUT}/ (${Object.keys(LANGS).join(', ')}; ${CREATURES.length} creatures, app ${APP_OPEN ? 'open' : 'coming soon'})\n`,
 );

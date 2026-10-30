@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="{{LANG}}">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{t:title}}</title>
+    <meta name="description" content="{{t:description}}" />
+    <meta name="theme-color" content="#06222b" />
+    <link rel="canonical" href="https://nyrgo.fun{{PATH}}" />
+    {{ALTERNATES}}
+    <link rel="icon" href="/assets/icon-192.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="{{t:title}}" />
+    <meta property="og:description" content="{{t:ogDescription}}" />
+    <meta property="og:image" content="https://nyrgo.fun/assets/header-1600.webp" />
+    <meta property="og:url" content="https://nyrgo.fun{{PATH}}" />
+    <meta property="og:locale" content="{{OGLOCALE}}" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preload" href="/assets/fredoka.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/site.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="{{PATH}}#top" aria-label="{{t:home}}">
+        <img src="/assets/logo.webp" alt="" width="40" height="41" />
+        <span>nyrGo!</span>
+      </a>
+      <nav aria-label="{{t:navLabel}}">
+        <a href="#play">{{t:navPlay}}</a>
+        <a href="#creatures">{{t:navCreatures}}</a>
+        <a href="#nft">{{t:navNft}}</a>
+        <a href="#faq">{{t:navFaq}}</a>
+      </nav>
+      <div class="lang" role="group" aria-label="{{t:langLabel}}">{{LANGSWITCH}}</div>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <picture>
+          <source media="(max-width: 700px)" srcset="/assets/header-800.webp" />
+          <img
+            class="banner"
+            src="/assets/header-1600.webp"
+            alt="{{t:bannerAlt}}"
+            width="1600"
+            height="600"
+          />
+        </picture>
+        <div class="hero-card card">
+          <h1>{{t:h1a}}<br /><span class="hl">{{t:h1b}}</span></h1>
+          <p class="lead">{{t:lead}}</p>
+          <div class="cta">
+            {{PLAY}}
+            <a class="btn btn-ghost" href="#creatures">{{t:seeCreatures}}</a>
+          </div>
+          <p class="pilot">📍 {{t:pilot}} <strong>Córdoba</strong></p>
+        </div>
+        <div class="starters" aria-label="{{t:startersLabel}}">{{STARTERS}}</div>
+      </section>
+
+      <section id="play" class="section">
+        <h2 class="title">{{t:howTitle}}</h2>
+        <ol class="steps">
+          <li class="card step">
+            <span class="num">1</span>
+            <h3>{{t:s1t}}</h3>
+            <p>{{t:s1}}</p>
+          </li>
+          <li class="card step">
+            <span class="num">2</span>
+            <h3>{{t:s2t}}</h3>
+            <p>{{t:s2}}</p>
+          </li>
+          <li class="card step">
+            <span class="num">3</span>
+            <h3>{{t:s3t}}</h3>
+            <p>{{t:s3}}</p>
+          </li>
+          <li class="card step">
+            <span class="num">4</span>
+            <h3>{{t:s4t}}</h3>
+            <p>{{t:s4}}</p>
+          </li>
+        </ol>
+      </section>
+
+      <section id="creatures" class="section">
+        <h2 class="title">{{t:creaturesTitle}}</h2>
+        <p class="sub">{{t:creaturesSub}}</p>
+        <div class="filters" role="group" aria-label="{{t:filterLabel}}">{{FILTERS}}</div>
+        <div class="grid" id="grid">{{CREATURES}}</div>
+      </section>
+
+      <section id="nft" class="section">
+        <h2 class="title">{{t:nftTitle}}</h2>
+        <div class="nft">
+          <div class="nft-text">
+            <p class="lead">{{t:nftLead}}</p>
+            <ul class="ticks">
+              <li>{{t:nft1}}</li>
+              <li>{{t:nft2}}</li>
+              <li>{{t:nft3}}</li>
+            </ul>
+            <table class="supply card">
+              <caption>
+                {{t:supplyCaption}}
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">{{t:thRarity}}</th>
+                  <th scope="col">{{t:thSpecies}}</th>
+                  <th scope="col">{{t:thEditions}}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{SUPPLY}}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th scope="row">{{t:total}}</th>
+                  <td colspan="2">{{t:totalValue}}</td>
+                </tr>
+              </tfoot>
+            </table>
+            <p class="note">{{t:testnet}}</p>
+          </div>
+          <div class="cards" aria-label="{{t:cardsLabel}}">
+            <img
+              src="/assets/cards/burnlet.webp"
+              alt="{{t:cardCommon}}"
+              loading="lazy"
+              width="600"
+              height="880"
+            />
+            <img
+              src="/assets/cards/airdragon.webp"
+              alt="{{t:cardRare}}"
+              loading="lazy"
+              width="600"
+              height="880"
+            />
+            <img
+              src="/assets/cards/genesaur.webp"
+              alt="{{t:cardLegendary}}"
+              loading="lazy"
+              width="600"
+              height="880"
+            />
+            <img
+              src="/assets/cards/zeroknowl.webp"
+              alt="{{t:cardMythic}}"
+              loading="lazy"
+              width="600"
+              height="880"
+            />
+          </div>
+        </div>
+      </section>
+
+      <section id="faq" class="section">
+        <h2 class="title">{{t:faqTitle}}</h2>
+        <div class="faq">
+          <details class="card">
+            <summary>{{t:q1}}</summary>
+            <p>{{t:a1}}</p>
+          </details>
+          <details class="card">
+            <summary>{{t:q2}}</summary>
+            <p>{{t:a2}}</p>
+          </details>
+          <details class="card">
+            <summary>{{t:q3}}</summary>
+            <p>{{t:a3}}</p>
+          </details>
+          <details class="card">
+            <summary>{{t:q4}}</summary>
+            <p>{{t:a4}}</p>
+          </details>
+          <details class="card">
+            <summary>{{t:q5}}</summary>
+            <p>{{t:a5}}</p>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <img src="/assets/logo.webp" alt="" width="64" height="65" loading="lazy" />
+      <p>nyrGo! · {{YEAR}}</p>
+      <p class="small">
+        {{t:footerNote}}
+        <a href="https://github.com/PoorInfz/nyrgo">{{t:code}}</a>
+      </p>
+    </footer>
+
+    <script src="/site.js" defer></script>
+  </body>
+</html>

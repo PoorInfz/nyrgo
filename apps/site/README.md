@@ -7,8 +7,11 @@ A static page presenting the game, built from the game's own data (`@nyrgo/share
 pnpm --filter "@nyrgo/site..." build     # → apps/site/dist
 ```
 
-- `static/` — page, styles, filter script, NFT card examples, Cloudflare `_headers`.
-- `build.mts` — fills the creature grid, starters, element filters and NFT supply table.
+- English at `/` (main), Spanish at `/es/`; the switch in the top bar remembers the choice, and a
+  first visit from a Spanish browser goes to `/es/`.
+- `page.html` + `i18n.mts` — the page and its text in each language.
+- `static/` — styles, script (language, element filter), NFT card examples, Cloudflare `_headers`.
+- `build.mts` — renders each language with the creature grid, starters, filters and NFT supplies.
 - `SITE_APP_OPEN=true` turns "Beta en Córdoba · muy pronto" into a "¡Jugar ahora!" link to
   `SITE_APP_URL` (default `https://app.nyrgo.fun`).
 

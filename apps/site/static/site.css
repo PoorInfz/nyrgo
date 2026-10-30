@@ -118,6 +118,38 @@ h3 {
   outline: none;
 }
 
+.lang {
+  display: flex;
+  flex-shrink: 0;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 12%);
+  border: 2px solid rgb(146 253 232 / 45%);
+}
+
+.lang a,
+.lang span {
+  min-width: 40px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+}
+
+.lang a:hover,
+.lang a:focus-visible {
+  background: rgb(67 242 137 / 25%);
+  outline: none;
+}
+
+.lang .on {
+  background: var(--mint);
+  color: var(--ink);
+}
+
 /* ------------------------------------------------------------ shared */
 
 .card {
@@ -702,6 +734,19 @@ h3 {
   }
   .brand span {
     display: none;
+  }
+  .topbar {
+    gap: 8px;
+    padding: 8px 10px;
+  }
+  .topbar nav {
+    flex: 1;
+    min-width: 0;
+  }
+  .lang a,
+  .lang span {
+    min-width: 34px;
+    padding: 4px 7px;
   }
   .hero-card {
     margin-top: -28px;
