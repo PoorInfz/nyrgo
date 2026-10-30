@@ -95,7 +95,7 @@ describe('signed out', () => {
 
 /** Calls the test is about, leaving out the profile's NEAR wallet check (adults only). */
 const gameCalls = (fetch: { mock: { calls: unknown[][] } }) =>
-  fetch.mock.calls.filter(([url]) => !String(url).endsWith('/v1/me/wallet'));
+  fetch.mock.calls.filter(([url]) => !/\/v1\/me\/(wallet|tips)$/.test(String(url)));
 
 describe('signed in as guest', () => {
   it('offers to save progress with an email', async () => {

@@ -1565,3 +1565,45 @@ button.skill:active:not(:disabled) {
 .grade-S {
   background: #ffb300;
 }
+
+/* ---------------------------------------------------------------- tips and market */
+
+.tip-won {
+  font-weight: 700;
+  color: #0a6b3a;
+  background: color-mix(in srgb, var(--mint) 30%, white);
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  padding: 6px 10px;
+}
+
+.token-claims {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+.price {
+  font-weight: 700;
+  font-size: 17px;
+}
+
+.sell {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.sell input {
+  width: 6.5em;
+  min-height: 36px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  padding: 0 8px;
+  font: inherit;
+}

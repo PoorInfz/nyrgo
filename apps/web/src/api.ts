@@ -165,6 +165,54 @@ export interface CaptureResult {
   itemsLeft: number;
   reward: { xp: number; gold: number; level: number; leveledUp: boolean; goldCapped: number };
   creature: OwnedCreature | null;
+  /** A NEAR tip on its way for walking to this creature, or null. */
+  tip?: { id: string; amountNear: string; status: string } | null;
+  /** Why this catch paid no tip (null when it did, or for a miss). */
+  noTip?: string | null;
+}
+
+/** A creature for sale in the game's market (prices in yoctoNEAR). */
+export interface MarketListing {
+  tokenId: string;
+  seller: string;
+  priceYocto: string;
+  species: string;
+  level: number;
+  grade: string;
+  edition: number | null;
+  supply: number | null;
+  cardUrl: string;
+}
+
+export interface Market {
+  contractId: string;
+  network: string;
+  treasury: string;
+  marketFeeBps: number;
+  royaltyBps: number;
+  listings: MarketListing[];
+}
+
+export interface TipRules {
+  amountNear: string;
+  maxPerDay: number;
+  minIntervalMin: number;
+  minDistanceM: number;
+}
+
+export interface MyTips {
+  enabled: boolean;
+  network: string;
+  rules: TipRules;
+  today: number;
+  nextTipAt: string | null;
+  tips: {
+    id: string;
+    amountNear: string;
+    status: string;
+    txHash: string | null;
+    createdAt: string;
+  }[];
 }
 
 export interface DexEntry {
@@ -345,6 +393,8 @@ export function createApi(baseUrl: string) {
       call<{ wallet: NearLink }>('POST', '/v1/me/wallet/link', body),
     nearUnlink: () => call<void>('DELETE', '/v1/me/wallet'),
     /** The card image a minted creature NFT shows in wallets. */
+    market: () => call<Market>('GET', '/v1/market'),
+    tips: () => call<MyTips>('GET', '/v1/me/tips'),
     nftCardUrl: (id: string) => `${baseUrl}/v1/nft/cards/${encodeURIComponent(id)}.png`,
     /** 404 when creature NFTs are switched off on this server. */
     nftInfo: () => call<{ contractId: string; network: string }>('GET', '/v1/nft'),

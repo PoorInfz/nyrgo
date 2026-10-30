@@ -58,6 +58,15 @@ class FakeContract implements NftChain {
   transfer(id: string, to: string) {
     this.tokens.get(id)!.owner = to;
   }
+  forSale = new Map<string, { seller: string; price: string }>();
+  async listings() {
+    this.guard();
+    return [...this.forSale].map(([token_id, l]) => ({ token_id, ...l }));
+  }
+  async marketConfig() {
+    this.guard();
+    return { treasury: 'rewards.nyrgo.testnet', royalty_bps: 500, market_fee_bps: 500 };
+  }
 }
 
 describe.skipIf(!TEST_DB_URL)('creatures as NFTs', () => {
@@ -169,6 +178,31 @@ describe.skipIf(!TEST_DB_URL)('creatures as NFTs', () => {
       url: `/v1/nft/cards/${other.creatureId}.png`,
     });
     expect(none.statusCode).toBe(404);
+  });
+
+  it('shows the game market from the contract, described from the game', async () => {
+    const p = await withStarter();
+    const account = acc();
+    await p.link(account);
+    await p.call('POST', `/v1/me/creatures/${p.creatureId}/mint`);
+    chain.forSale.set(p.creatureId, { seller: account, price: '2000000000000000000000000' });
+    chain.forSale.set('not-a-creature', { seller: account, price: '1' });
+    const m = (await injectAs(t.app, { method: 'GET', url: '/v1/market' })).json();
+    expect(m).toMatchObject({
+      treasury: 'rewards.nyrgo.testnet',
+      marketFeeBps: 500,
+      royaltyBps: 500,
+    });
+    expect(m.listings).toEqual([
+      expect.objectContaining({
+        tokenId: p.creatureId,
+        seller: account,
+        priceYocto: '2000000000000000000000000',
+        species: 'gwisp',
+        cardUrl: `http://localhost:3000/v1/nft/cards/${p.creatureId}.png`,
+      }),
+    ]);
+    chain.forSale.clear();
   });
 
   it('refuses once every edition of a species exists', async () => {

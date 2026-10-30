@@ -34,6 +34,16 @@ function newKey(): string {
  * Facing a wild creature: pick a vault and throw it. The server decides the outcome; the client
  * only sends the vault and a timing score (0–1) from the shrinking ring.
  */
+/** Reasons for no tip worth telling the player (the rest: minors, tips off). */
+const TIP_HINTS = new Set([
+  'no_wallet',
+  'too_soon',
+  'too_close',
+  'daily_limit',
+  'pool_empty',
+  'under_review',
+]);
+
 export function Encounter({
   api,
   spawn,
@@ -231,6 +241,12 @@ export function Encounter({
           <p className="muted">{t('chanceLine', { pct: Math.round(result.chance * 100) })}</p>
           <p>{t('rewardLine', { xp: result.reward.xp, gold: result.reward.gold })}</p>
           {result.reward.leveledUp && <p>{t('levelUp', { level: result.reward.level })}</p>}
+          {result.tip && (
+            <p className="tip-won">{t('tips.won', { amount: result.tip.amountNear })}</p>
+          )}
+          {!result.tip && result.noTip && TIP_HINTS.has(result.noTip) && (
+            <p className="muted small">{t(`tips.no.${result.noTip}`)}</p>
+          )}
         </div>
       )}
       {error && <p role="alert">{error}</p>}

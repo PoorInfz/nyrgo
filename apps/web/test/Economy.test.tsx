@@ -277,3 +277,129 @@ describe('Creatures as NFTs in the collection', () => {
     expect(screen.queryByRole('button', { name: 'Sacar como NFT' })).not.toBeInTheDocument();
   });
 });
+
+describe('The game market in the collection', () => {
+  const ID = '77777777-7777-4777-8777-777777777777';
+  const OTHER = '88888888-8888-4888-8888-888888888888';
+  const mine = {
+    id: ID,
+    creatureId: 'gwisp',
+    level: 16,
+    xp: 4800,
+    ivs: { hp: 7, atk: 7, def: 7, spd: 7 },
+    stats: { hp: 60, atk: 50, def: 40, spd: 60 },
+    hp: 60,
+    maxHp: 60,
+    acquiredVia: 'starter',
+    acquiredAt: '2026-10-29T09:00:00.000Z',
+    onchain: { status: 'minted', account: 'alice.testnet', edition: 3, supply: 1000 },
+  };
+  const listing = (over: Record<string, unknown> = {}) => ({
+    tokenId: OTHER,
+    seller: 'bob.testnet',
+    priceYocto: '1500000000000000000000000',
+    species: 'gwisp',
+    level: 9,
+    grade: 'B',
+    edition: 7,
+    supply: 1000,
+    cardUrl: `http://api.test/v1/nft/cards/${OTHER}.png`,
+    ...over,
+  });
+
+  function marketServer(listings: unknown[]) {
+    return serve((url) => {
+      if (url.endsWith('/v1/nft'))
+        return json(200, { contractId: 'c.testnet', network: 'testnet' });
+      if (url.endsWith('/v1/me/wallet'))
+        return json(200, {
+          network: 'testnet',
+          wallet: { accountId: 'alice.testnet', network: 'testnet', linkedAt: 'now' },
+        });
+      if (url.endsWith('/v1/market'))
+        return json(200, {
+          contractId: 'c.testnet',
+          network: 'testnet',
+          treasury: 'rewards.testnet',
+          marketFeeBps: 500,
+          royaltyBps: 500,
+          listings,
+        });
+      return json(200, { creatures: [mine] });
+    });
+  }
+
+  it('buys a listed creature with the player’s wallet, paying its price', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    marketServer([listing()]);
+    const caller = vi.fn(async () => ({ txHash: 'tx1' }));
+    render(<Collection api={createApi('http://api.test')} caller={caller} />);
+    const buy = await screen.findByRole('button', { name: 'Comprar por 1.5 NEAR' });
+    expect(screen.getByText(/El 5 % de cada venta/)).toBeInTheDocument();
+    await act(async () => {
+      fireEvent.click(buy);
+    });
+    expect(caller).toHaveBeenCalledWith({
+      network: 'testnet',
+      signerId: 'alice.testnet',
+      receiverId: 'c.testnet',
+      methodName: 'market_buy',
+      args: { token_id: OTHER },
+      deposit: '1500000000000000000000000',
+      gas: '100000000000000',
+    });
+    expect(await screen.findByText(/Has comprado Gwisp/)).toBeInTheDocument();
+  });
+
+  it('puts the player’s own NFT on sale with the listing deposit, and takes it off', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    marketServer([]);
+    const caller = vi.fn(async () => ({ txHash: 'tx' }));
+    render(<Collection api={createApi('http://api.test')} caller={caller} />);
+    const price = await screen.findByLabelText('Precio en NEAR');
+    fireEvent.change(price, { target: { value: '2,5' } });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Vender' }));
+    });
+    expect(caller).toHaveBeenCalledWith(
+      expect.objectContaining({
+        methodName: 'market_list',
+        args: { token_id: ID, price: '2500000000000000000000000' },
+        deposit: '10000000000000000000000',
+      }),
+    );
+    cleanup();
+
+    marketServer([listing({ tokenId: ID, seller: 'alice.testnet' })]);
+    render(<Collection api={createApi('http://api.test')} caller={caller} />);
+    expect(await screen.findByText('A la venta por 1.5 NEAR')).toBeInTheDocument();
+    expect(screen.getByText('Es tuya')).toBeInTheDocument();
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Quitar de la venta' }));
+    });
+    expect(caller).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        methodName: 'market_unlist',
+        args: { token_id: ID },
+        deposit: '1',
+      }),
+    );
+  });
+
+  it('says when the wallet signs with another account', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    marketServer([listing()]);
+    const { WrongAccountError } = await import('../src/near/tx');
+    const caller = vi.fn(async () => {
+      throw new WrongAccountError('alice.testnet', 'eve.testnet');
+    });
+    render(<Collection api={createApi('http://api.test')} caller={caller} />);
+    const buy = await screen.findByRole('button', { name: 'Comprar por 1.5 NEAR' });
+    await act(async () => {
+      fireEvent.click(buy);
+    });
+    expect(
+      await screen.findByText('Firma con la cuenta vinculada (alice.testnet).'),
+    ).toBeInTheDocument();
+  });
+});

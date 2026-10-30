@@ -43,6 +43,10 @@ export interface NftChain {
   speciesSupply(species: string): Promise<{ minted: number; max: number } | null>;
   /** Every token id an account holds in this contract. */
   tokensFor(account: string): Promise<string[]>;
+  /** Creatures for sale in the game's market (prices in yoctoNEAR). */
+  listings(): Promise<{ token_id: string; seller: string; price: string }[]>;
+  /** Where trading fees go and how much (basis points). */
+  marketConfig(): Promise<{ treasury: string; royalty_bps: number; market_fee_bps: number }>;
 }
 
 export class ChainUnavailable extends Error {}
@@ -95,6 +99,26 @@ export function nearNftChain(opts: {
       return (
         (await view<{ minted: number; max: number } | null>('species_supply', { species })) ?? null
       );
+    },
+    async listings() {
+      const all: { token_id: string; seller: string; price: string }[] = [];
+      for (let from = 0; ; from += PAGE) {
+        const page =
+          (await view<{ token_id: string; seller: string; price: string }[]>('market_listings', {
+            from_index: from,
+            limit: PAGE,
+          })) ?? [];
+        all.push(...page);
+        if (page.length < PAGE) return all;
+      }
+    },
+    async marketConfig() {
+      const m = await view<{ treasury: string; royalty_bps: number; market_fee_bps: number }>(
+        'market_config',
+        {},
+      );
+      if (!m) throw new ChainUnavailable('market_config: empty');
+      return m;
     },
     async tokensFor(account) {
       const ids: string[] = [];

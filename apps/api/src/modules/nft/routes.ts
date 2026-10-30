@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { Type, type Static } from '@sinclair/typebox';
-import { canUseWeb3, type AgeBand } from '@nyrgo/shared';
+import { canUseWeb3, nftGrade, type AgeBand } from '@nyrgo/shared';
 import type { AppConfig } from '../../config.js';
 import { withTx, type Db } from '../../db.js';
 import { HttpProblem } from '../../http/problem.js';
@@ -15,6 +15,8 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 /** A mint that started this long ago and never finished is picked up again. */
 const STUCK_MS = 2 * 60_000;
+/** The market is read from the chain at most this often. */
+const MARKET_CACHE_MS = 10_000;
 
 /**
  * Taking a creature out of the game as an NFT (Phase 3, testnet). The game account mints the
@@ -34,6 +36,62 @@ export async function nftRoutes(
   const cards = new Map<string, Buffer>();
 
   app.get('/v1/nft', async () => ({ contractId: chain.contractId, network }));
+
+  /**
+   * The game's market: creatures for sale, read from the contract (cached a few seconds) and
+   * described from what the game knows of each token. Buying and selling are signed by the
+   * players' own wallets; the API only shows.
+   */
+  let market: { at: number; body: unknown } | null = null;
+  app.get('/v1/market', async (req) => {
+    if (market && Date.now() - market.at < MARKET_CACHE_MS) return market.body;
+    let listings: { token_id: string; seller: string; price: string }[];
+    let cfg: { treasury: string; royalty_bps: number; market_fee_bps: number };
+    try {
+      [listings, cfg] = await Promise.all([chain.listings(), chain.marketConfig()]);
+    } catch (e) {
+      if (!(e instanceof ChainUnavailable)) throw e;
+      req.log.warn({ err: e.message }, 'market read failed');
+      throw new HttpProblem('nft_unavailable', 'NEAR could not be reached; try again');
+    }
+    const ids = listings.map((l) => l.token_id).filter((id) => UUID.test(id));
+    const { rows } = await db.query<{
+      id: string;
+      nft_snapshot: NftSnapshot;
+      nft_edition: number | null;
+      nft_supply: number | null;
+    }>(
+      `SELECT id, nft_snapshot, nft_edition, nft_supply FROM creature_instances
+        WHERE id = ANY($1::uuid[]) AND nft_snapshot IS NOT NULL`,
+      [ids],
+    );
+    const known = new Map(rows.map((r) => [r.id, r]));
+    const body = {
+      contractId: chain.contractId,
+      network,
+      treasury: cfg.treasury,
+      marketFeeBps: cfg.market_fee_bps,
+      royaltyBps: cfg.royalty_bps,
+      listings: listings
+        .filter((l) => known.has(l.token_id))
+        .map((l) => {
+          const t = known.get(l.token_id)!;
+          return {
+            tokenId: l.token_id,
+            seller: l.seller,
+            priceYocto: l.price,
+            species: t.nft_snapshot.species,
+            level: t.nft_snapshot.level,
+            grade: nftGrade(t.nft_snapshot.ivs),
+            edition: t.nft_edition,
+            supply: t.nft_supply,
+            cardUrl: urls(l.token_id).card,
+          };
+        }),
+    };
+    market = { at: Date.now(), body };
+    return body;
+  });
 
   /** A minted token's snapshot and edition; null for anything else (never unminted creatures). */
   async function minted(id: string) {

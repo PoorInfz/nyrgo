@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.22.0 — 2026-10-30 — Rewards in NEAR from trading fees
+
+- Creatures contract: the game's own market (`market_list`, `market_unlist`, `market_buy`, 5 %
+  fee) and NEP-199 royalties (5 %) on outside resales, both to the treasury
+  `rewards.nyrgo.testnet`; the testnet contract was upgraded in place with `migrate`, keeping
+  every creature and edition.
+- NEAR tips (0.005) for walking to a creature and catching it: one per hour at most, 100 m or more
+  from the last tip, 5 a day, adults with a linked wallet; paid by a job from the treasury within a
+  daily budget of 3 % of it. See `docs/REWARDS.md`.
+- App: market in the collection (buy, sell, take off sale, signed with the player's wallet), tip
+  after a catch, tips card in the profile.
+
 ## 0.21.0 — 2026-10-30 — NYRGO dropped
 
 - The NYRGO token is gone from the game (contract, API, app card, docs, workflow); its tables are
