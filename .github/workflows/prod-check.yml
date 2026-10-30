@@ -28,6 +28,8 @@ jobs:
           check "api health"    "curl -fsS https://api.nyrgo.fun/health"
           check "api nft"       "curl -fsS https://api.nyrgo.fun/v1/nft"
           check "api dex"       "curl -fsS https://api.nyrgo.fun/v1/dex | jq -c '{version, creatures: (.creatures | length)}'"
+          check "api token"     "curl -fsS https://api.nyrgo.fun/v1/token | jq -c '{contractId, network}' | grep -v null"
+          check "tiles service" "curl -fsS -o /dev/null -w '%{http_code}' https://tiles.nyrgo.fun/planet/0/0/0.mvt | grep -E '200|204'"
           check "api cors"      "curl -fsS -o /dev/null -D - -X OPTIONS https://api.nyrgo.fun/v1/me -H 'Origin: https://app.nyrgo.fun' -H 'Access-Control-Request-Method: GET' | grep -i '^access-control-allow-origin'"
           check "api render"    "curl -fsS https://nyrgo-api.onrender.com/health"
           exit $fail

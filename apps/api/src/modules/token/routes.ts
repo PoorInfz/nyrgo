@@ -64,6 +64,16 @@ export async function tokenRoutes(
     return null;
   }
 
+  /** Public: which token the game pays in (for wallets, explorers and the production check). */
+  app.get('/v1/token', async () => ({
+    symbol: cfg.symbol,
+    network,
+    contractId: chain?.contractId ?? null,
+    totalSupply: cfg.totalSupply,
+    dailyCapPerPlayer: cfg.dailyCapPerPlayer,
+    dailyCapGlobal: cfg.dailyCapGlobal,
+  }));
+
   app.get('/v1/me/token', async (req) => {
     const auth = requireAuth(req);
     const balance = await tokenBalance(db, auth.userId);

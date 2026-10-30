@@ -156,6 +156,15 @@ describe.skipIf(!TEST_DB_URL)('NYRGO switched off', () => {
   });
   afterAll(() => t.close());
 
+  it('says publicly that it is off', async () => {
+    const res = await injectAs(t.app, { method: 'GET', url: '/v1/token' });
+    expect(res.json()).toMatchObject({
+      symbol: 'NYRGO',
+      contractId: null,
+      totalSupply: 1_000_000_000,
+    });
+  });
+
   it('reports it and refuses claims', async () => {
     const g = await createGuest(t.app);
     const me = await injectAs(t.app, {
