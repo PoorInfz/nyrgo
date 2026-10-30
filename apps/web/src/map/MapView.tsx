@@ -1,10 +1,24 @@
 import { useEffect, useRef, useState } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
 import type { Map as MlMap, GeoJSONSource, Marker } from 'maplibre-gl';
+import { DEFAULT_AVATAR, type AvatarLook } from '@nyrgo/shared';
+import { Avatar } from '../avatar/Avatar';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { LocationFix } from '../geo/location';
 import { BIOME_COLORS, OSM_ATTRIBUTION, buildStyle, poisToGeoJSON, type MapPoi } from './style';
 
 const PLAYER_ZOOM = 16;
+/** Moves shorter than this are GPS jitter: the explorer stands still. */
+const STEP_M = 1.5;
+/** How long the explorer keeps walking after the last real move. */
+const WALK_HOLD_MS = 3500;
+/** The explorer glides to each new fix over this long instead of jumping. */
+const GLIDE_MS = 1200;
+
+const metresBetween = (a: { lat: number; lng: number }, b: { lat: number; lng: number }) => {
+  const k = Math.cos(((a.lat + b.lat) / 2) * (Math.PI / 180));
+  return Math.hypot((b.lat - a.lat) * 111_195, (b.lng - a.lng) * 111_195 * k);
+};
 
 export interface MapCreature {
   id: string;
@@ -27,8 +41,11 @@ export default function MapView({
   onCreature,
   lang,
   label,
+  look = DEFAULT_AVATAR,
 }: {
   fix: LocationFix | null;
+  /** The player's explorer, drawn where they stand. */
+  look?: AvatarLook;
   pois: MapPoi[];
   creatures?: MapCreature[];
   /** Tapping a creature on the map; the list beside the map does the same for keyboards. */
@@ -42,6 +59,9 @@ export default function MapView({
   const centred = useRef(false);
   const lib = useRef<typeof import('maplibre-gl') | null>(null);
   const markers = useRef(new Map<string, Marker>());
+  const me = useRef<{ marker: Marker; root: Root; at: { lat: number; lng: number } } | null>(null);
+  const [walking, setWalking] = useState(false);
+  const [facing, setFacing] = useState<'left' | 'right'>('right');
   const tap = useRef(onCreature);
   useEffect(() => {
     tap.current = onCreature;
@@ -110,17 +130,13 @@ export default function MapView({
           source: 'player',
           paint: { 'circle-radius': 18, 'circle-color': '#5eead4', 'circle-opacity': 0.15 },
         });
-        m.addLayer({
-          id: 'player',
-          type: 'circle',
-          source: 'player',
-          paint: {
-            'circle-radius': 7,
-            'circle-color': '#5eead4',
-            'circle-stroke-color': '#ffffff',
-            'circle-stroke-width': 2,
-          },
-        });
+        // the player is their explorer, an HTML marker standing on its feet at the fix
+        const el = document.createElement('div');
+        el.className = 'player-marker';
+        el.setAttribute('aria-hidden', 'true');
+        const root = createRoot(el);
+        const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' });
+        me.current = { marker, root, at: { lat: 0, lng: 0 } };
         map.current = m;
         setReady(true);
       });
@@ -130,6 +146,13 @@ export default function MapView({
       cancelled = true;
       for (const m of live.values()) m.remove();
       live.clear();
+      const mine = me.current;
+      me.current = null;
+      if (mine) {
+        mine.marker.remove();
+        // unmount after this render pass
+        queueMicrotask(() => mine.root.unmount());
+      }
       instance?.remove();
       map.current = null;
     };
@@ -173,6 +196,47 @@ export default function MapView({
     if (!ready || !map.current) return;
     (map.current.getSource('pois') as GeoJSONSource | undefined)?.setData(poisToGeoJSON(pois));
   }, [ready, pois]);
+
+  // Draw the explorer whenever its look, gait or direction changes.
+  useEffect(() => {
+    me.current?.root.render(<Avatar look={look} walking={walking} facing={facing} size={52} />);
+  }, [ready, look, walking, facing]);
+
+  // Walk to each new fix: glide there, legs moving, facing the way it goes.
+  useEffect(() => {
+    if (!ready || !map.current || !fix || !me.current) return;
+    const p = me.current;
+    const from = p.at;
+    const to = { lat: fix.lat, lng: fix.lng };
+    if (from.lat === 0 && from.lng === 0) {
+      p.marker.setLngLat([to.lng, to.lat]).addTo(map.current);
+      p.at = to;
+      return;
+    }
+    if (metresBetween(from, to) < STEP_M) {
+      // standing still (or GPS jitter): stop walking a moment later
+      const t = window.setTimeout(() => setWalking(false), WALK_HOLD_MS);
+      return () => window.clearTimeout(t);
+    }
+    if (to.lng !== from.lng) setFacing(to.lng < from.lng ? 'left' : 'right');
+    setWalking(true);
+    const still = window.setTimeout(() => setWalking(false), WALK_HOLD_MS);
+    const start = performance.now();
+    let frame = 0;
+    const step = (now: number) => {
+      const k = Math.min(1, (now - start) / GLIDE_MS);
+      const lat = from.lat + (to.lat - from.lat) * k;
+      const lng = from.lng + (to.lng - from.lng) * k;
+      p.marker.setLngLat([lng, lat]);
+      p.at = { lat, lng };
+      if (k < 1) frame = requestAnimationFrame(step);
+    };
+    frame = requestAnimationFrame(step);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.clearTimeout(still);
+    };
+  }, [ready, fix]);
 
   useEffect(() => {
     if (!ready || !map.current || !fix) return;

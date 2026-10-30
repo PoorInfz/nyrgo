@@ -18,6 +18,7 @@ import { looksLikeDriving, shouldQuery } from '../geo/nearby';
 import { isNativeApp, nativeSource } from '../geo/native';
 import { PLACES } from '../geo/presets';
 import { DevGps } from './DevGps';
+import { useLook } from '../avatar/store';
 
 const MapView = lazy(() => import('../map/MapView'));
 
@@ -72,6 +73,7 @@ export function Play({
   const [progressTick, setProgressTick] = useState(0);
   const [visit, setVisit] = useState<{ ok: boolean; text: string } | null>(null);
   const [visited, setVisited] = useState<ReadonlySet<string>>(new Set());
+  const look = useLook(api);
   const [events, setEvents] = useState<{ list: GameEvent[]; at: number }>({ list: [], at: 0 });
 
   useEffect(() => {
@@ -235,6 +237,7 @@ export function Play({
             }}
             lang={i18n.language}
             label={t('mapLabel')}
+            look={look}
           />
         </Suspense>
       )}

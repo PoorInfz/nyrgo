@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.27.0 — 2026-10-30 — Explorer avatar and cosmetics shop
+
+- The player's dot on the map is now their explorer: an original 2D character drawn in layers that
+  walks (arms and legs swing, it glides to each new fix and faces the way it goes) and stands still
+  when GPS only jitters. Reduced-motion settings stop the animation.
+- Wardrobe and cosmetics shop in the profile: skin tone, hairstyle, hair colour, clothes, hat and
+  accessory. Free pieces for everyone; the rest bought once with Gold (60–800), idempotent, through
+  the Gold ledger. Cosmetics change nothing in play. API: `GET/PUT /v1/me/avatar`,
+  `POST /v1/me/cosmetics/buy`; the look and purchases are in the data export.
+
 ## 0.26.0 — 2026-10-30 — Friendly duels
 
 - Friendly duels between friends standing together: challenge with one creature, the friend

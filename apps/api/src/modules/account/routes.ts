@@ -56,7 +56,7 @@ export async function accountRoutes(
           )
         )[0],
         player: (
-          await q(`SELECT display_name, level, xp, gold FROM players WHERE user_id = $1`)
+          await q(`SELECT display_name, level, xp, gold, avatar FROM players WHERE user_id = $1`)
         )[0],
         sessions: await q(
           `SELECT created_at, last_seen_at, expires_at, revoked_at FROM sessions WHERE user_id = $1 ORDER BY created_at`,
@@ -65,6 +65,9 @@ export async function accountRoutes(
           `SELECT id, definition_id, level, xp, acquired_via, acquired_at FROM creature_instances WHERE owner_id = $1`,
         ),
         inventory: await q(`SELECT item_id, qty FROM inventory WHERE user_id = $1`),
+        cosmetics: await q(
+          `SELECT item_id, acquired_at FROM player_cosmetics WHERE user_id = $1 ORDER BY acquired_at`,
+        ),
         dex: await q(
           `SELECT definition_id, seen_at, caught_at, caught_count FROM dex_entries WHERE user_id = $1`,
         ),

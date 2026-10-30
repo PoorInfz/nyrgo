@@ -68,7 +68,7 @@ async function takeItems(c: PoolClient, userId: string, items: Record<string, nu
 }
 
 /** Spends Gold through the ledger, or throws without spending anything. */
-async function spendGold(c: PoolClient, userId: string, amount: number, reason: string) {
+export async function spendGold(c: PoolClient, userId: string, amount: number, reason: string) {
   if (amount <= 0) return;
   const { rows } = await c.query<{ gold: string }>(
     `SELECT gold FROM players WHERE user_id = $1 FOR UPDATE`,

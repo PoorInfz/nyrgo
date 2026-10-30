@@ -1,5 +1,6 @@
 import type {
   AgeBand,
+  AvatarLook,
   BattleEvent,
   Element,
   ErrorCode,
@@ -349,6 +350,13 @@ export interface Duel {
   fight: DuelFight | null;
 }
 
+export interface AvatarState {
+  avatar: AvatarLook;
+  /** Cosmetics bought (free ones are not listed: everyone has them). */
+  owned: string[];
+  gold: number;
+}
+
 export interface GameEvent {
   id: string;
   title: string;
@@ -507,6 +515,11 @@ export function createApi(baseUrl: string) {
       call<{ status: 'done' }>('POST', `/v1/trades/${encodeURIComponent(id)}/accept`),
     declineTrade: (id: string) =>
       call<{ status: 'closed' }>('POST', `/v1/trades/${encodeURIComponent(id)}/decline`),
+    avatar: () => call<AvatarState>('GET', '/v1/me/avatar'),
+    saveAvatar: (avatar: AvatarLook) => call<AvatarState>('PUT', '/v1/me/avatar', { avatar }),
+    /** `key` must stay the same when retrying the same purchase. */
+    buyCosmetic: (item: string, key: string) =>
+      call<AvatarState>('POST', '/v1/me/cosmetics/buy', { item }, { 'idempotency-key': key }),
     duels: () => call<{ duels: Duel[] }>('GET', '/v1/duels'),
     challenge: (to: string, creature: string) =>
       call<{ id: string; status: 'pending'; expiresAt: string }>('POST', '/v1/duels', {

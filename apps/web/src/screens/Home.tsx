@@ -4,6 +4,7 @@ import { ApiError, type Api, type Profile } from '../api';
 import { EmailForm } from '../components/EmailForm';
 import { TipsCard } from './TipsCard';
 import { NearWallet } from './NearWallet';
+import { Wardrobe } from './Wardrobe';
 
 export function Home({
   api,
@@ -85,6 +86,12 @@ export function Home({
             <dd>{profile.gold}</dd>
           </div>
         </dl>
+      </section>
+
+      <section className="card stack" aria-labelledby="wardrobe-title">
+        <h2 id="wardrobe-title">{t('wardrobe.title')}</h2>
+        <p className="muted">{t('wardrobe.why')}</p>
+        <Wardrobe api={api} onGold={(gold) => onChange({ ...profile, gold })} />
       </section>
 
       {profile.kind === 'guest' && (
