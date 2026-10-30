@@ -22,8 +22,12 @@ export interface DeployTarget {
   /** Available balance (yocto) and code hash; null if the account does not exist. */
   account(id: string): Promise<{ available: bigint; codeHash: string } | null>;
   createContractAccount(contractId: string, deposit: bigint): Promise<void>;
-  /** Deploys `wasm`; with `init`, also calls `new` in the same transaction. */
-  deploy(contractId: string, wasm: Uint8Array, init: Record<string, unknown> | null): Promise<void>;
+  /** Deploys `wasm`; with `init`, also calls that method (`new`, `migrate`) in the same transaction. */
+  deploy(
+    contractId: string,
+    wasm: Uint8Array,
+    init: { method: string; args: Record<string, unknown> } | null,
+  ): Promise<void>;
   view<T>(contractId: string, method: string, args: Record<string, unknown>): Promise<T>;
   registerSpecies(contractId: string, species: SpeciesSupplyArg[]): Promise<void>;
 }
@@ -31,6 +35,11 @@ export interface DeployTarget {
 /** Storage for a ~350 kB contract plus the species registry and room for the first tokens. */
 export const CONTRACT_DEPOSIT = 5n * 10n ** 24n; // 5 NEAR
 const NEAR = 10n ** 24n;
+/** The treasury only needs to exist: trading fees fill it. */
+export const TREASURY_DEPOSIT = NEAR / 5n; // 0.2 NEAR
+/** 5 % royalty on outside resales, 5 % fee in the game's market. */
+export const ROYALTY_BPS = 500;
+export const MARKET_FEE_BPS = 500;
 const EMPTY_CODE = '11111111111111111111111111111111';
 const BATCH = 25;
 
@@ -59,6 +68,8 @@ export interface DeployOptions {
   contract: string;
   wasm: Uint8Array;
   species: SpeciesSupplyArg[];
+  /** Where trading fees go (default `rewards.<game>`); created if missing. */
+  treasury?: string;
   /** Redeploy the code when it differs from what is on chain (state is kept). */
   upgrade?: boolean;
   /** Only look and report; change nothing. */
@@ -68,6 +79,8 @@ export interface DeployOptions {
 
 export interface DeployReport {
   created: boolean;
+  /** The trading fees' account and the contract's market settings after the deploy. */
+  market?: { treasury: string; royalty_bps: number; market_fee_bps: number } | null;
   deployed: 'new' | 'upgraded' | 'unchanged' | 'differs';
   registered: number;
   alreadyRegistered: number;
@@ -85,6 +98,17 @@ export async function deployCreatures(t: DeployTarget, o: DeployOptions): Promis
   const game = await t.account(o.game);
   if (!game) throw new Error(`The game account ${o.game} does not exist on this network`);
   log(`game account ${o.game}: ${near(game.available)} available`);
+
+  // 0. the treasury that trading fees fill (and NEAR tips are paid from)
+  const treasury = o.treasury ?? `rewards.${o.game}`;
+  if (!treasury.endsWith(`.${o.game}`)) {
+    throw new Error(`The treasury must be a sub-account of ${o.game}`);
+  }
+  const market = { treasury, royalty_bps: ROYALTY_BPS, market_fee_bps: MARKET_FEE_BPS };
+  if (!(await t.account(treasury))) {
+    log(`${would}create the treasury ${treasury} with ${near(TREASURY_DEPOSIT)}`);
+    if (!o.dryRun) await t.createContractAccount(treasury, TREASURY_DEPOSIT);
+  }
 
   // 1. contract account
   let contract = await t.account(o.contract);
@@ -113,8 +137,12 @@ export async function deployCreatures(t: DeployTarget, o: DeployOptions): Promis
     log(`${would}deploy and initialise (owner ${o.game}), code ${hash}`);
     if (!o.dryRun) {
       await t.deploy(o.contract, o.wasm, {
-        owner_id: o.game,
-        metadata: { spec: 'nft-1.0.0', name: 'nyrGo! Creatures (testnet)', symbol: 'NYRGO' },
+        method: 'new',
+        args: {
+          owner_id: o.game,
+          metadata: { spec: 'nft-1.0.0', name: 'nyrGo! Creatures (testnet)', symbol: 'NYRGO' },
+          market,
+        },
       });
     }
     deployed = 'new';
@@ -122,8 +150,21 @@ export async function deployCreatures(t: DeployTarget, o: DeployOptions): Promis
     log('contract code is up to date');
     deployed = 'unchanged';
   } else if (o.upgrade) {
-    log(`${would}upgrade the code ${onChain} → ${hash} (state kept)`);
-    if (!o.dryRun) await t.deploy(o.contract, o.wasm, null);
+    // the first deploy has no market: its state is migrated in the same transaction
+    const hasMarket = await t
+      .view(o.contract, 'market_config', {})
+      .then(() => true)
+      .catch(() => false);
+    log(
+      `${would}upgrade the code ${onChain} → ${hash} (state kept${hasMarket ? '' : ', migrated to add the market'})`,
+    );
+    if (!o.dryRun) {
+      await t.deploy(
+        o.contract,
+        o.wasm,
+        hasMarket ? null : { method: 'migrate', args: { market } },
+      );
+    }
     deployed = 'upgraded';
   } else {
     log(
@@ -164,9 +205,23 @@ export async function deployCreatures(t: DeployTarget, o: DeployOptions): Promis
   }
   if (mismatched.length) log(`WARNING: supply differs on chain for ${mismatched.join(', ')}`);
 
+  const onChainMarket = await t
+    .view<{ treasury: string; royalty_bps: number; market_fee_bps: number }>(
+      o.contract,
+      'market_config',
+      {},
+    )
+    .catch(() => null);
+  if (onChainMarket) {
+    log(
+      `market: fees to ${onChainMarket.treasury}, royalty ${onChainMarket.royalty_bps / 100} %, ` +
+        `market fee ${onChainMarket.market_fee_bps / 100} %`,
+    );
+  }
   return {
     created,
     deployed,
+    market: onChainMarket,
     registered: o.dryRun ? 0 : missing.length,
     alreadyRegistered: o.species.length - missing.length,
     mismatched,
@@ -204,7 +259,7 @@ export function nearDeployTarget(rpcUrl: string, game: string, key: string): Dep
     },
     async deploy(contractId, wasm, init) {
       const list = [actions.deployContract(wasm)];
-      if (init) list.push(actions.functionCall('new', init, 100_000_000_000_000n, 0n));
+      if (init) list.push(actions.functionCall(init.method, init.args, 100_000_000_000_000n, 0n));
       await as(contractId).signAndSendTransaction({ receiverId: contractId, actions: list });
     },
     async view<T>(contractId: string, method: string, args: Record<string, unknown>) {

@@ -4,6 +4,13 @@ NEP-171 NFTs on NEAR's `near-contract-standards` 5.30. The NFT is the creature: 
 token has the creature in the game. Only the game account (`owner_id`) can mint, and only species it registered, each up to its
 fixed supply; every token's title carries its edition ("Gwisp #12/1000"). See `docs/nft/`.
 
+Trading pays the players' rewards. Resales on outside marketplaces pay a **5 % royalty** (NEP-199
+`nft_payout` / `nft_transfer_payout`), and the game's own market (`market_list`, `market_unlist`,
+`market_buy`, in this contract so a sale is one atomic call) takes a **5 % fee**. Both go to the
+treasury (`rewards.<game account>`), which funds the NEAR tips for catching creatures. Fees are
+capped at 20 % in the contract; `set_market` (game account) changes them. The first deploy is
+upgraded in place with `migrate`, keeping every token and edition.
+
 ## Test
 
 ```bash

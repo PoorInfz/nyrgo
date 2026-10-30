@@ -15,7 +15,12 @@ function fakeChain(gameBalance = 10n * NEAR) {
   const accounts = new Map<string, { available: bigint; codeHash: string }>([
     ['game.testnet', { available: gameBalance, codeHash: EMPTY }],
   ]);
-  const state = { owner: null as string | null, species: new Map<string, number>() };
+  const state = {
+    owner: null as string | null,
+    market: null as Record<string, unknown> | null,
+    species: new Map<string, number>(),
+    inits: [] as string[],
+  };
   const calls: string[] = [];
   const t: DeployTarget = {
     async account(id) {
@@ -29,10 +34,16 @@ function fakeChain(gameBalance = 10n * NEAR) {
     async deploy(id, wasm, init) {
       calls.push(init ? `deploy+init ${id}` : `deploy ${id}`);
       accounts.get(id)!.codeHash = codeHashOf(wasm);
-      if (init) state.owner = init.owner_id as string;
+      if (init) state.inits.push(init.method);
+      if (init?.method === 'new') state.owner = init.args.owner_id as string;
+      if (init) state.market = init.args.market as Record<string, unknown>;
     },
     async view<T>(_id: string, method: string, args: Record<string, unknown>) {
       if (method === 'game_account') return state.owner as T;
+      if (method === 'market_config') {
+        if (!state.market) throw new Error('MethodNotFound');
+        return state.market as T;
+      }
       const max = state.species.get(args.species as string);
       return (max ? { minted: 0, max } : null) as T;
     },
@@ -59,12 +70,18 @@ describe('NFT contract deploy', () => {
     const c = fakeChain();
     const r = await deployCreatures(c.t, opts);
     expect(c.calls).toEqual([
+      'create rewards.game.testnet',
       'create creatures.game.testnet',
       'deploy+init creatures.game.testnet',
       'register 25',
       'register 5',
     ]);
-    expect(r).toMatchObject({ created: true, deployed: 'new', registered: 30 });
+    expect(r).toMatchObject({
+      created: true,
+      deployed: 'new',
+      registered: 30,
+      market: { treasury: 'rewards.game.testnet', royalty_bps: 500, market_fee_bps: 500 },
+    });
     expect(c.state.owner).toBe('game.testnet');
     expect(c.accounts.get('creatures.game.testnet')!.available).toBe(CONTRACT_DEPOSIT);
   });
@@ -105,6 +122,19 @@ describe('NFT contract deploy', () => {
       'upgraded',
     );
     expect(c.calls).toEqual(['deploy creatures.game.testnet']);
+    expect(c.state.species.size).toBe(30);
+  });
+
+  it('migrates a first deploy without a market when upgrading it', async () => {
+    const c = fakeChain();
+    await deployCreatures(c.t, opts);
+    c.state.market = null; // as deployed before trading existed
+    c.calls.length = 0;
+    const next = new Uint8Array([...wasm, 2]);
+    const r = await deployCreatures(c.t, { ...opts, wasm: next, upgrade: true });
+    expect(c.calls).toEqual(['deploy+init creatures.game.testnet']);
+    expect(c.state.inits.at(-1)).toBe('migrate');
+    expect(r.market).toMatchObject({ treasury: 'rewards.game.testnet' });
     expect(c.state.species.size).toBe(30);
   });
 
