@@ -41,6 +41,13 @@ export const ERROR_CODES = {
   creature_onchain: 409,
   nft_unavailable: 503,
   nft_sold_out: 409,
+  token_unavailable: 503,
+  token_review: 403,
+  token_account_too_new: 403,
+  token_cooldown: 429,
+  token_below_minimum: 422,
+  token_claim_failed: 502,
+  token_claim_unknown: 504,
   internal_error: 500,
 } as const;
 

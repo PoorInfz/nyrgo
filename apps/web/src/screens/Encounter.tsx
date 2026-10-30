@@ -11,6 +11,7 @@ import {
 } from '../api';
 import { thumbUrl, useContent } from '../content';
 import { Battle, Sprite } from './Battle';
+import { rewardText } from '../rewardText';
 
 /** Seconds for one shrink of the timing ring (kept in sync with the CSS animation). */
 export const RING_PERIOD_MS = 1400;
@@ -229,7 +230,7 @@ export function Encounter({
             </strong>
           </p>
           <p className="muted">{t('chanceLine', { pct: Math.round(result.chance * 100) })}</p>
-          <p>{t('rewardLine', { xp: result.reward.xp, gold: result.reward.gold })}</p>
+          <p>{rewardText(t, result.reward)}</p>
           {result.reward.leveledUp && <p>{t('levelUp', { level: result.reward.level })}</p>}
         </div>
       )}

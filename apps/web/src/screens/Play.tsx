@@ -17,6 +17,7 @@ import { DEFAULT_CONFIG } from '@nyrgo/shared';
 import { looksLikeDriving, shouldQuery } from '../geo/nearby';
 import { PLACES } from '../geo/presets';
 import { DevGps } from './DevGps';
+import { rewardText } from '../rewardText';
 
 const MapView = lazy(() => import('../map/MapView'));
 
@@ -117,7 +118,7 @@ export function Play({
         .join(', ');
       setVisit({
         ok: true,
-        text: `${t('rewardLine', { xp: r.reward.xp, gold: r.reward.gold })}${itemNames ? ` · ${itemNames}` : ''}`,
+        text: `${rewardText(t, r.reward)}${itemNames ? ` · ${itemNames}` : ''}`,
       });
       setVisited((v) => new Set(v).add(id));
       setProgressTick((n) => n + 1);

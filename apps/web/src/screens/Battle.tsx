@@ -10,6 +10,7 @@ import {
   type Dex,
 } from '../api';
 import { fxUrl, spriteUrl } from '../content';
+import { rewardText } from '../rewardText';
 
 type Lang = 'es' | 'en';
 
@@ -304,7 +305,7 @@ export function Battle({
                 ` ${t('battle.creatureLevelUp', { name: me.name, level: b.creatureXp.level })}`}
             </p>
           )}
-          {b.reward && <p>{t('rewardLine', { xp: b.reward.xp, gold: b.reward.gold })}</p>}
+          {b.reward && <p>{rewardText(t, b.reward)}</p>}
           {b.reward === null && <p className="muted">{t('battle.capReached')}</p>}
           <button type="button" onClick={() => onEnd(b)}>
             {t('battle.continue')}

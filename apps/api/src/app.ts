@@ -23,6 +23,8 @@ import { httpNearRpc, type NearRpc } from './modules/wallet/rpc.js';
 import { nearNftChain, type NftChain } from './modules/nft/chain.js';
 import { nftRoutes } from './modules/nft/routes.js';
 import { Syncer } from './modules/nft/service.js';
+import { nearFtChain, type FtChain } from './modules/token/chain.js';
+import { tokenRoutes } from './modules/token/routes.js';
 
 export interface AppDeps {
   config: AppConfig;
@@ -33,6 +35,8 @@ export interface AppDeps {
   nearRpc?: NearRpc;
   /** Overrides the creatures NFT client (tests pass a fake chain). */
   nftChain?: NftChain;
+  /** Overrides the NYRGO token client (tests pass a fake chain). */
+  ftChain?: FtChain;
 }
 
 const STATE_CHANGING = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
@@ -43,6 +47,7 @@ export async function buildApp({
   mailer,
   nearRpc,
   nftChain,
+  ftChain,
 }: AppDeps): Promise<FastifyInstance> {
   const app = Fastify({
     logger:
@@ -154,6 +159,12 @@ export async function buildApp({
   // Own plugin scope: the token hook only applies to /admin/v1/*.
   await app.register(adminRoutes, { db, config });
   if (chain) await app.register(nftRoutes, { db, config, chain });
+  const tok = config.near.token;
+  await app.register(tokenRoutes, {
+    db,
+    config,
+    chain: ftChain ?? (tok ? nearFtChain({ rpcUrl: config.near.rpcUrl, ...tok }) : null),
+  });
   await app.register(walletRoutes, {
     db,
     config,

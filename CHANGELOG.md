@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.20.0 — 2026-10-30 — NYRGO token (testnet, play to earn)
+
+- `contracts/token`: NYRGO, a NEP-141 token with a fixed supply of 1,000,000,000 created once in
+  the game account (no mint function). Workflow "Deploy token (testnet)".
+- Players aged 18+ earn NYRGO for captures, battles won, places visited and missions, at most 50
+  per local day and 200,000 per day for the whole game; they claim to their linked NEAR account
+  once a day (accounts 7+ days old, low anti-cheat risk, no open review). See `docs/TOKEN.md`.
+- The app shows the unclaimed balance and claims it; rewards say "+2 NYRGO".
+
 ## 0.19.0 — 2026-10-30 — Play anywhere: the world loads on demand
 
 - `WORLD_ON_DEMAND=true`: the first time someone plays in an area (H3 resolution 6, ~36 km²) the
