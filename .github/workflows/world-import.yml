@@ -50,7 +50,16 @@ jobs:
           elif [ -z "$DATABASE_URL" ]; then
             echo "::error title=World import::The repository secret PROD_DATABASE_URL is missing"; exit 1
           fi
-          if ! pnpm world:import $flags > import.log 2>&1; then
+          # the public Overpass servers are often busy: try the main one, then mirrors
+          ok=0
+          for url in https://overpass-api.de/api/interpreter \
+                     https://overpass.kumi.systems/api/interpreter \
+                     https://overpass.private.coffee/api/interpreter; do
+            if OVERPASS_URL=$url pnpm world:import $flags > import.log 2>&1; then ok=1; break; fi
+            echo "::warning title=World import::$url failed, trying the next server"
+            sleep 20
+          done
+          if [ $ok = 0 ]; then
             cat import.log
             # the error (never the connection string: it is masked as a secret)
             grep -iE 'error|refused|denied|timeout|ENOTFOUND|ssl' import.log | head -3 | while read -r l; do
