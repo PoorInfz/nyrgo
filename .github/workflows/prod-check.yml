@@ -34,6 +34,7 @@ jobs:
           check "api market"    "curl -fsS https://api.nyrgo.fun/v1/market | jq -c '{treasury, marketFeeBps, royaltyBps, listings: (.listings | length)}'"
           check "api events"    "curl -fsS 'https://api.nyrgo.fun/v1/events?lat=37.8847&lng=-4.7792' | jq -c '{events: (.events | length)}'"
           check "api duels"     "curl -sS -o /dev/null -w '%{http_code}' https://api.nyrgo.fun/v1/duels | grep -x 401"
-          check "api cors"      "curl -fsS -o /dev/null -D - -X OPTIONS https://api.nyrgo.fun/v1/me -H 'Origin: https://app.nyrgo.fun' -H 'Access-Control-Request-Method: GET' | grep -i '^access-control-allow-origin'"
+          check "api avatar"    "curl -sS -o /dev/null -w '%{http_code}' https://api.nyrgo.fun/v1/me/avatar | grep -x 401"
+          check "api cors"      "curl -fsS -o /dev/null -D - -X OPTIONS https://api.nyrgo.fun/v1/me -H 'Origin: https://app.nyrgo.fun' -H 'Access-Control-Request-Method: PUT' | grep -i '^access-control-allow-origin'"
           check "api render"    "curl -fsS https://nyrgo-api.onrender.com/health"
           exit $fail
