@@ -221,3 +221,94 @@ export function nearDeployTarget(rpcUrl: string, game: string, key: string): Dep
     },
   };
 }
+
+/** NYRGO: 1,000,000,000 tokens with 18 decimals, all created once in the game account. */
+export const TOKEN_DECIMALS = 18;
+export const TOKEN_SUPPLY = 1_000_000_000n * 10n ** BigInt(TOKEN_DECIMALS);
+export const TOKEN_DEPOSIT = 3n * 10n ** 24n; // 3 NEAR for the contract's storage
+/** A small round mint coin with the game's "N", as the NEP-148 icon. */
+export const TOKEN_ICON =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='29' fill='%2343f289' stroke='%2306222b' stroke-width='5'/%3E%3Cpath d='M21 45V19h5l12 17V19h5v26h-5L26 28v17z' fill='%2306222b'/%3E%3C/svg%3E";
+
+export interface TokenDeployOptions {
+  game: string;
+  contract: string;
+  wasm: Uint8Array;
+  upgrade?: boolean;
+  dryRun?: boolean;
+  log?: (line: string) => void;
+}
+
+/**
+ * Puts the NYRGO token on NEAR testnet: creates `token.<game>` with the game's key, deploys and
+ * initialises it with the whole supply in the game account. Safe to run again.
+ */
+export async function deployToken(
+  t: DeployTarget,
+  o: TokenDeployOptions,
+): Promise<{ created: boolean; deployed: DeployReport['deployed']; gameBalance: string | null }> {
+  const log = o.log ?? (() => {});
+  const would = o.dryRun ? '(dry run) would ' : '';
+  if (!o.contract.endsWith(`.${o.game}`)) {
+    throw new Error(`The token account must be a sub-account of ${o.game}`);
+  }
+  const game = await t.account(o.game);
+  if (!game) throw new Error(`The game account ${o.game} does not exist on this network`);
+  log(`game account ${o.game}: ${near(game.available)} available`);
+
+  let contract = await t.account(o.contract);
+  let created = false;
+  if (!contract) {
+    if (game.available < TOKEN_DEPOSIT + NEAR) {
+      throw new Error(
+        `${o.game} needs at least ${near(TOKEN_DEPOSIT + NEAR)} to create the token account; ` +
+          'top it up with the "Fund testnet account" workflow',
+      );
+    }
+    log(`${would}create ${o.contract} with ${near(TOKEN_DEPOSIT)}`);
+    if (!o.dryRun) {
+      await t.createContractAccount(o.contract, TOKEN_DEPOSIT);
+      contract = await t.account(o.contract);
+      if (!contract) throw new Error(`${o.contract} was not created`);
+    }
+    created = true;
+  }
+
+  const hash = codeHashOf(o.wasm);
+  const onChain = contract?.codeHash ?? EMPTY_CODE;
+  let deployed: DeployReport['deployed'];
+  if (onChain === EMPTY_CODE) {
+    log(`${would}deploy and initialise: ${TOKEN_SUPPLY / 10n ** 18n} NYRGO to ${o.game}`);
+    if (!o.dryRun) {
+      await t.deploy(o.contract, o.wasm, {
+        owner_id: o.game,
+        total_supply: TOKEN_SUPPLY.toString(),
+        metadata: {
+          spec: 'ft-1.0.0',
+          name: 'nyrGo!',
+          symbol: 'NYRGO',
+          icon: TOKEN_ICON,
+          decimals: TOKEN_DECIMALS,
+        },
+      });
+    }
+    deployed = 'new';
+  } else if (onChain === hash) {
+    log('token code is up to date');
+    deployed = 'unchanged';
+  } else if (o.upgrade) {
+    log(`${would}upgrade the code ${onChain} → ${hash} (balances kept)`);
+    if (!o.dryRun) await t.deploy(o.contract, o.wasm, null);
+    deployed = 'upgraded';
+  } else {
+    log(`token code differs from this build (${onChain} on chain); run with upgrade to replace it`);
+    deployed = 'differs';
+  }
+  if (o.dryRun && deployed === 'new') return { created, deployed, gameBalance: null };
+
+  const meta = await t.view<{ symbol: string }>(o.contract, 'ft_metadata', {});
+  if (meta.symbol !== 'NYRGO') throw new Error(`${o.contract} is not the NYRGO token`);
+  const balance = await t.view<string>(o.contract, 'ft_balance_of', { account_id: o.game });
+  log(`${o.game} holds ${BigInt(balance) / 10n ** 18n} NYRGO`);
+  return { created, deployed, gameBalance: balance };
+}
