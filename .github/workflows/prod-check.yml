@@ -23,6 +23,8 @@ jobs:
           }
           check "website"       "curl -fsS https://nyrgo.fun/ | grep -o '<title>[^<]*'"
           check "website www"   "curl -fsS https://www.nyrgo.fun/ | grep -o '<title>[^<]*'"
+          check "website play"  "curl -fsS https://nyrgo.fun/ | grep -o 'href=\"https://app.nyrgo.fun\"' | head -1"
+          check "website world" "curl -fsS https://nyrgo.fun/es/ | grep -o 'Disponible en todo el mundo'"
           check "website es"    "curl -fsS https://nyrgo.fun/es/ | grep -o '<title>[^<]*'"
           check "app"           "curl -fsS https://app.nyrgo.fun/ | grep -o '<title>[^<]*'"
           check "app route"     "curl -fsS -o /dev/null -w '%{http_code}' https://app.nyrgo.fun/auth/verify"
