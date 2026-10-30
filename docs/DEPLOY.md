@@ -55,8 +55,9 @@ When the app works end to end, set `SITE_APP_OPEN=true` as a build variable of t
 
 - **Import world**: Córdoba's places and exclusion zones from OpenStreetMap into production
   (secret `PROD_DATABASE_URL`).
-- **Map tiles (Córdoba)**: cuts the basemap from the latest Protomaps build into
-  `apps/web/public/tiles/cordoba/` and commits it; deploy the app afterwards.
+- **World map upload**: streams the latest Protomaps planet basemap into the R2 bucket
+  `nyrgo-tiles` (secrets `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`); the tiles Worker
+  (`apps/tiles`, tiles.nyrgo.fun) serves it. Run again to refresh the map.
 - **Deploy to Cloudflare**: the app or the website (secrets `CLOUDFLARE_API_TOKEN`,
   `CLOUDFLARE_ACCOUNT_ID`).
 - **Production check**: website, app and API answer as expected.

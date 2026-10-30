@@ -49,8 +49,9 @@ export default defineConfig({
             },
           },
           {
-            // The basemap tiles of the pilot city: the map keeps working with a weak signal.
-            urlPattern: /\/tiles\/.*\.pbf$/,
+            // Street map tiles already seen: the map keeps working with a weak signal.
+            urlPattern: ({ url }) =>
+              url.hostname.startsWith('tiles.') || /\/tiles\/.*\.(pbf|mvt)$/.test(url.pathname),
             handler: 'CacheFirst',
             options: {
               cacheName: 'map-tiles',
