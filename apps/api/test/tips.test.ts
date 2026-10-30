@@ -46,6 +46,32 @@ const north = (p: { lat: number; lng: number }, m: number) => ({
   lng: p.lng,
 });
 
+/**
+ * A time zone where it is daytime right now. The limits count tips per local day and the tests
+ * move tips hours into the past, which must not cross the player's midnight.
+ */
+function daytimeZone(): string {
+  const zones = [
+    'Europe/Madrid',
+    'America/New_York',
+    'Asia/Tokyo',
+    'Pacific/Honolulu',
+    'Asia/Kolkata',
+    'America/Los_Angeles',
+  ];
+  for (const zone of zones) {
+    const hour = Number(
+      new Intl.DateTimeFormat('en-GB', {
+        timeZone: zone,
+        hour: '2-digit',
+        hourCycle: 'h23',
+      }).format(new Date()),
+    );
+    if (hour >= 7 && hour < 17) return zone;
+  }
+  return 'UTC';
+}
+
 describe.skipIf(!TEST_DB_URL)('NEAR tips for walking to a creature and catching it', () => {
   let t: TestApp;
   const treasury = fakeTreasury();
@@ -64,6 +90,7 @@ describe.skipIf(!TEST_DB_URL)('NEAR tips for walking to a creature and catching 
   async function player(birthYear = 1995, wallet = true) {
     const g = await createGuest(t.app, birthYear);
     const id = g.profile.id as string;
+    await t.db.query(`UPDATE players SET time_zone = $2 WHERE user_id = $1`, [id, daytimeZone()]);
     const account = `p${randomBytes(4).toString('hex')}.testnet`;
     if (wallet) {
       await t.db.query(
