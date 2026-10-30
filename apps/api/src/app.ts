@@ -23,6 +23,8 @@ import { httpNearRpc, type NearRpc } from './modules/wallet/rpc.js';
 import { nearNftChain, type NftChain } from './modules/nft/chain.js';
 import { nftRoutes } from './modules/nft/routes.js';
 import { Syncer } from './modules/nft/service.js';
+import { nearTipChain, type TipChain } from './modules/tips/chain.js';
+import { tipsRoutes } from './modules/tips/routes.js';
 
 export interface AppDeps {
   config: AppConfig;
@@ -33,6 +35,8 @@ export interface AppDeps {
   nearRpc?: NearRpc;
   /** Overrides the creatures NFT client (tests pass a fake chain). */
   nftChain?: NftChain;
+  /** Overrides the treasury client for tips (tests pass a fake chain). */
+  tipChain?: TipChain;
 }
 
 const STATE_CHANGING = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
@@ -43,6 +47,7 @@ export async function buildApp({
   mailer,
   nearRpc,
   nftChain,
+  tipChain,
 }: AppDeps): Promise<FastifyInstance> {
   const app = Fastify({
     logger:
@@ -144,8 +149,21 @@ export async function buildApp({
     nftChain ?? (nft ? nearNftChain({ rpcUrl: config.near.rpcUrl, ...nft }) : null);
   const syncer = chain ? new Syncer(db, chain, config.near.network) : null;
   app.decorate('nftSyncer', syncer);
+  const tipsCfg = config.near.tips;
+  const tips: TipChain | null =
+    tipChain ??
+    (tipsCfg
+      ? nearTipChain({ rpcUrl: config.near.rpcUrl, treasury: tipsCfg.treasury, key: tipsCfg.key })
+      : null);
+  app.decorate('tipChain', tips);
+  await app.register(tipsRoutes, {
+    db,
+    network: config.near.network,
+    treasury: tips?.treasury ?? null,
+  });
   await app.register(captureRoutes, {
     db,
+    tips: { enabled: tips !== null, network: config.near.network },
     ...(syncer ? { syncNfts: (userId: string) => syncer.forPlayer(userId) } : {}),
   });
   await app.register(battleRoutes, { db });

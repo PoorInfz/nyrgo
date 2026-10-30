@@ -5,6 +5,8 @@ import { decayAllRisk } from '../modules/anticheat/risk.js';
 import { runRetention } from './retention.js';
 import { loadDueAreas } from '../modules/world/areas.js';
 import type { Syncer } from '../modules/nft/service.js';
+import type { TipChain } from '../modules/tips/chain.js';
+import { runTips } from '../modules/tips/payout.js';
 
 /**
  * Scheduled jobs on pg-boss (PostgreSQL-backed, so no extra service). pg-boss keeps its tables
@@ -16,6 +18,8 @@ export const JOBS = {
   riskDecay: { name: 'risk-decay', cron: '17 3 * * *' },
   /** Creatures held as NFTs follow their tokens even when nobody opens a collection. */
   nftSync: { name: 'nft-sync', cron: '3-59/10 * * * *' },
+  /** Today's tip budget and the NEAR tips waiting to be sent (see tips/payout.ts). */
+  tips: { name: 'tips', cron: '* * * * *' },
   /** New places where people play, loaded from OpenStreetMap (see world/areas.ts). */
   worldAreas: { name: 'world-areas', cron: '* * * * *' },
 } as const;
@@ -25,6 +29,7 @@ export type JobName = (typeof JOBS)[keyof typeof JOBS]['name'];
 export function jobHandlers(
   db: Db,
   nftSyncer: Syncer | null = null,
+  tipChain: TipChain | null = null,
 ): Record<JobName, () => Promise<unknown>> {
   return {
     retention: () => runRetention(db),
@@ -32,6 +37,7 @@ export function jobHandlers(
     'nft-sync': async () =>
       nftSyncer ? { accounts: await nftSyncer.all() } : { skipped: 'NFTs are off' },
     'world-areas': () => loadDueAreas(db),
+    tips: () => runTips(db, tipChain),
   };
 }
 
@@ -40,11 +46,12 @@ export async function startJobs(
   db: Db,
   log: FastifyBaseLogger,
   nftSyncer: Syncer | null = null,
+  tipChain: TipChain | null = null,
 ): Promise<PgBoss> {
   const boss = new PgBoss(connectionString);
   boss.on('error', (err) => log.error({ err }, 'job queue error'));
   await boss.start();
-  const handlers = jobHandlers(db, nftSyncer);
+  const handlers = jobHandlers(db, nftSyncer, tipChain);
   for (const job of Object.values(JOBS)) {
     await boss.createQueue(job.name);
     await boss.schedule(job.name, job.cron);

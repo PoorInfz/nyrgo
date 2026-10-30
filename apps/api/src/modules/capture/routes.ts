@@ -20,6 +20,7 @@ import {
 import { isUniqueViolation, withTx, type Db } from '../../db.js';
 import { HttpProblem } from '../../http/problem.js';
 import { idempotent, readIdempotencyKey } from '../../http/idempotency.js';
+import { awardTip } from '../tips/award.js';
 import { requireAuth } from '../auth/sessions.js';
 import { requireInteractable } from '../anticheat/movement.js';
 import { grantReward } from '../progress/rewards.js';
@@ -155,7 +156,16 @@ export function assertInRange(d: number) {
 
 export async function captureRoutes(
   app: FastifyInstance,
-  { db, syncNfts }: { db: Db; syncNfts?: (userId: string) => Promise<void> },
+  {
+    db,
+    syncNfts,
+    tips = { enabled: false, network: 'testnet' },
+  }: {
+    db: Db;
+    syncNfts?: (userId: string) => Promise<void>;
+    /** NEAR tips for walking to a creature and catching it (see tips/award.ts). */
+    tips?: { enabled: boolean; network: string };
+  },
 ) {
   const cap = DEFAULT_CONFIG.capture;
 
@@ -365,6 +375,9 @@ export async function captureRoutes(
             );
             await markDex(c, auth.userId, enc.definition_id, true);
           }
+          const tip = success
+            ? await awardTip(c, tips, auth.userId, enc.spawn_id, attempt.rows[0]!.id)
+            : { tip: null, reason: null };
           return {
             result: success ? 'caught' : fled ? 'fled' : 'escaped',
             chance: Math.round(chance * 1000) / 1000,
@@ -372,6 +385,9 @@ export async function captureRoutes(
             itemsLeft: used.rows[0]!.qty,
             reward,
             creature,
+            /** A NEAR tip on its way, or why there is none (null reason: not a catch). */
+            tip: tip.tip,
+            noTip: tip.reason,
           };
         }),
       );

@@ -18,6 +18,8 @@ declare module 'fastify' {
   interface FastifyInstance {
     /** Null when creature NFTs are switched off. */
     nftSyncer: import('../nft/service.js').Syncer | null;
+    /** Null when NEAR tips are switched off. */
+    tipChain: import('../tips/chain.js').TipChain | null;
   }
   interface FastifyRequest {
     auth: AuthContext | null;

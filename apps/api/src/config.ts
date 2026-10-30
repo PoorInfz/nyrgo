@@ -48,6 +48,11 @@ const EnvSchema = Type.Object({
   /** The game account that mints, and its key (`ed25519:…`). Secret: only the API holds it. */
   NEAR_MINTER_ACCOUNT: Type.String({ default: '' }),
   NEAR_MINTER_KEY: Type.String({ default: '' }),
+  /**
+   * The treasury that trading fees fill and NEAR tips are paid from (created with the minter's
+   * key, which signs for it). Empty: no tips.
+   */
+  NEAR_TREASURY_ACCOUNT: Type.String({ default: '' }),
   /** Who the signed message is for (NEP-413 `recipient`); wallets show it to the player. */
   NEAR_SIGN_RECIPIENT: Type.String({ minLength: 1, maxLength: 64, default: 'nyrgo' }),
   /** Seeds wild spawns. Anyone holding it can predict where creatures appear. */
@@ -88,6 +93,8 @@ export interface AppConfig {
     challengeTtlMin: number;
     /** Null when creature NFTs are switched off. */
     nft: { contractId: string; minterAccount: string; minterKey: string } | null;
+    /** Null when tips are switched off. */
+    tips: { treasury: string; key: string } | null;
   };
 }
 
@@ -160,6 +167,11 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
       'NEAR_NFT_CONTRACT, NEAR_MINTER_ACCOUNT and NEAR_MINTER_KEY go together (all set or none)',
     );
   }
+  if (env.NEAR_TREASURY_ACCOUNT && !env.NEAR_MINTER_KEY) {
+    throw new ConfigError(
+      'NEAR_TREASURY_ACCOUNT needs NEAR_MINTER_KEY (it signs for the treasury)',
+    );
+  }
   if (env.NEAR_MINTER_KEY && !/^ed25519:[1-9A-HJ-NP-Za-km-z]{60,100}$/.test(env.NEAR_MINTER_KEY)) {
     throw new ConfigError('NEAR_MINTER_KEY must be an ed25519 secret key (ed25519:…)');
   }
@@ -209,6 +221,9 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
             minterAccount: env.NEAR_MINTER_ACCOUNT,
             minterKey: env.NEAR_MINTER_KEY,
           }
+        : null,
+      tips: env.NEAR_TREASURY_ACCOUNT
+        ? { treasury: env.NEAR_TREASURY_ACCOUNT, key: env.NEAR_MINTER_KEY }
         : null,
     },
   };

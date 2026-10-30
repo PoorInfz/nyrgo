@@ -128,6 +128,27 @@ export interface AntiCheatConfig {
   riskHalfLifeH: number;
 }
 
+/**
+ * NEAR tips for walking to a creature and catching it, paid from the treasury that trading fees
+ * fill (royalties on resales, the game market's fee). Testnet until the Phase 6 gates.
+ */
+export interface TipsConfig {
+  /** One tip, in thousandths of a NEAR. */
+  amountMilliNear: number;
+  /** Per player and local day. */
+  maxPerDay: number;
+  /** At most one tip in this long. */
+  minIntervalMin: number;
+  /** The catch must be at least this far from where the last tip was earned. */
+  minDistanceM: number;
+  /** Share of the treasury that one UTC day may pay out, so the pot never empties at once. */
+  poolDailyShare: number;
+  /** Always left in the treasury (its own storage), in thousandths of a NEAR. */
+  poolReserveMilliNear: number;
+  /** Players at or above this risk score, or with an open review case, get no tips. */
+  maxRisk: number;
+}
+
 export interface GameConfig {
   version: number;
   world: WorldConfig;
@@ -135,6 +156,7 @@ export interface GameConfig {
   capture: CaptureConfig;
   spawns: SpawnConfig;
   antiCheat: AntiCheatConfig;
+  tips: TipsConfig;
 }
 
 export const DEFAULT_CONFIG: GameConfig = {
@@ -213,6 +235,15 @@ export const DEFAULT_CONFIG: GameConfig = {
     encounterGraceMin: 2,
     starterKit: { 'vault-basic': 15, patch: 3 },
     starterLevel: 5,
+  },
+  tips: {
+    amountMilliNear: 5,
+    maxPerDay: 5,
+    minIntervalMin: 60,
+    minDistanceM: 100,
+    poolDailyShare: 0.03,
+    poolReserveMilliNear: 100,
+    maxRisk: 35,
   },
   spawns: {
     slotsByBiome: { urban: 1, park: 3, historic: 2, culture: 2 },
