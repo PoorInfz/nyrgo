@@ -1,0 +1,46 @@
+name: Fund testnet account
+
+# Run by hand when the web faucets fail: sends testnet NEAR (no real value) to a testnet account,
+# through the faucet service near-cli uses. Needs no secrets.
+
+on:
+  workflow_dispatch:
+    inputs:
+      account:
+        description: Testnet account to fund (it must already exist)
+        required: true
+        default: nyrgo-game.testnet
+      rounds:
+        description: How many top-ups (1-5)
+        required: true
+        default: '1'
+
+permissions:
+  contents: read
+
+jobs:
+  fund:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install near-cli-rs
+        run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/near/near-cli-rs/releases/latest/download/near-cli-rs-installer.sh | sh
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Fund
+        working-directory: apps/api
+        env:
+          TO: ${{ inputs.account }}
+          ROUNDS: ${{ inputs.rounds }}
+        run: pnpm testnet:fund --to "$TO" --rounds "$ROUNDS"

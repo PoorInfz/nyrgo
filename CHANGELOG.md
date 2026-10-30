@@ -2,6 +2,9 @@
 
 ## 0.15.0 — 2026-10-30 — Testnet deploy of the NFT contract
 
+- Workflow "Fund testnet account" (`pnpm --filter @nyrgo/api testnet:fund`): tops up a testnet
+  account through the faucet service near-cli uses, for when the web faucets fail. No secrets.
+
 - `pnpm --filter @nyrgo/api nft:deploy` and the manual workflow "Deploy NFT contract (testnet)":
   create `creatures.<game account>`, deploy and initialise the contract and register every
   species, doing only what is missing (dry run, upgrade). Testnet only; the key comes from the
