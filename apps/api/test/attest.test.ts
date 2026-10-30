@@ -182,7 +182,10 @@ describe.skipIf(!TEST_DB_URL)('device checks from the Android app', () => {
     expect(ok.statusCode).toBe(200);
     expect((await p.call('GET', '/v1/me/attest')).json()).toMatchObject({ verified: true });
     // the nonce cannot be used again
-    const again = await p.call('POST', '/v1/me/attest', { nonce: lastNonce, token: 'genuine-token' });
+    const again = await p.call('POST', '/v1/me/attest', {
+      nonce: lastNonce,
+      token: 'genuine-token',
+    });
     expect(again.json()).toMatchObject({ code: 'attest_failed', detail: 'nonce' });
   });
 
