@@ -7,6 +7,8 @@ export interface LocationFix {
   /** Metres per second, or null when the device does not know. */
   speed: number | null;
   timestamp: number;
+  /** Android app only: the OS marked this fix as mocked (a location spoofing app). */
+  mock?: boolean;
 }
 
 export type LocationError = 'denied' | 'unavailable' | 'timeout' | 'unsupported';

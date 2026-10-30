@@ -31,7 +31,7 @@ export interface Profile {
 export interface Movement {
   speedKmh: number | null;
   interactable: boolean;
-  reason: 'speed' | 'teleport_cooldown' | null;
+  reason: 'speed' | 'teleport_cooldown' | 'mock_location' | null;
   lockedUntil: string | null;
 }
 
@@ -334,6 +334,7 @@ export function createApi(baseUrl: string) {
         accuracy: fix.accuracy,
         speed: fix.speed,
         timestamp: Math.round(fix.timestamp),
+        ...(fix.mock !== undefined ? { mock: fix.mock } : {}),
       }),
     dex: () => call<Dex>('GET', '/v1/dex'),
     reportPoi: (id: string, reason: PoiReportReason) =>

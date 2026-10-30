@@ -2,7 +2,7 @@ import type { PoolClient } from 'pg';
 import { DEFAULT_CONFIG } from '@nyrgo/shared';
 import type { Db } from '../../db.js';
 import { HttpProblem } from '../../http/problem.js';
-import { assess, type Assessment, type Fix } from './plausibility.js';
+import { SCORES, assess, type Assessment, type Fix } from './plausibility.js';
 import { recordSignals } from './risk.js';
 
 type Q = Db | PoolClient;
@@ -11,7 +11,7 @@ export interface MovementState {
   speedKmh: number | null;
   interactable: boolean;
   /** Why interactions are paused, if they are. */
-  reason: 'speed' | 'teleport_cooldown' | null;
+  reason: 'speed' | 'teleport_cooldown' | 'mock_location' | null;
   lockedUntil: string | null;
 }
 
@@ -21,6 +21,8 @@ export interface SampleInput {
   accuracy: number;
   speed: number | null;
   clientTs?: number | undefined;
+  /** The native app's report that Android marked this fix as mocked (a spoofing app). */
+  mock?: boolean | undefined;
 }
 
 /** How fresh the last fix must be for an interaction to be allowed at all. */
@@ -76,12 +78,21 @@ export async function recordFix(
     [input.lat, input.lng, userId, world.spawnH3Resolution, input.accuracy, input.speed],
   );
 
-  const lockMin = result.verdict === 'teleport' ? ac.teleportLockMin : null;
-  const { rows: state } = await q.query<{ locked_until: Date | null }>(
+  // A mocked fix pauses interactions longer than a jump, and is a strong signal on its own.
+  if (input.mock) {
+    result.signals.push({ kind: 'mock_location', score: SCORES.mock_location, detail: {} });
+  }
+  const lockMin = input.mock
+    ? ac.mockLocationLockMin
+    : result.verdict === 'teleport'
+      ? ac.teleportLockMin
+      : null;
+  const lockReason = input.mock ? 'mock_location' : 'teleport';
+  const { rows: state } = await q.query<{ locked_until: Date | null; lock_reason: string | null }>(
     `INSERT INTO player_movement (user_id, last_fix_at, last_speed_kmh, locked_until, lock_reason, updated_at)
      VALUES ($1, now(), $2,
              CASE WHEN $3::int IS NULL THEN NULL ELSE now() + make_interval(mins => $3::int) END,
-             CASE WHEN $3::int IS NULL THEN NULL ELSE 'teleport' END, now())
+             CASE WHEN $3::int IS NULL THEN NULL ELSE $4 END, now())
      ON CONFLICT (user_id) DO UPDATE SET
        last_fix_at = now(),
        last_speed_kmh = EXCLUDED.last_speed_kmh,
@@ -90,8 +101,8 @@ export async function recordFix(
        lock_reason = CASE WHEN $3::int IS NULL THEN player_movement.lock_reason
                           ELSE EXCLUDED.lock_reason END,
        updated_at = now()
-     RETURNING locked_until`,
-    [userId, result.speedKmh, lockMin],
+     RETURNING locked_until, lock_reason`,
+    [userId, result.speedKmh, lockMin, lockReason],
   );
 
   if (result.signals.length > 0) await recordSignals(q, userId, result.signals);
@@ -104,7 +115,13 @@ export async function recordFix(
     movement: {
       speedKmh: result.speedKmh === null ? null : Math.round(result.speedKmh * 10) / 10,
       interactable: !locked && result.verdict === 'ok',
-      reason: locked ? 'teleport_cooldown' : result.verdict === 'too_fast' ? 'speed' : null,
+      reason: locked
+        ? state[0]?.lock_reason === 'mock_location'
+          ? 'mock_location'
+          : 'teleport_cooldown'
+        : result.verdict === 'too_fast'
+          ? 'speed'
+          : null,
       lockedUntil: locked ? lockedUntil!.toISOString() : null,
     },
   };

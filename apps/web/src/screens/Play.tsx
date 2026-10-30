@@ -15,6 +15,7 @@ import {
 } from '../geo/location';
 import { DEFAULT_CONFIG } from '@nyrgo/shared';
 import { looksLikeDriving, shouldQuery } from '../geo/nearby';
+import { isNativeApp, nativeSource } from '../geo/native';
 import { PLACES } from '../geo/presets';
 import { DevGps } from './DevGps';
 
@@ -45,7 +46,13 @@ export function Play({
 }) {
   const { t, i18n } = useTranslation();
   const source = useMemo<LocationSource>(
-    () => injected ?? (simulatorEnabled() ? simulatedSource(PLACES[0]!.at) : browserSource()),
+    () =>
+      injected ??
+      (simulatorEnabled()
+        ? simulatedSource(PLACES[0]!.at)
+        : isNativeApp()
+          ? nativeSource()
+          : browserSource()),
     [injected],
   );
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
@@ -168,6 +175,7 @@ export function Play({
 
   // Either the device says it is moving fast or the server measured it between fixes.
   const driving = (fix ? looksLikeDriving(fix) : false) || nearby?.movement.reason === 'speed';
+  const mocked = nearby?.movement.reason === 'mock_location';
 
   return (
     <div className="stack">
@@ -182,6 +190,11 @@ export function Play({
         </p>
       )}
       {status.kind === 'locating' && <p role="status">{t('locating')}</p>}
+      {mocked && (
+        <p className="warning" role="alert">
+          {t('mockNotice')}
+        </p>
+      )}
       {cooldownMin !== null && (
         <p className="notice" role="status">
           {t('cooldownNotice', { min: cooldownMin })}

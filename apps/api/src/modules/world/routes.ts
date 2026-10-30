@@ -20,6 +20,8 @@ export const LocationSample = Type.Object(
     speed: Type.Optional(Type.Union([Type.Number({ minimum: 0, maximum: 1000 }), Type.Null()])),
     /** Client timestamp in ms since epoch; checked against server time in milestone 4. */
     timestamp: Type.Optional(Type.Integer({ minimum: 0 })),
+    /** Android app only: the OS marked this fix as mocked (a location spoofing app). */
+    mock: Type.Optional(Type.Boolean()),
   },
   { additionalProperties: false },
 );
@@ -54,7 +56,7 @@ export async function worldRoutes(
     },
     async (req) => {
       const auth = requireAuth(req);
-      const { lat, lng, accuracy, speed, timestamp } = req.body;
+      const { lat, lng, accuracy, speed, timestamp, mock } = req.body;
       if (accuracy > cfg.requiredAccuracyM) {
         throw new HttpProblem(
           'accuracy_too_low',
@@ -73,6 +75,7 @@ export async function worldRoutes(
           accuracy,
           speed: speed ?? null,
           clientTs: timestamp,
+          mock,
         });
       });
 

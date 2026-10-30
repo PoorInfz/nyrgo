@@ -171,6 +171,18 @@ describe.skipIf(!TEST_DB_URL)('movement checks', () => {
     expect((await p.user()).risk_level).toBe(10);
   });
 
+  it('pauses a player whose phone reports a mocked location, and records it', async () => {
+    const p = await player();
+    const res = await p.fix(TENDILLAS, { mock: true });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().movement).toMatchObject({ interactable: false, reason: 'mock_location' });
+    expect(await p.signals()).toContain('mock_location');
+    expect((await p.user()).risk_level).toBeGreaterThanOrEqual(35);
+    // a later honest fix is still paused for a while
+    await p.wait(30);
+    expect((await p.fix(north(20))).json().movement.reason).toBe('mock_location');
+  });
+
   it('erases movement state and review cases with the account', async () => {
     const g = await createGuest(t.app);
     await injectAs(t.app, {

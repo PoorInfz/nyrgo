@@ -83,6 +83,8 @@ export const resources = {
         'No conseguimos tu ubicación. Sal a un sitio abierto e inténtalo de nuevo.',
       weakSignal: 'Señal GPS débil ({{m}} m). Esperando más precisión…',
       drivingWarning: 'Parece que vas en vehículo. No juegues mientras conduces.',
+      mockNotice:
+        'Tu móvil indica que la ubicación es simulada. Cierra cualquier app de ubicación falsa: el juego queda en pausa unos minutos.',
       cooldownNotice:
         'Tu ubicación ha cambiado de golpe. Por seguridad, las interacciones vuelven en {{min}} min.',
       mapLabel: 'Mapa con tu posición y los lugares cercanos',
@@ -128,36 +130,6 @@ export const resources = {
         grade: 'Grado {{grade}}',
         gradeHint: 'Grado según sus valores individuales: D, C, B, A y S (el mejor y más escaso).',
         card: 'Ver carta NFT',
-      },
-      token: {
-        title: 'Token {{symbol}}',
-        why: 'Ganas tokens al capturar, ganar combates, visitar lugares y completar misiones. Red de pruebas ({{network}}): no tienen valor real.',
-        unclaimed: 'sin reclamar',
-        today: 'Hoy: {{earned}} de {{cap}} {{symbol}} como máximo.',
-        claim: 'Enviar a mi cartera',
-        sending: 'Enviando…',
-        claimed: '{{amount}} NYRGO enviados a {{account}}.',
-        view: 'ver',
-        status: {
-          sent: 'enviado',
-          sending: 'enviando',
-          failed: 'rechazado (devuelto)',
-          unknown: 'en revisión',
-        },
-        blocked: {
-          wallet_required: 'Vincula tu cartera NEAR para reclamarlos.',
-          token_account_too_new: 'Las cuentas nuevas pueden reclamar a partir del {{when}}.',
-          token_cooldown: 'Podrás volver a reclamar el {{when}}.',
-          token_below_minimum: 'Se reclaman a partir de {{min}} {{symbol}}.',
-          token_review: 'Tu cuenta está en revisión; los reclamos están en pausa.',
-          other: 'Ahora mismo no se puede reclamar.',
-        },
-        errors: {
-          token_claim_failed: 'NEAR rechazó el envío. Tus tokens siguen aquí.',
-          token_claim_unknown: 'NEAR no respondió. Revisaremos el envío antes de repetirlo.',
-          token_cooldown: 'Ya reclamaste hace poco.',
-          other: 'No se pudo reclamar. Inténtalo más tarde.',
-        },
       },
       tips: {
         title: 'Tips en NEAR',
@@ -459,6 +431,8 @@ export const resources = {
       locationUnavailable: 'We could not get your location. Step outside and try again.',
       weakSignal: 'Weak GPS signal ({{m}} m). Waiting for a better fix…',
       drivingWarning: 'Looks like you are in a vehicle. Never play while driving.',
+      mockNotice:
+        'Your phone says this location is simulated. Close any fake-location app: the game pauses for a few minutes.',
       cooldownNotice:
         'Your location jumped suddenly. To be safe, interactions come back in {{min}} min.',
       mapLabel: 'Map with your position and nearby places',
@@ -504,37 +478,6 @@ export const resources = {
         grade: 'Grade {{grade}}',
         gradeHint: 'Grade from its individual values: D, C, B, A and S (the best and scarcest).',
         card: 'See NFT card',
-      },
-      token: {
-        title: '{{symbol}} token',
-        why: 'You earn tokens for catching, winning battles, visiting places and completing missions. Test network ({{network}}): they have no real value.',
-        unclaimed: 'unclaimed',
-        today: 'Today: {{earned}} of at most {{cap}} {{symbol}}.',
-        claim: 'Send to my wallet',
-        sending: 'Sending…',
-        claimed: '{{amount}} NYRGO sent to {{account}}.',
-        view: 'view',
-        status: {
-          sent: 'sent',
-          sending: 'sending',
-          failed: 'refused (returned)',
-          unknown: 'under review',
-        },
-        blocked: {
-          wallet_required: 'Link your NEAR wallet to claim them.',
-          token_account_too_new: 'New accounts can claim from {{when}}.',
-          token_cooldown: 'You can claim again on {{when}}.',
-          token_below_minimum: 'Claims start at {{min}} {{symbol}}.',
-          token_review: 'Your account is under review; claims are paused.',
-          other: 'Claiming is not possible right now.',
-        },
-        errors: {
-          token_claim_failed: 'NEAR refused the transfer. Your tokens are still here.',
-          token_claim_unknown:
-            'NEAR did not answer. We will check the transfer before trying again.',
-          token_cooldown: 'You claimed recently.',
-          other: 'Could not claim. Try again later.',
-        },
       },
       tips: {
         title: 'NEAR tips',

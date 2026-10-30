@@ -122,6 +122,8 @@ export interface AntiCheatConfig {
   clockSkewToleranceS: number;
   /** Identical accuracy on this many consecutive fixes suggests a mock location app. */
   constantAccuracyRun: number;
+  /** Interactions stay paused this long after the device reports a mocked location. */
+  mockLocationLockMin: number;
   /** Risk score at which an account is queued for manual review. */
   reviewThreshold: number;
   /** Signals lose half their weight every this many hours. */
@@ -209,6 +211,7 @@ export const DEFAULT_CONFIG: GameConfig = {
     minSpeedIntervalS: 2,
     clockSkewToleranceS: 120,
     constantAccuracyRun: 20,
+    mockLocationLockMin: 15,
     reviewThreshold: 70,
     riskHalfLifeH: 72,
   },

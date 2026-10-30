@@ -21,7 +21,8 @@ export interface Incoming extends Fix {
   clientTs?: number | undefined;
 }
 
-export type SignalKind = 'teleport' | 'impossible_speed' | 'clock_skew' | 'constant_accuracy';
+export type SignalKind =
+  'teleport' | 'impossible_speed' | 'clock_skew' | 'constant_accuracy' | 'mock_location';
 
 export interface Signal {
   kind: SignalKind;
@@ -46,12 +47,14 @@ export interface Assessment {
 export const IMPOSSIBLE_SPEED_KMH = 1200;
 const IMPOSSIBLE_MIN_DISTANCE_M = 2_000;
 
-const SCORES: Record<SignalKind, number> = {
+export const SCORES: Record<SignalKind, number> = {
   // A jump can be honest (a train, a long tunnel, GPS reacquiring), so it weighs little alone.
   teleport: 15,
   impossible_speed: 30,
   clock_skew: 3,
   constant_accuracy: 5,
+  // The native app read it from Android itself: a location spoofing app is running.
+  mock_location: 40,
 };
 
 const EARTH_RADIUS_M = 6_371_008.8;

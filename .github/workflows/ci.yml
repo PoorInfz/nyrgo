@@ -138,3 +138,38 @@ jobs:
           curl -fsS localhost:8080/v1/dex > /dev/null
           docker logs api 2>&1 | tail -20
           curl -fsS localhost:8080/health
+
+  android:
+    name: Android app (debug build)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build the web app and copy it into the Android project
+        working-directory: apps/mobile
+        run: pnpm sync
+
+      - name: Build the APK
+        working-directory: apps/mobile/android
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nyrgo-android-debug
+          path: apps/mobile/android/app/build/outputs/apk/debug/*.apk
