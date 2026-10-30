@@ -128,31 +128,6 @@ export interface AntiCheatConfig {
   riskHalfLifeH: number;
 }
 
-/**
- * NYRGO, the game token (testnet until the Phase 6 gates). Players earn whole tokens for
- * gameplay, capped per day and per game; they claim them to their linked NEAR account. Amounts
- * here are whole NYRGO (the contract has 18 decimals).
- */
-export interface TokenConfig {
-  symbol: string;
-  decimals: number;
-  /** Fixed at deploy; the contract cannot create more. */
-  totalSupply: number;
-  /** Tokens per rewarded event, keyed by the reward reason. */
-  rewards: Record<string, number>;
-  /** Per player and local day. */
-  dailyCapPerPlayer: number;
-  /** For the whole game per UTC day: bounds how fast the rewards share is paid out. */
-  dailyCapGlobal: number;
-  /** Smallest claim, and time between claims. */
-  minClaim: number;
-  claimCooldownH: number;
-  /** Accounts younger than this cannot claim yet (fresh farm accounts wait). */
-  minAccountAgeDays: number;
-  /** Players at or above this risk score cannot claim; an open review case also blocks. */
-  maxRiskToClaim: number;
-}
-
 export interface GameConfig {
   version: number;
   world: WorldConfig;
@@ -160,7 +135,6 @@ export interface GameConfig {
   capture: CaptureConfig;
   spawns: SpawnConfig;
   antiCheat: AntiCheatConfig;
-  token: TokenConfig;
 }
 
 export const DEFAULT_CONFIG: GameConfig = {
@@ -239,18 +213,6 @@ export const DEFAULT_CONFIG: GameConfig = {
     encounterGraceMin: 2,
     starterKit: { 'vault-basic': 15, patch: 3 },
     starterLevel: 5,
-  },
-  token: {
-    symbol: 'NYRGO',
-    decimals: 18,
-    totalSupply: 1_000_000_000,
-    rewards: { capture: 2, pve_win: 3, poi_visit: 1, mission: 10 },
-    dailyCapPerPlayer: 50,
-    dailyCapGlobal: 200_000,
-    minClaim: 10,
-    claimCooldownH: 24,
-    minAccountAgeDays: 7,
-    maxRiskToClaim: 35,
   },
   spawns: {
     slotsByBiome: { urban: 1, park: 3, historic: 2, culture: 2 },

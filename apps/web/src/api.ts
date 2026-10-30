@@ -108,8 +108,6 @@ export interface Reward {
   level: number;
   leveledUp: boolean;
   goldCapped: number;
-  /** NYRGO credited (adults, within the token caps). */
-  token?: number;
 }
 
 export interface VisitResult {
@@ -165,7 +163,7 @@ export interface CaptureResult {
   chance: number;
   attempts: number;
   itemsLeft: number;
-  reward: Reward;
+  reward: { xp: number; gold: number; level: number; leveledUp: boolean; goldCapped: number };
   creature: OwnedCreature | null;
 }
 
@@ -230,29 +228,6 @@ export interface NearLink {
   accountId: string;
   network: string;
   linkedAt: string;
-}
-
-/** NYRGO, the game token (testnet): earned by playing, claimed to the linked NEAR account. */
-export interface TokenStatus {
-  symbol: string;
-  enabled: boolean;
-  contractId: string | null;
-  network: string;
-  /** Unclaimed, whole tokens. */
-  balance: number;
-  earnedToday: number;
-  dailyCap: number;
-  minClaim: number;
-  canClaim: boolean;
-  blockedBy: string | null;
-  claimableAt: string | null;
-  claims: {
-    id: string;
-    amount: number;
-    status: string;
-    txHash: string | null;
-    createdAt: string;
-  }[];
 }
 
 /** What the wallet must sign (NEP-413). The nonce is base64. */
@@ -370,12 +345,6 @@ export function createApi(baseUrl: string) {
       call<{ wallet: NearLink }>('POST', '/v1/me/wallet/link', body),
     nearUnlink: () => call<void>('DELETE', '/v1/me/wallet'),
     /** The card image a minted creature NFT shows in wallets. */
-    token: () => call<TokenStatus>('GET', '/v1/me/token'),
-    tokenClaim: () =>
-      call<{ id: string; amount: number; account: string; status: string; txHash: string | null }>(
-        'POST',
-        '/v1/me/token/claim',
-      ),
     nftCardUrl: (id: string) => `${baseUrl}/v1/nft/cards/${encodeURIComponent(id)}.png`,
     /** 404 when creature NFTs are switched off on this server. */
     nftInfo: () => call<{ contractId: string; network: string }>('GET', '/v1/nft'),

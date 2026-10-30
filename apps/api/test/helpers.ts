@@ -6,7 +6,6 @@ import { createDb, type Db } from '../src/db.js';
 import { MemoryMailer } from '../src/modules/auth/mailer.js';
 import type { NearRpc } from '../src/modules/wallet/rpc.js';
 import type { NftChain } from '../src/modules/nft/chain.js';
-import type { FtChain } from '../src/modules/token/chain.js';
 
 export const TEST_DB_URL = process.env.TEST_DATABASE_URL;
 
@@ -18,12 +17,7 @@ export interface TestApp {
 }
 
 export async function makeTestApp(
-  opts: {
-    nearRpc?: NearRpc;
-    nftChain?: NftChain;
-    ftChain?: FtChain;
-    env?: Record<string, string>;
-  } = {},
+  opts: { nearRpc?: NearRpc; nftChain?: NftChain; env?: Record<string, string> } = {},
 ): Promise<TestApp> {
   const db = createDb(TEST_DB_URL!);
   const mailer = new MemoryMailer();
@@ -39,7 +33,6 @@ export async function makeTestApp(
     mailer,
     ...(opts.nearRpc ? { nearRpc: opts.nearRpc } : {}),
     ...(opts.nftChain ? { nftChain: opts.nftChain } : {}),
-    ...(opts.ftChain ? { ftChain: opts.ftChain } : {}),
   });
   return {
     app,

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ApiError, type Api, type Mission } from '../api';
-import { rewardText } from '../rewardText';
 
 type Lang = 'es' | 'en';
 
@@ -31,7 +30,7 @@ export function Missions({ api, refresh = 0 }: { api: Api; refresh?: number }) {
     try {
       const r = await api.claimMission(id);
       setMissions(r.missions);
-      setMessage(rewardText(t, r.reward));
+      setMessage(t('rewardLine', { xp: r.reward.xp, gold: r.reward.gold }));
     } catch (err) {
       const code = err instanceof ApiError ? err.code : 'other';
       setMessage(t(`errors.${code}`, { defaultValue: t('errors.other') }));

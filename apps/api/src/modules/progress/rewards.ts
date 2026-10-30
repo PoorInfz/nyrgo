@@ -2,7 +2,6 @@ import type { PoolClient } from 'pg';
 import tzLookup from '@photostructure/tz-lookup';
 import { DEFAULT_CONFIG, levelForXp } from '@nyrgo/shared';
 import type { Db } from '../../db.js';
-import { earnToken } from '../token/earn.js';
 
 /**
  * Grants XP and Gold for gameplay. Gold goes through the append-only ledger and respects the
@@ -16,8 +15,6 @@ export interface RewardResult {
   leveledUp: boolean;
   /** Gold that would have been paid but was cut by the daily cap. */
   goldCapped: number;
-  /** NYRGO credited for this event (adults only, within the token caps). */
-  token: number;
 }
 
 /** Players who have not shared a location yet count days in the pilot city's zone. */
@@ -96,13 +93,11 @@ export async function grantReward(
       WHERE user_id = $1`,
     [userId, xp, level, paid],
   );
-  const token = await earnToken(c, userId, reward.reason, reward.refId);
   return {
     xp: reward.xp,
     gold: paid,
     level,
     leveledUp: level > before.level,
     goldCapped: reward.gold + levelGold - paid,
-    token,
   };
 }

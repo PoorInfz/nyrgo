@@ -79,15 +79,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   contract:
-    name: Contract ${{ matrix.contract }} (test and build wasm)
+    name: NFT contract (test and build wasm)
     runs-on: ubuntu-24.04
     timeout-minutes: 30
-    strategy:
-      matrix:
-        contract: [creatures, token]
     defaults:
       run:
-        working-directory: contracts/${{ matrix.contract }}
+        working-directory: contracts/creatures
     steps:
       - uses: actions/checkout@v4
 
@@ -97,7 +94,7 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          workspaces: contracts/${{ matrix.contract }}
+          workspaces: contracts/creatures
 
       - name: Unit tests
         run: cargo test
@@ -111,8 +108,8 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: nyrgo-${{ matrix.contract }}-wasm
-          path: contracts/${{ matrix.contract }}/target/near/*.wasm
+          name: nyrgo-creatures-wasm
+          path: contracts/creatures/target/near/*.wasm
 
   api-image:
     name: API image (build and boot)

@@ -48,8 +48,6 @@ const EnvSchema = Type.Object({
   /** The game account that mints, and its key (`ed25519:…`). Secret: only the API holds it. */
   NEAR_MINTER_ACCOUNT: Type.String({ default: '' }),
   NEAR_MINTER_KEY: Type.String({ default: '' }),
-  /** The NYRGO token contract (contracts/token); paid from the minter account. Empty: off. */
-  NEAR_TOKEN_CONTRACT: Type.String({ default: '' }),
   /** Who the signed message is for (NEP-413 `recipient`); wallets show it to the player. */
   NEAR_SIGN_RECIPIENT: Type.String({ minLength: 1, maxLength: 64, default: 'nyrgo' }),
   /** Seeds wild spawns. Anyone holding it can predict where creatures appear. */
@@ -90,8 +88,6 @@ export interface AppConfig {
     challengeTtlMin: number;
     /** Null when creature NFTs are switched off. */
     nft: { contractId: string; minterAccount: string; minterKey: string } | null;
-    /** Null when the NYRGO token is switched off. Uses the minter account. */
-    token: { contractId: string; minterAccount: string; minterKey: string } | null;
   };
 }
 
@@ -164,9 +160,6 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
       'NEAR_NFT_CONTRACT, NEAR_MINTER_ACCOUNT and NEAR_MINTER_KEY go together (all set or none)',
     );
   }
-  if (env.NEAR_TOKEN_CONTRACT && !(env.NEAR_MINTER_ACCOUNT && env.NEAR_MINTER_KEY)) {
-    throw new ConfigError('NEAR_TOKEN_CONTRACT needs NEAR_MINTER_ACCOUNT and NEAR_MINTER_KEY');
-  }
   if (env.NEAR_MINTER_KEY && !/^ed25519:[1-9A-HJ-NP-Za-km-z]{60,100}$/.test(env.NEAR_MINTER_KEY)) {
     throw new ConfigError('NEAR_MINTER_KEY must be an ed25519 secret key (ed25519:…)');
   }
@@ -213,13 +206,6 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
       nft: env.NEAR_NFT_CONTRACT
         ? {
             contractId: env.NEAR_NFT_CONTRACT,
-            minterAccount: env.NEAR_MINTER_ACCOUNT,
-            minterKey: env.NEAR_MINTER_KEY,
-          }
-        : null,
-      token: env.NEAR_TOKEN_CONTRACT
-        ? {
-            contractId: env.NEAR_TOKEN_CONTRACT,
             minterAccount: env.NEAR_MINTER_ACCOUNT,
             minterKey: env.NEAR_MINTER_KEY,
           }

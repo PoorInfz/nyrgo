@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.21.0 — 2026-10-30 — NYRGO dropped
+
+- The NYRGO token is gone from the game (contract, API, app card, docs, workflow); its tables are
+  dropped by a migration. Rewards will be paid in native NEAR from the game's trading fees (next).
+  The testnet contract `token.nyrgo.testnet` stays on chain, unused.
+
 ## 0.20.0 — 2026-10-30 — NYRGO token (testnet, play to earn)
 
 - `contracts/token`: NYRGO, a NEP-141 token with a fixed supply of 1,000,000,000 created once in

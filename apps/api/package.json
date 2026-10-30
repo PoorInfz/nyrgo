@@ -16,7 +16,6 @@
     "nft:species": "tsx scripts/nft-species.ts",
     "nft:samples": "tsx scripts/nft-samples.ts",
     "nft:deploy": "tsx scripts/nft-deploy.mts",
-    "token:deploy": "tsx scripts/token-deploy.mts",
     "testnet:fund": "tsx scripts/testnet-fund.mts",
     "jobs:run": "tsx --env-file-if-exists=../../.env scripts/run-job.ts",
     "content:sync": "tsx --env-file-if-exists=../../.env scripts/sync-content.ts"

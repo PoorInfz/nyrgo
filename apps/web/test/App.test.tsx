@@ -93,9 +93,9 @@ describe('signed out', () => {
   });
 });
 
-/** Calls the test is about, leaving out the profile's NEAR wallet and token checks (adults only). */
+/** Calls the test is about, leaving out the profile's NEAR wallet check (adults only). */
 const gameCalls = (fetch: { mock: { calls: unknown[][] } }) =>
-  fetch.mock.calls.filter(([url]) => !/\/v1\/me\/(wallet|token)$/.test(String(url)));
+  fetch.mock.calls.filter(([url]) => !String(url).endsWith('/v1/me/wallet'));
 
 describe('signed in as guest', () => {
   it('offers to save progress with an email', async () => {
