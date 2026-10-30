@@ -120,6 +120,17 @@ describe('Play', () => {
     expect(body).toMatchObject({ lat: 37.8847, lng: -4.7792, accuracy: 5 });
   });
 
+  it('says when the place is being explored for the first time', async () => {
+    const fetch = vi.fn(async () => json(200, { ...NEARBY, area: 'loading', pois: [] }));
+    vi.stubGlobal('fetch', routed(fetch));
+    const m = manualSource();
+    render(<Play api={createApi('http://api.test')} source={m.source} showMap={false} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Activar ubicación' }));
+    await m.fix();
+    expect(await screen.findByText(/Explorando esta zona por primera vez/)).toBeInTheDocument();
+    expect(screen.queryByText(/No ves ninguna criatura/)).not.toBeInTheDocument();
+  });
+
   it('does not query the server with an imprecise fix', async () => {
     const fetch = vi.fn(async (_u: RequestInfo | URL) => json(200, NEARBY));
     vi.stubGlobal('fetch', routed(fetch));

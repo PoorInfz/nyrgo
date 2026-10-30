@@ -283,3 +283,37 @@ export function overpassQuery(b: BBox): string {
     'out geom;',
   ].join('\n');
 }
+
+/** Public Overpass servers, tried in order: the main one is often busy. */
+export const OVERPASS_URLS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter',
+];
+
+/** Fetches the world query for a box, trying each server until one answers. */
+export async function fetchOverpass(
+  bbox: BBox,
+  urls: string[] = OVERPASS_URLS,
+  fetchFn: typeof fetch = fetch,
+): Promise<OverpassResponse> {
+  const errors: string[] = [];
+  for (const url of urls) {
+    try {
+      const res = await fetchFn(url, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          'user-agent': 'nyrgo-world-import/0.4 (geolocation game; https://nyrgo.fun)',
+        },
+        body: new URLSearchParams({ data: overpassQuery(bbox) }),
+        signal: AbortSignal.timeout(200_000),
+      });
+      if (!res.ok) throw new Error(`answered ${res.status}`);
+      return (await res.json()) as OverpassResponse;
+    } catch (e) {
+      errors.push(`${new URL(url).host}: ${(e as Error).message}`);
+    }
+  }
+  throw new Error(`Overpass unavailable (${errors.join('; ')})`);
+}

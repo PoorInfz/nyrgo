@@ -53,6 +53,8 @@ export interface Nearby {
   visibleRadiusM: number;
   interactionRadiusM: number;
   attribution: string;
+  /** `loading`: the server is fetching this place from OpenStreetMap; creatures come after. */
+  area?: 'ready' | 'loading';
   pois: MapPoi[];
   creatures: NearbyCreature[];
 }

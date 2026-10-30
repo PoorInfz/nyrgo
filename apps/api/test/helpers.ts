@@ -17,7 +17,7 @@ export interface TestApp {
 }
 
 export async function makeTestApp(
-  opts: { nearRpc?: NearRpc; nftChain?: NftChain } = {},
+  opts: { nearRpc?: NearRpc; nftChain?: NftChain; env?: Record<string, string> } = {},
 ): Promise<TestApp> {
   const db = createDb(TEST_DB_URL!);
   const mailer = new MemoryMailer();
@@ -27,6 +27,7 @@ export async function makeTestApp(
       NODE_ENV: 'test',
       APP_URL: 'http://app.test',
       CORS_ORIGINS: 'http://app.test',
+      ...opts.env,
     }),
     db,
     mailer,

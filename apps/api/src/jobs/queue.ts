@@ -3,6 +3,7 @@ import type { FastifyBaseLogger } from 'fastify';
 import type { Db } from '../db.js';
 import { decayAllRisk } from '../modules/anticheat/risk.js';
 import { runRetention } from './retention.js';
+import { loadDueAreas } from '../modules/world/areas.js';
 import type { Syncer } from '../modules/nft/service.js';
 
 /**
@@ -15,6 +16,8 @@ export const JOBS = {
   riskDecay: { name: 'risk-decay', cron: '17 3 * * *' },
   /** Creatures held as NFTs follow their tokens even when nobody opens a collection. */
   nftSync: { name: 'nft-sync', cron: '3-59/10 * * * *' },
+  /** New places where people play, loaded from OpenStreetMap (see world/areas.ts). */
+  worldAreas: { name: 'world-areas', cron: '* * * * *' },
 } as const;
 
 export type JobName = (typeof JOBS)[keyof typeof JOBS]['name'];
@@ -28,6 +31,7 @@ export function jobHandlers(
     'risk-decay': async () => ({ updated: await decayAllRisk(db) }),
     'nft-sync': async () =>
       nftSyncer ? { accounts: await nftSyncer.all() } : { skipped: 'NFTs are off' },
+    'world-areas': () => loadDueAreas(db),
   };
 }
 
@@ -46,7 +50,10 @@ export async function startJobs(
     await boss.schedule(job.name, job.cron);
     await boss.work(job.name, async () => {
       const result = await handlers[job.name]();
-      log.info({ job: job.name, result }, 'job finished');
+      // the every-minute world job only logs when it did something
+      const idle =
+        job.name === 'world-areas' && JSON.stringify(result) === '{"ready":0,"failed":0}';
+      if (!idle) log.info({ job: job.name, result }, 'job finished');
       return result;
     });
   }

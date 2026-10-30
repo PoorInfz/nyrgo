@@ -19,7 +19,7 @@ import { loadWorld } from '../src/modules/world/load.js';
 import {
   CORDOBA_BBOX,
   classifyElements,
-  overpassQuery,
+  fetchOverpass,
   type BBox,
   type OverpassResponse,
 } from '../src/modules/world/osm.js';
@@ -42,24 +42,10 @@ function parseBbox(s: string | undefined): BBox {
   return { south: south!, west: west!, north: north!, east: east! };
 }
 
-async function fetchOverpass(bbox: BBox): Promise<OverpassResponse> {
-  const url = process.env.OVERPASS_URL ?? 'https://overpass-api.de/api/interpreter';
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/x-www-form-urlencoded',
-      'user-agent': 'nyrgo-world-import/0.3 (geolocation game; pilot import)',
-    },
-    body: new URLSearchParams({ data: overpassQuery(bbox) }),
-  });
-  if (!res.ok) throw new Error(`Overpass answered ${res.status}: ${await res.text()}`);
-  return (await res.json()) as OverpassResponse;
-}
-
 const bbox = parseBbox(values.bbox);
 const raw: OverpassResponse = values.file
   ? (JSON.parse(await readFile(values.file, 'utf8')) as OverpassResponse)
-  : await fetchOverpass(bbox);
+  : await fetchOverpass(bbox, process.env.OVERPASS_URL ? [process.env.OVERPASS_URL] : undefined);
 if (values.save) {
   await mkdir(dirname(values.save), { recursive: true });
   await writeFile(values.save, JSON.stringify(raw));

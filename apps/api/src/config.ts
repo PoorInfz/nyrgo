@@ -25,6 +25,11 @@ const EnvSchema = Type.Object({
   REAUTH_WINDOW_MIN: Type.Integer({ minimum: 1, maximum: 60, default: 15 }),
   JOBS_ENABLED: Type.Boolean({ default: true }),
   /**
+   * Load the world from OpenStreetMap wherever people play, and keep creatures out of areas not
+   * loaded yet. Off: only the places imported by hand exist, and creatures appear anywhere.
+   */
+  WORLD_ON_DEMAND: Type.Boolean({ default: false }),
+  /**
    * Admin access tokens: `name:role:token` entries separated by commas; role is `reviewer` or
    * `admin`; tokens are 32+ characters. Empty disables the admin API.
    */
@@ -70,6 +75,7 @@ export interface AppConfig {
   secureCookies: boolean;
   /** Run scheduled jobs (retention, risk decay) in this process. */
   jobsEnabled: boolean;
+  worldOnDemand: boolean;
   spawnSecret: string;
   admins: AdminAccount[];
   publicApiUrl: string;
@@ -187,6 +193,7 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
     reauthWindowMin: env.REAUTH_WINDOW_MIN,
     secureCookies: prod,
     jobsEnabled: env.JOBS_ENABLED,
+    worldOnDemand: env.WORLD_ON_DEMAND,
     spawnSecret: env.SPAWN_SECRET,
     admins: parseAdmins(env.ADMIN_TOKENS),
     publicApiUrl: env.PUBLIC_API_URL.replace(/\/+$/, ''),

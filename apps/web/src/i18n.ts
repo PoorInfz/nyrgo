@@ -96,6 +96,8 @@ export const resources = {
       tabCollection: 'Colección',
       creaturesTitle: 'Criaturas cerca',
       creaturesEmpty: 'No ves ninguna criatura. Camina un poco: cambian cada 15 minutos.',
+      areaLoading:
+        'Explorando esta zona por primera vez… Las criaturas aparecerán en uno o dos minutos.',
       approach: 'Acércate ({{m}} m)',
       catchIt: '¡A por ella!',
       levelShort: 'Nv. {{level}}',
@@ -395,6 +397,8 @@ export const resources = {
       tabCollection: 'Collection',
       creaturesTitle: 'Creatures nearby',
       creaturesEmpty: 'No creatures in sight. Walk a little: they change every 15 minutes.',
+      areaLoading:
+        'Exploring this area for the first time… Creatures will appear in a minute or two.',
       approach: 'Get closer ({{m}} m)',
       catchIt: 'Go for it!',
       levelShort: 'Lv. {{level}}',

@@ -7,6 +7,7 @@ import { HttpProblem } from '../../http/problem.js';
 import { requireAuth } from '../auth/sessions.js';
 import { recordFix } from '../anticheat/movement.js';
 import { cellsAround, ensureSpawns, visibleSpawns } from '../spawns/store.js';
+import { areasOf, requestAreas } from './areas.js';
 
 export const LocationSample = Type.Object(
   {
@@ -36,7 +37,7 @@ export const OSM_ATTRIBUTION = '© OpenStreetMap contributors (ODbL)';
 
 export async function worldRoutes(
   app: FastifyInstance,
-  { db, spawnSecret }: { db: Db; spawnSecret: string },
+  { db, spawnSecret, onDemand = false }: { db: Db; spawnSecret: string; onDemand?: boolean },
 ) {
   const cfg = DEFAULT_CONFIG.world;
 
@@ -75,7 +76,18 @@ export async function worldRoutes(
       });
 
       // Wild creatures around the player: generated on first sight for each cell and window.
-      const cells = await cellsAround(db, fix.cell);
+      let cells = await cellsAround(db, fix.cell);
+      // Anywhere in the world: areas not loaded yet are queued, and get no creatures until then.
+      let areaReady = true;
+      if (onDemand) {
+        const areas = await areasOf(db, cells);
+        const missing = [
+          ...new Set([...areas.values()].filter((a) => !a.ready).map((a) => a.area)),
+        ];
+        await requestAreas(db, missing);
+        areaReady = areas.get(fix.cell)?.ready ?? false;
+        cells = cells.filter((c) => areas.get(c)?.ready);
+      }
       await withTx(db, (c) => ensureSpawns(c, cells, spawnSecret));
       const spawns = await visibleSpawns(db, auth.userId, cells, lat, lng);
 
@@ -107,6 +119,8 @@ export async function worldRoutes(
         visibleRadiusM: cfg.visibleRadiusM,
         interactionRadiusM: cfg.interactionRadiusM,
         attribution: OSM_ATTRIBUTION,
+        /** `loading`: this area is being fetched from OpenStreetMap; creatures appear when ready. */
+        area: areaReady ? 'ready' : 'loading',
         pois: rows.map((r) => ({
           id: r.id,
           name: r.name,

@@ -23,6 +23,8 @@ services:
         value: https://api.nyrgo.fun
       - key: DEFAULT_REGION
         value: ES
+      - key: WORLD_ON_DEMAND
+        value: 'true'
       - key: MAIL_DRIVER
         value: resend
       - key: MAIL_FROM

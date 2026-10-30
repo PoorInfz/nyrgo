@@ -217,7 +217,13 @@ export function Play({
 
       <section className="card" aria-labelledby="creatures-title">
         <h2 id="creatures-title">{t('creaturesTitle')}</h2>
-        {nearby && creatures.length === 0 && <p className="muted">{t('creaturesEmpty')}</p>}
+        {nearby?.area === 'loading' ? (
+          <p className="muted" role="status">
+            {t('areaLoading')}
+          </p>
+        ) : (
+          nearby && creatures.length === 0 && <p className="muted">{t('creaturesEmpty')}</p>
+        )}
         <ul className="creature-list">
           {creatures.map((c) => {
             const name = names.get(c.creatureId) ?? c.creatureId;

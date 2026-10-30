@@ -134,7 +134,11 @@ export async function buildApp({
   await app.register(healthRoutes, { db });
   await app.register(authRoutes, { db, config, mailer: mail });
   await app.register(accountRoutes, { db, config });
-  await app.register(worldRoutes, { db, spawnSecret: config.spawnSecret });
+  await app.register(worldRoutes, {
+    db,
+    spawnSecret: config.spawnSecret,
+    onDemand: config.worldOnDemand,
+  });
   const nft = config.near.nft;
   const chain: NftChain | null =
     nftChain ?? (nft ? nearNftChain({ rpcUrl: config.near.rpcUrl, ...nft }) : null);
