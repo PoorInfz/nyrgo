@@ -125,6 +125,20 @@ Stated openly so nobody relies on something that is not there.
 - Secret scanning uses `gitleaks-action`, which needs a free license key for GitHub organizations
   (not for personal accounts).
 
+## Android app and device checks
+
+- The Android app (`apps/mobile`) builds in CI but has not been run on a phone by us yet; the
+  owner's first install is its first real test.
+- Play Integrity is implemented against Google's documented API but untested end to end: it needs
+  the owner's Play Console app, a linked Google Cloud project and a service account
+  (`docs/ANDROID.md`). Until then device checks are off and `REWARDS_REQUIRE_ATTESTATION` stays
+  false.
+- Mock-location detection only sees what Android reports; rooted devices can hide it. Play
+  Integrity's device verdict is the second line; neither is proof, so failures add risk for a
+  person to review rather than banning.
+- iOS (App Attest) is not started.
+- One API test fails intermittently in CI and passes on rerun; not yet tracked down.
+
 ## Data
 
 - OpenStreetMap coverage and tagging vary by street; exclusion zones for Córdoba will need manual review.
