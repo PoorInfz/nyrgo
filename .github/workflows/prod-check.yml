@@ -31,6 +31,7 @@ jobs:
           check "tiles service" "curl -fsS -o /dev/null -w '%{http_code}' https://tiles.nyrgo.fun/planet/0/0/0.mvt | grep -E '200|204'"
           check "api rewards"   "curl -fsS https://api.nyrgo.fun/v1/rewards | jq -c '{enabled, treasury, today}'"
           check "api market"    "curl -fsS https://api.nyrgo.fun/v1/market | jq -c '{treasury, marketFeeBps, royaltyBps, listings: (.listings | length)}'"
+          check "api events"    "curl -fsS 'https://api.nyrgo.fun/v1/events?lat=37.8847&lng=-4.7792' | jq -c '{events: (.events | length)}'"
           check "api cors"      "curl -fsS -o /dev/null -D - -X OPTIONS https://api.nyrgo.fun/v1/me -H 'Origin: https://app.nyrgo.fun' -H 'Access-Control-Request-Method: GET' | grep -i '^access-control-allow-origin'"
           check "api render"    "curl -fsS https://nyrgo-api.onrender.com/health"
           exit $fail

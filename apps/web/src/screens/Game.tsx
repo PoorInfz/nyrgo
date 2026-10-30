@@ -6,11 +6,12 @@ import { Play } from './Play';
 import { DexScreen } from './DexScreen';
 import { Collection } from './Collection';
 import { Bag } from './Bag';
+import { Social } from './Social';
 import { ensureDeviceCheck } from '../near/deviceCheck';
 
-type Tab = 'play' | 'collection' | 'bag' | 'dex' | 'profile';
+type Tab = 'play' | 'collection' | 'bag' | 'dex' | 'social' | 'profile';
 
-/** Menu icons, drawn for the game: a map pin, two creatures, a satchel, a book, an explorer. */
+/** Menu icons, drawn for the game: a map pin, two creatures, a satchel, a book, two friends, an explorer. */
 const ICONS: Record<Tab, ReactNode> = {
   play: (
     <path d="M12 22s7-6.4 7-12a7 7 0 1 0-14 0c0 5.6 7 12 7 12Zm0-9a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z" />
@@ -36,6 +37,13 @@ const ICONS: Record<Tab, ReactNode> = {
       <path d="M4 20.5A2.5 2.5 0 0 1 6.5 18H20v3H6.5M12 7.5l1 2.2 2.3.2-1.8 1.5.6 2.3-2.1-1.3-2.1 1.3.6-2.3-1.8-1.5 2.3-.2 1-2.2Z" />
     </>
   ),
+  social: (
+    <>
+      <circle cx="9" cy="8" r="3" />
+      <circle cx="17" cy="9.5" r="2.5" />
+      <path d="M3 20c.5-3.5 3-5.5 6-5.5s5.5 2 6 5.5M15.5 14.6c2.9-.4 5 1.3 5.5 4.4" />
+    </>
+  ),
   profile: (
     <>
       <circle cx="12" cy="8" r="4" />
@@ -49,6 +57,7 @@ const LABELS: Record<Tab, string> = {
   collection: 'tabCollection',
   bag: 'tabBag',
   dex: 'tabDex',
+  social: 'tabSocial',
   profile: 'tabProfile',
 };
 
@@ -84,7 +93,7 @@ export function Game({
   return (
     <div className="stack">
       <nav className="tabs" role="tablist" aria-label={t('tabsLabel')}>
-        {(['play', 'collection', 'bag', 'dex', 'profile'] as const).map((id) => (
+        {(['play', 'collection', 'bag', 'dex', 'social', 'profile'] as const).map((id) => (
           <button
             key={id}
             type="button"
@@ -116,6 +125,7 @@ export function Game({
         {tab === 'collection' && <Collection api={api} />}
         {tab === 'bag' && <Bag api={api} />}
         {tab === 'dex' && <DexScreen api={api} />}
+        {tab === 'social' && <Social api={api} />}
         {tab === 'profile' && (
           <Home api={api} profile={profile} onChange={onChange} onSignedOut={onSignedOut} />
         )}

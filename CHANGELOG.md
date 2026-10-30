@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.24.0 — 2026-10-30 — Friends, face-to-face trades and events
+
+- Friends by code, shared in person (200 at most, 20 requests a day, never across the adult and
+  minor age groups); friends see name, level and species caught, never a location.
+- Face-to-face trades between friends: one creature for one, accepted only while both players'
+  latest fixes are under 2 minutes old and within 100 m; 5 a day; NFTs and creatures in battle
+  are excluded.
+- Events at places: admins schedule a creature at a POI for 15–240 minutes (audited, cancellable);
+  everyone there sees it at the event's level. Public `GET /v1/events` lists those within 30 km.
+- App: new **Friends** tab (code, requests, friends, trade builder, offers), events card on the map
+  screen and highlighted event creatures. See `docs/SOCIAL.md`.
+
 ## 0.23.0 — 2026-10-30 — Android app and device checks
 
 - `apps/mobile`: the game as an Android app (Capacitor 8, `fun.nyrgo.app`), built as a debug APK on

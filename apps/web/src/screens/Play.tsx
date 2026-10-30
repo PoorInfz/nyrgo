@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ApiError, type Api, type Nearby, type NearbyCreature } from '../api';
+import { ApiError, type Api, type GameEvent, type Nearby, type NearbyCreature } from '../api';
 import { thumbUrl, useContent } from '../content';
 import { Encounter } from './Encounter';
 import { Missions } from './Missions';
@@ -72,6 +72,7 @@ export function Play({
   const [progressTick, setProgressTick] = useState(0);
   const [visit, setVisit] = useState<{ ok: boolean; text: string } | null>(null);
   const [visited, setVisited] = useState<ReadonlySet<string>>(new Set());
+  const [events, setEvents] = useState<{ list: GameEvent[]; at: number }>({ list: [], at: 0 });
 
   useEffect(() => {
     if (!active) return;
@@ -106,6 +107,24 @@ export function Play({
     );
     return stop;
   }, [active, api, source]);
+
+  // Events near the player: looked up again only when they move to another cell.
+  const cell = nearby?.cell;
+  useEffect(() => {
+    const at = last.current?.fix;
+    if (!cell || !at) return;
+    let live = true;
+    api
+      .events(at.lat, at.lng)
+      .then(
+        (r) =>
+          live && setEvents({ list: Array.isArray(r?.events) ? r.events : [], at: Date.now() }),
+      )
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [api, cell]);
 
   function enable() {
     setStatus({ kind: 'locating' });
@@ -228,6 +247,44 @@ export function Play({
       />
       <Missions api={api} refresh={progressTick} />
 
+      {events.list.length > 0 && (
+        <section className="card" aria-labelledby="events-title">
+          <h2 id="events-title">{t('events.title')}</h2>
+          <ul className="creature-list">
+            {events.list.map((e) => {
+              const live = Date.parse(e.startsAt) <= events.at;
+              const when = (iso: string) =>
+                new Date(iso).toLocaleString(i18n.language, {
+                  weekday: 'short',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                });
+              return (
+                <li key={e.id}>
+                  <img src={thumbUrl(e.creatureId)} alt="" width={48} height={70} />
+                  <span className="poi-name">
+                    <strong>{e.title}</strong>
+                    <br />
+                    <span className="muted small">
+                      {names.get(e.creatureId) ?? e.creatureId}{' '}
+                      {t('levelShort', { level: e.level })} · {e.placeName} ·{' '}
+                      {t('metres', { m: e.distanceM })}
+                    </span>
+                    <br />
+                    <span className="muted small">
+                      {live
+                        ? t('events.until', { when: when(e.endsAt) })
+                        : t('events.from', { when: when(e.startsAt) })}
+                    </span>
+                  </span>
+                  {live && <span className="badge event">{t('events.badge')}</span>}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+
       <section className="card" aria-labelledby="creatures-title">
         <h2 id="creatures-title">{t('creaturesTitle')}</h2>
         {nearby?.area === 'loading' ? (
@@ -245,6 +302,7 @@ export function Play({
                 <img src={thumbUrl(c.creatureId)} alt="" width={48} height={70} />
                 <span className="poi-name">
                   {name} <span className="muted">{t('levelShort', { level: c.level })}</span>
+                  {c.eventId && <span className="badge event">{t('events.badge')}</span>}
                 </span>
                 {c.inRange ? (
                   <button type="button" className="small" onClick={() => setFacing(c)}>

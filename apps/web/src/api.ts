@@ -45,6 +45,8 @@ export interface NearbyCreature {
   distanceM: number;
   expiresAt: string;
   inRange: boolean;
+  /** Set when the creature is there for a scheduled event. */
+  eventId?: string | null;
 }
 
 export interface Nearby {
@@ -147,7 +149,7 @@ export interface OwnedCreature {
   ivs: Stats;
   stats: Stats;
   hp: number;
-  acquiredVia: 'capture' | 'starter';
+  acquiredVia: 'capture' | 'starter' | 'trade';
   acquiredAt: string;
   /** Set when the creature is an NFT: being minted, or held by a NEAR account. */
   onchain?: {
@@ -287,6 +289,55 @@ export interface NearChallenge {
   expiresAt: string;
 }
 
+export interface Friend {
+  id: string;
+  name: string;
+  level: number;
+  caught?: number;
+}
+
+export interface Friends {
+  /** This player's code to share in person. */
+  code: string;
+  friends: Friend[];
+  incoming: Friend[];
+  outgoing: Friend[];
+}
+
+export interface FriendCreature {
+  id: string;
+  creatureId: string;
+  level: number;
+  grade: string;
+}
+
+export interface Trade {
+  id: string;
+  status: 'pending' | 'done' | 'declined' | 'cancelled' | 'expired';
+  /** True when this player proposed it. */
+  mine: boolean;
+  expiresAt: string;
+  friendId: string;
+  friendName: string;
+  giveCreatureId: string;
+  giveLevel: number;
+  wantCreatureId: string;
+  wantLevel: number;
+}
+
+export interface GameEvent {
+  id: string;
+  title: string;
+  creatureId: string;
+  level: number;
+  startsAt: string;
+  endsAt: string;
+  placeName: string;
+  lat: number;
+  lng: number;
+  distanceM: number;
+}
+
 export function createApi(baseUrl: string) {
   async function call<T>(
     method: string,
@@ -410,6 +461,33 @@ export function createApi(baseUrl: string) {
     attest: (nonce: string, token: string) =>
       call<{ verified: true; until: string }>('POST', '/v1/me/attest', { nonce, token }),
     tips: () => call<MyTips>('GET', '/v1/me/tips'),
+    friends: () => call<Friends>('GET', '/v1/friends'),
+    addFriend: (code: string) =>
+      call<{ status: 'friends' | 'requested' }>('POST', '/v1/friends', { code }),
+    acceptFriend: (id: string) =>
+      call<{ status: 'friends' }>('POST', `/v1/friends/${encodeURIComponent(id)}/accept`),
+    removeFriend: (id: string) => call<void>('DELETE', `/v1/friends/${encodeURIComponent(id)}`),
+    friendCreatures: (id: string) =>
+      call<{ creatures: FriendCreature[] }>(
+        'GET',
+        `/v1/friends/${encodeURIComponent(id)}/creatures`,
+      ),
+    trades: () => call<{ trades: Trade[] }>('GET', '/v1/trades'),
+    proposeTrade: (to: string, give: string, want: string) =>
+      call<{ id: string; status: 'pending'; expiresAt: string }>('POST', '/v1/trades', {
+        to,
+        give,
+        want,
+      }),
+    acceptTrade: (id: string) =>
+      call<{ status: 'done' }>('POST', `/v1/trades/${encodeURIComponent(id)}/accept`),
+    declineTrade: (id: string) =>
+      call<{ status: 'closed' }>('POST', `/v1/trades/${encodeURIComponent(id)}/decline`),
+    events: (lat: number, lng: number) =>
+      call<{ events: GameEvent[] }>(
+        'GET',
+        `/v1/events?lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}`,
+      ),
     nftCardUrl: (id: string) => `${baseUrl}/v1/nft/cards/${encodeURIComponent(id)}.png`,
     /** 404 when creature NFTs are switched off on this server. */
     nftInfo: () => call<{ contractId: string; network: string }>('GET', '/v1/nft'),

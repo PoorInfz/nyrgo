@@ -211,6 +211,19 @@ p {
   color: #fff;
 }
 
+.badge.event {
+  margin-left: 6px;
+  background: var(--sun);
+  color: var(--ink);
+}
+
+.friend-code {
+  font-family: ui-monospace, monospace;
+  font-size: 1.25em;
+  letter-spacing: 0.12em;
+  user-select: all;
+}
+
 .chip {
   display: inline-block;
   padding: 2px 12px;
@@ -342,7 +355,7 @@ button.small {
   width: min(480px, 100%);
   translate: -50% 0;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 6px;
   padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
   background: var(--paper);
@@ -364,7 +377,7 @@ button.small {
   color: var(--ink-soft);
   border: 3px solid transparent;
   box-shadow: none;
-  font-size: 12.5px;
+  font-size: 11.5px;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -429,6 +442,21 @@ button.small {
   border-radius: 12px;
 }
 
+.social-list li {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.social-list .poi-name {
+  flex: 1 1 60%;
+  min-width: 0;
+}
+
+.social-list button {
+  width: auto;
+  flex: none;
+}
+
 .poi-list .dot {
   width: 12px;
   height: 12px;
@@ -490,6 +518,14 @@ button.small {
   background: var(--sky-2);
   border: 3px solid var(--ink);
   box-shadow: 0 3px 0 var(--ink);
+}
+
+.creature-marker[data-event='true'] {
+  width: 58px;
+  height: 58px;
+  box-shadow:
+    0 0 0 4px var(--sun),
+    0 3px 0 6px var(--ink);
 }
 
 .creature-marker[data-in-range='true'] {

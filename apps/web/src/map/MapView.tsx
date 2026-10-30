@@ -12,6 +12,8 @@ export interface MapCreature {
   lat: number;
   lng: number;
   inRange: boolean;
+  /** Creatures placed by an event stand out on the map. */
+  eventId?: string | null;
 }
 
 /**
@@ -163,6 +165,7 @@ export default function MapView({
         markers.current.set(c.id, marker);
       }
       marker.getElement().dataset.inRange = String(c.inRange);
+      marker.getElement().dataset.event = String(Boolean(c.eventId));
     }
   }, [ready, creatures]);
 
