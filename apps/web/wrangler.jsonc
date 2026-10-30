@@ -5,6 +5,8 @@
 {
   "name": "nyrgo-app",
   "compatibility_date": "2026-10-01",
+  // the app's address; deploying creates the custom domain and its DNS record
+  "routes": [{ "pattern": "app.nyrgo.fun", "custom_domain": true }],
   "assets": {
     "directory": "./dist",
     "not_found_handling": "single-page-application",
