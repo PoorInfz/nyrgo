@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{{t:title}}</title>
     <meta name="description" content="{{t:description}}" />
-    <meta name="theme-color" content="#06222b" />
+    <meta name="theme-color" content="#070b1f" />
     <link rel="canonical" href="https://nyrgo.fun{{PATH}}" />
     {{ALTERNATES}}
     <link rel="icon" href="/assets/icon-192.png" type="image/png" />
@@ -32,34 +32,46 @@
         <a href="#nft">{{t:navNft}}</a>
         <a href="#faq">{{t:navFaq}}</a>
       </nav>
-      <div class="lang" role="group" aria-label="{{t:langLabel}}">{{LANGSWITCH}}</div>
+      <div class="top-actions">
+        <div class="lang" role="group" aria-label="{{t:langLabel}}">{{LANGSWITCH}}</div>
+        {{PLAYTOP}}
+      </div>
     </header>
+
+    <div class="bg-creatures" aria-hidden="true">{{BGCREATURES}}</div>
 
     <main id="top">
       <section class="hero">
-        <picture>
-          <source media="(max-width: 700px)" srcset="/assets/header-800.webp" />
-          <img
-            class="banner"
-            src="/assets/header-1600.webp"
-            alt="{{t:bannerAlt}}"
-            width="1600"
-            height="600"
-          />
-        </picture>
-        <div class="hero-card card">
-          <h1>{{t:h1a}}<br /><span class="hl">{{t:h1b}}</span></h1>
+        <div class="hero-text">
+          <p class="eyebrow"><span class="dot" aria-hidden="true"></span>{{t:eyebrow}}</p>
+          <h1>{{t:h1a}} <span class="hl">{{t:h1b}}</span></h1>
           <p class="lead">{{t:lead}}</p>
           <div class="cta">
             {{PLAY}}
             <a class="btn btn-ghost" href="#creatures">{{t:seeCreatures}}</a>
           </div>
-          <p class="pilot">📍 {{t:pilot}} <strong>Córdoba</strong></p>
+          <ul class="stats" aria-label="{{t:statsLabel}}">
+            <li><strong>{{COUNT}}</strong><span>{{t:statCreatures}}</span></li>
+            <li><strong>{{ELEMENTS}}</strong><span>{{t:statElements}}</span></li>
+            <li><strong>🌍</strong><span>{{t:statWorld}}</span></li>
+          </ul>
         </div>
-        <div class="starters" aria-label="{{t:startersLabel}}">{{STARTERS}}</div>
+        <div class="hero-art">
+          <picture>
+            <source media="(max-width: 700px)" srcset="/assets/header-800.webp" />
+            <img
+              class="banner"
+              src="/assets/header-1600.webp"
+              alt="{{t:bannerAlt}}"
+              width="1600"
+              height="600"
+            />
+          </picture>
+        </div>
       </section>
 
       <section id="play" class="section">
+        <p class="kicker">{{t:howKicker}}</p>
         <h2 class="title">{{t:howTitle}}</h2>
         <ol class="steps">
           <li class="card step">
@@ -86,6 +98,7 @@
       </section>
 
       <section id="creatures" class="section">
+        <p class="kicker">{{t:creaturesKicker}}</p>
         <h2 class="title">{{t:creaturesTitle}}</h2>
         <p class="sub">{{t:creaturesSub}}</p>
         <div class="filters" role="group" aria-label="{{t:filterLabel}}">{{FILTERS}}</div>
@@ -93,6 +106,7 @@
       </section>
 
       <section id="nft" class="section">
+        <p class="kicker">{{t:nftKicker}}</p>
         <h2 class="title">{{t:nftTitle}}</h2>
         <div class="nft">
           <div class="nft-text">
@@ -159,6 +173,7 @@
       </section>
 
       <section id="faq" class="section">
+        <p class="kicker">{{t:faqKicker}}</p>
         <h2 class="title">{{t:faqTitle}}</h2>
         <div class="faq">
           <details class="card">
@@ -181,6 +196,13 @@
             <summary>{{t:q5}}</summary>
             <p>{{t:a5}}</p>
           </details>
+        </div>
+      </section>
+      <section class="section final">
+        <div class="final-card">
+          <h2>{{t:finalTitle}}</h2>
+          <p>{{t:finalLead}}</p>
+          <div class="cta">{{PLAY}}</div>
         </div>
       </section>
     </main>

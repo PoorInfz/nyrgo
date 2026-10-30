@@ -12,8 +12,8 @@ pnpm --filter "@nyrgo/site..." build     # → apps/site/dist
 - `page.html` + `i18n.mts` — the page and its text in each language.
 - `static/` — styles, script (language, element filter), NFT card examples, Cloudflare `_headers`.
 - `build.mts` — renders each language with the creature grid, starters, filters and NFT supplies.
-- `SITE_APP_OPEN=true` turns "Beta en Córdoba · muy pronto" into a "¡Jugar ahora!" link to
-  `SITE_APP_URL` (default `https://app.nyrgo.fun`).
+- The "Play now" buttons link to `SITE_APP_URL` (default `https://app.nyrgo.fun`);
+  `SITE_APP_OPEN=false` turns them into "Coming soon".
 
 ## Cloudflare (Workers, static assets)
 

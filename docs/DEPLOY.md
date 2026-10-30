@@ -46,10 +46,10 @@ Workers & Pages → Create → Import a repository → `PoorInfz/nyrgo`:
 Then Settings → Domains & Routes → add `app.nyrgo.fun`. The app talks to
 `https://api.nyrgo.fun` (`apps/web/.env.production`).
 
-## 5. Open the beta
+## 5. The play button
 
-When the app works end to end, set `SITE_APP_OPEN=true` as a build variable of the `nyrgo`
-(website) Worker and redeploy: the "coming soon" button becomes "Play now!".
+The website's "Play now!" buttons link to the app. To close them again (showing "Coming soon"),
+set `SITE_APP_OPEN=false` as a build variable of the `nyrgo` (website) Worker and redeploy.
 
 ## Data and checks (GitHub → Actions, run by hand)
 

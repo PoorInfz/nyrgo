@@ -23,7 +23,8 @@ const ART = '../web/public';
 /** Where the game itself lives; the page links there. */
 const APP_URL = process.env.SITE_APP_URL ?? 'https://app.nyrgo.fun';
 /** Set when the game is open to players; until then the play button says "coming soon". */
-const APP_OPEN = process.env.SITE_APP_OPEN === 'true';
+// the game is open to everyone; SITE_APP_OPEN=false shows "coming soon" instead of the link
+const APP_OPEN = process.env.SITE_APP_OPEN !== 'false';
 
 const esc = (s: string) =>
   s.replace(
@@ -40,11 +41,6 @@ cpSync(join(ART, 'creatures'), join(OUT, 'assets/creatures'), {
   recursive: true,
   filter: (f) => !f.endsWith('-thumb.webp'),
 });
-const starters = CREATURES.filter((c) => c.starter);
-mkdirSync(join(OUT, 'assets/sprites'), { recursive: true });
-for (const c of starters) {
-  cpSync(join(ART, 'sprites', `${c.id}-idle.webp`), join(OUT, `assets/sprites/${c.id}-idle.webp`));
-}
 for (const f of [
   'header-1600.webp',
   'header-800.webp',
@@ -61,23 +57,23 @@ const font = dirname(
 );
 cpSync(join(font, 'files/fredoka-latin-wght-normal.woff2'), join(OUT, 'assets/fredoka.woff2'));
 
+/** A small seeded generator, so the background is the same on every build. */
+function mulberry(seed: number) {
+  let a = seed;
+  return () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 function render(lang: Lang): string {
   const t = TEXT[lang];
   const { locale } = LANGS[lang];
   const name = (e: keyof typeof ELEMENT_INFO) => ELEMENT_INFO[e][lang];
   const chip = (e: keyof typeof ELEMENT_INFO) =>
     `<span class="chip" style="--el:${ELEMENT_INFO[e].color}">${esc(name(e))}</span>`;
-
-  const startersHtml = starters
-    .map(
-      (c) => `
-        <figure class="starter">
-          <div class="sprite" style="--sheet:url(/assets/sprites/${c.id}-idle.webp)" role="img" aria-label="${esc(c.name)}"></div>
-          <div class="platform"></div>
-          <figcaption>${esc(c.name)} ${chip(c.element)}</figcaption>
-        </figure>`,
-    )
-    .join('');
 
   const creaturesHtml = CREATURES.map(
     (c) => `
@@ -113,6 +109,30 @@ function render(lang: Lang): string {
     ? `<a class="btn btn-play" href="${esc(APP_URL)}">${esc(t.playNow)}</a>`
     : `<span class="btn btn-play soon" aria-disabled="true">${esc(t.soon)}</span>`;
 
+  const playTop = APP_OPEN
+    ? `<a class="btn btn-play btn-small" href="${esc(APP_URL)}">${esc(t.navCta)}</a>`
+    : '';
+
+  // creatures drifting behind the page: spread over a grid of cells so they never pile up,
+  // jittered so it does not look like a grid; the same every build
+  const rand = mulberry(7);
+  const pick = [...CREATURES].sort((a, b) => a.dex - b.dex).filter((_, i) => i % 3 === 0);
+  const cols = 4;
+  const bgHtml = pick
+    .map((c, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const x = ((col + 0.15 + rand() * 0.7) / cols) * 100;
+      const rows = Math.ceil(pick.length / cols);
+      const y = ((row + 0.1 + rand() * 0.8) / rows) * 100;
+      const size = 110 + Math.round(rand() * 110);
+      const dur = 14 + Math.round(rand() * 12);
+      const tilt = Math.round(rand() * 16 - 8);
+      const far = rand() < 0.4 ? ' far' : '';
+      return `<img class="bg-c${far}" src="/assets/bg/${c.id}.webp" alt="" decoding="async" style="--x:${x.toFixed(1)}%;--y:${y.toFixed(1)}%;--s:${size}px;--d:${dur}s;--r:${tilt}deg;--delay:-${(rand() * dur).toFixed(1)}s">`;
+    })
+    .join('');
+
   const langs = Object.keys(LANGS) as Lang[];
   const switchHtml = langs
     .map((l) =>
@@ -140,9 +160,10 @@ function render(lang: Lang): string {
     .replaceAll('{{ALTERNATES}}', alternates)
     .replaceAll('{{LANGSWITCH}}', switchHtml)
     .replaceAll('{{PLAY}}', play)
+    .replaceAll('{{PLAYTOP}}', playTop)
+    .replaceAll('{{BGCREATURES}}', bgHtml)
     .replaceAll('{{COUNT}}', String(CREATURES.length))
     .replaceAll('{{ELEMENTS}}', String(ELEMENTS.length))
-    .replaceAll('{{STARTERS}}', startersHtml)
     .replaceAll('{{FILTERS}}', filtersHtml)
     .replaceAll('{{CREATURES}}', creaturesHtml)
     .replaceAll('{{SUPPLY}}', supplyHtml)

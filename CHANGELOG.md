@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.28.0 — 2026-10-31 — New website
+
+- nyrgo.fun redesigned: dark, polished theme with gradient accents, two-column hero with stats,
+  section kickers, opaque cards, a closing call to action and a sticky bar with a Play button.
+- The game's creatures (cut-out sprites) drift slowly behind the page, spread over its whole length;
+  fewer on phones, still under reduced motion.
+- "Play now!" is on by default (`SITE_APP_OPEN=false` turns it off) and the site says the game is
+  available worldwide instead of a Córdoba beta.
+
 ## 0.27.1 — 2026-10-30 — Anime explorer
 
 - The explorer redrawn as an anime-style chibi with cel shading: hard-edged violet-leaning shadows
