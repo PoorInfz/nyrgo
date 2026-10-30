@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.29.0 — 2026-10-31 — The app in the website's look
+
+- The app now shares nyrgo.fun's dark theme: night-blue background with violet and cyan glows,
+  opaque dark panels with hairline edges, mint → cyan → violet gradient buttons and active tab,
+  glass secondary buttons, dark inputs, and toned notices, badges and lists. Map markers keep their
+  dark outline on the bright map; encounter and battle scenes keep their painted sky.
+- PWA and browser theme colour follow (`#070b1f`).
+
 ## 0.28.0 — 2026-10-31 — New website
 
 - nyrgo.fun redesigned: dark, polished theme with gradient accents, two-column hero with stats,

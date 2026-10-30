@@ -1,15 +1,23 @@
 /*
- * nyrGo! — a creature-collecting game. The look follows the owner's logo: mint-green letters
- * with a deep green-black outline, a holographic mint ring, painted sky and meadow, and the
- * purple of its mascot as the accent. Windows are white with an ink outline and a hard drop
- * shadow; buttons are chunky and sink when pressed.
+ * nyrGo! — a creature-collecting game. The app shares the website's look: a deep night-blue
+ * background with soft violet and cyan glows, opaque dark panels with a hairline edge, and
+ * mint → cyan → violet gradients for what matters. The painted game scenes (encounters, battles)
+ * keep their own sky and meadow.
  */
 :root {
+  --bg: #070b1f;
+  --text: #eef3ff;
+  --edge: rgb(255 255 255 / 12%);
+  --edge-2: rgb(255 255 255 / 20%);
+  --cyan: #3fd0ee;
+  --violet: #9b6bff;
+  --grad: linear-gradient(100deg, #43f289 0%, #3fd0ee 45%, #9b6bff 100%);
+  /* outlines drawn on top of the bright game art (map markers, portraits) stay dark */
   --ink: #06222b;
-  --ink-soft: #3b5962;
-  --paper: #fbfffd;
-  --paper-2: #e6faf1;
-  --line: #b5ecd6;
+  --ink-soft: #a6b0cf;
+  --paper: #121a3d;
+  --paper-2: #18214b;
+  --line: rgb(255 255 255 / 12%);
   --sky-1: #3fb0ee;
   --sky-2: #9be0fb;
   --sky-3: #e2f8ff;
@@ -22,12 +30,12 @@
   --red: #ef4a5b;
   --meadow-1: #c6f2a6;
   --meadow-2: #7fd36c;
-  --frame: 0 4px 0 rgb(6 34 43 / 35%);
-  color-scheme: light;
+  --frame: 0 18px 40px -18px rgb(0 0 0 / 70%);
+  color-scheme: dark;
   font-family: 'Fredoka Variable', 'Fredoka', ui-rounded, system-ui, sans-serif;
   font-weight: 450;
   line-height: 1.4;
-  color: var(--ink);
+  color: var(--text);
 }
 
 * {
@@ -38,9 +46,11 @@ body {
   margin: 0;
   min-height: 100dvh;
   background:
-    radial-gradient(ellipse 80% 40% at 20% 0%, rgb(255 255 255 / 55%), transparent 70%),
-    linear-gradient(180deg, var(--sky-1) 0%, var(--sky-2) 45%, var(--sky-3) 100%) fixed;
-  color: var(--ink);
+    radial-gradient(700px 500px at 100% -10%, rgb(155 107 255 / 22%), transparent 60%),
+    radial-gradient(600px 500px at -20% 30%, rgb(63 208 238 / 14%), transparent 60%),
+    radial-gradient(700px 500px at 50% 110%, rgb(67 242 137 / 10%), transparent 60%),
+    var(--bg) fixed;
+  color: var(--text);
 }
 
 .shell {
@@ -66,7 +76,7 @@ body {
   height: 118px;
   object-fit: cover;
   object-position: 50% 80%;
-  border-bottom: 3px solid var(--ink);
+  border-bottom: 1px solid var(--edge);
   border-radius: 0 0 20px 20px;
   box-shadow: 0 4px 0 rgb(6 34 43 / 30%);
 }
@@ -136,13 +146,10 @@ p {
 /* A game window: paper, an ink outline, a pale inner ring and a hard drop shadow. */
 .card {
   background: var(--paper);
-  border: 3px solid var(--ink);
+  border: 1px solid var(--edge);
   border-radius: 16px;
   padding: 16px;
-  box-shadow:
-    inset 0 0 0 3px var(--paper),
-    inset 0 0 0 5px var(--line),
-    var(--frame);
+  box-shadow: var(--frame);
 }
 
 .muted {
@@ -190,7 +197,7 @@ p {
   padding: 8px 12px;
   border-radius: 12px;
   background: #fff3d6;
-  border: 3px solid var(--ink);
+  border: 1px solid var(--edge);
   color: #5c3d06;
   font-size: 14.5px;
   box-shadow: var(--frame);
@@ -214,7 +221,7 @@ p {
 .badge.event {
   margin-left: 6px;
   background: var(--sun);
-  color: var(--ink);
+  color: var(--text);
 }
 
 .friend-code {
@@ -228,8 +235,8 @@ p {
   display: inline-block;
   padding: 2px 12px;
   border-radius: 999px;
-  border: 2px solid var(--ink);
-  color: var(--ink);
+  border: 1px solid var(--edge);
+  color: var(--text);
   font-weight: 650;
   font-size: 14px;
 }
@@ -254,16 +261,16 @@ label {
   gap: 6px;
   font-size: 15px;
   font-weight: 550;
-  color: var(--ink);
+  color: var(--text);
 }
 
 input,
 select {
   font: inherit;
   font-size: 16px; /* avoids iOS zoom on focus */
-  color: var(--ink);
+  color: var(--text);
   background: #fff;
-  border: 3px solid var(--ink);
+  border: 1px solid var(--edge);
   border-radius: 12px;
   padding: 10px 12px;
   min-height: 48px;
@@ -277,14 +284,14 @@ button {
   font-size: 16px;
   min-height: 48px;
   border-radius: 14px;
-  border: 3px solid var(--ink);
+  border: 1px solid var(--edge);
   padding: 0 16px;
   background: var(--mint);
-  color: var(--ink);
+  color: var(--text);
   cursor: pointer;
   box-shadow:
     inset 0 -4px 0 rgb(0 0 0 / 18%),
-    0 4px 0 var(--ink);
+    0 10px 24px -12px rgb(0 0 0 / 70%);
   transition:
     transform 0.06s ease,
     box-shadow 0.06s ease;
@@ -294,21 +301,21 @@ button:active:not(:disabled) {
   transform: translateY(3px);
   box-shadow:
     inset 0 -2px 0 rgb(0 0 0 / 18%),
-    0 1px 0 var(--ink);
+    0 10px 24px -12px rgb(0 0 0 / 70%);
 }
 
 button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
-  box-shadow: 0 2px 0 var(--ink);
+  box-shadow: 0 10px 24px -12px rgb(0 0 0 / 70%);
 }
 
 button.secondary {
   background: var(--paper);
-  color: var(--ink);
+  color: var(--text);
   box-shadow:
-    inset 0 -4px 0 var(--line),
-    0 4px 0 var(--ink);
+    inset 0 1px 0 rgb(255 255 255 / 8%),
+    0 10px 24px -12px rgb(0 0 0 / 70%);
 }
 
 button.danger {
@@ -359,7 +366,7 @@ button.small {
   gap: 6px;
   padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
   background: var(--paper);
-  border: 3px solid var(--ink);
+  border: 1px solid var(--edge);
   border-bottom: 0;
   border-radius: 20px 20px 0 0;
   box-shadow: 0 -4px 0 rgb(6 34 43 / 18%);
@@ -392,11 +399,11 @@ button.small {
 
 .tab.active {
   background: var(--mint);
-  color: var(--ink);
+  color: var(--text);
   border-color: var(--ink);
   box-shadow:
     inset 0 -3px 0 rgb(0 0 0 / 20%),
-    0 3px 0 var(--ink);
+    0 10px 24px -12px rgb(0 0 0 / 70%);
 }
 
 .tab span {
@@ -412,7 +419,7 @@ button.small {
   border-radius: 16px;
   overflow: hidden;
   background: #cfe6c4;
-  border: 3px solid var(--ink);
+  border: 1px solid var(--edge);
   box-shadow: var(--frame);
 }
 
@@ -461,7 +468,7 @@ button.small {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  border: 2px solid var(--ink);
+  border: 1px solid var(--edge);
 }
 
 .creature-list li {
@@ -480,7 +487,7 @@ button.small {
   object-fit: cover;
   object-position: 50% 30%;
   border-radius: 50%;
-  border: 3px solid var(--ink);
+  border: 1px solid var(--edge);
   background: var(--sky-2);
 }
 
@@ -516,8 +523,8 @@ button.small {
   overflow: hidden;
   border-radius: 50%;
   background: var(--sky-2);
-  border: 3px solid var(--ink);
-  box-shadow: 0 3px 0 var(--ink);
+  border: 1px solid var(--edge);
+  box-shadow: 0 10px 24px -12px rgb(0 0 0 / 70%);
 }
 
 .creature-marker[data-event='true'] {
@@ -525,7 +532,7 @@ button.small {
   height: 58px;
   box-shadow:
     0 0 0 4px var(--sun),
-    0 3px 0 6px var(--ink);
+    0 10px 24px -12px rgb(0 0 0 / 70%);
 }
 
 .creature-marker[data-in-range='true'] {
@@ -563,13 +570,13 @@ button.small {
   font-size: 14px;
   padding: 0 12px;
   background: var(--paper);
-  color: var(--ink);
-  box-shadow: 0 3px 0 var(--ink);
+  color: var(--text);
+  box-shadow: 0 10px 24px -12px rgb(0 0 0 / 70%);
 }
 
 .chips button[aria-pressed='true'] {
   background: var(--mint);
-  color: var(--ink);
+  color: var(--text);
 }
 
 /* ---------------------------------------------------------------- dex and collection */
@@ -594,8 +601,8 @@ button.small {
   text-align: center;
   padding: 8px 8px 12px;
   background: var(--paper);
-  color: var(--ink);
-  border: 3px solid var(--ink);
+  color: var(--text);
+  border: 1px solid var(--edge);
   border-radius: 16px;
   box-shadow: var(--frame);
   font-weight: 500;
@@ -605,8 +612,8 @@ button.small {
 
 button.dex-card {
   box-shadow:
-    inset 0 -4px 0 var(--line),
-    0 4px 0 var(--ink);
+    inset 0 1px 0 rgb(255 255 255 / 8%),
+    0 10px 24px -12px rgb(0 0 0 / 70%);
 }
 
 /* The creature, cut out, standing on a little patch of sky and meadow. */
@@ -616,7 +623,7 @@ button.dex-card {
   height: 132px;
   padding: 6px 6px 2px;
   border-radius: 10px;
-  border: 2px solid var(--ink);
+  border: 1px solid var(--edge);
   background: linear-gradient(180deg, var(--sky-2) 0 62%, var(--meadow-1) 62% 100%);
   margin-bottom: 4px;
 }
@@ -642,7 +649,7 @@ button.dex-card {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  border: 2px solid var(--ink);
+  border: 1px solid var(--edge);
 }
 
 .dex-name {
@@ -688,8 +695,8 @@ button.dex-card {
   place-items: center;
   border-radius: 50%;
   background: var(--mint-2);
-  border: 2px solid var(--ink);
-  color: var(--ink);
+  border: 1px solid var(--edge);
+  color: var(--text);
   font-weight: 700;
   font-size: 14px;
 }
@@ -710,7 +717,7 @@ button.dex-card {
   place-items: center;
   border-radius: 14px;
   overflow: hidden;
-  border: 3px solid var(--ink);
+  border: 1px solid var(--edge);
   box-shadow: inset 0 0 0 4px color-mix(in srgb, var(--el, #94a3b8) 70%, white);
 }
 
@@ -779,7 +786,7 @@ button.dex-card {
   height: 12px;
   border-radius: 6px;
   background: var(--mint-2);
-  border: 2px solid var(--ink);
+  border: 1px solid var(--edge);
 }
 
 .bars .value {
@@ -797,7 +804,7 @@ button.dex-card {
 
 .starter img {
   border-radius: 12px;
-  border: 3px solid var(--ink);
+  border: 1px solid var(--edge);
   width: 100%;
   height: auto;
   aspect-ratio: 306 / 445;
@@ -812,9 +819,9 @@ button.dex-card {
   padding: 4px 14px;
   font-size: 19px;
   font-weight: 700;
-  color: var(--ink);
+  color: var(--text);
   background: #ffe7a8;
-  border: 3px solid var(--ink);
+  border: 1px solid var(--edge);
   border-radius: 999px;
 }
 
@@ -890,12 +897,12 @@ button.dex-card {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: 3px solid var(--ink);
+  border: 1px solid var(--edge);
   background: #fff;
   display: grid;
   place-items: center;
   font-weight: 700;
-  color: var(--ink);
+  color: var(--text);
 }
 
 .steps li.done .check {
@@ -915,7 +922,7 @@ button.dex-card {
  */
 .scene {
   position: relative;
-  border: 3px solid var(--ink);
+  border: 1px solid var(--edge);
   border-radius: 18px;
   overflow: hidden;
   box-shadow: var(--frame);
@@ -941,7 +948,7 @@ button.dex-card {
   aspect-ratio: 3.2;
   translate: -50% 38%;
   border-radius: 50%;
-  border: 3px solid var(--ink);
+  border: 1px solid var(--edge);
   background:
     radial-gradient(closest-side, #f4fffa 0 26%, var(--mint) 27% 33%, transparent 34%),
     radial-gradient(closest-side, transparent 0 58%, var(--mint-2) 59% 63%, transparent 64%),
@@ -1007,7 +1014,7 @@ button.dex-card {
 
 .vaults {
   margin: 0;
-  border: 3px solid var(--ink);
+  border: 1px solid var(--edge);
   border-radius: 14px;
   padding: 8px 12px 10px;
   display: flex;
@@ -1051,11 +1058,11 @@ button.pick {
   align-items: center;
   text-align: left;
   background: var(--paper);
-  color: var(--ink);
+  color: var(--text);
   padding: 6px 10px;
   box-shadow:
-    inset 0 -4px 0 var(--line),
-    0 4px 0 var(--ink);
+    inset 0 1px 0 rgb(255 255 255 / 8%),
+    0 10px 24px -12px rgb(0 0 0 / 70%);
 }
 
 button.pick img {
@@ -1063,7 +1070,7 @@ button.pick img {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  border: 2px solid var(--ink);
+  border: 1px solid var(--edge);
   object-fit: cover;
   object-position: 50% 30%;
   background: var(--sky-2);
@@ -1073,7 +1080,7 @@ button.pick img {
   border-radius: 14px;
   padding: 12px 14px;
   background: var(--paper);
-  border: 3px solid var(--ink);
+  border: 1px solid var(--edge);
   box-shadow: var(--frame);
   display: flex;
   flex-direction: column;
@@ -1133,7 +1140,7 @@ button.pick img {
   position: relative;
   z-index: 2;
   background: var(--paper);
-  border: 3px solid var(--ink);
+  border: 1px solid var(--edge);
   border-radius: 14px 4px 14px 4px;
   padding: 6px 10px 8px;
   box-shadow: var(--frame);
@@ -1192,7 +1199,7 @@ button.pick img {
   padding: 0 5px;
   border-radius: 6px;
   background: var(--sun);
-  color: var(--ink);
+  color: var(--text);
 }
 
 .hud-num {
@@ -1208,7 +1215,7 @@ button.pick img {
   border-radius: 999px;
   background: #d6deea;
   overflow: hidden;
-  border: 2px solid var(--ink);
+  border: 1px solid var(--edge);
 }
 
 .hp-fill {
@@ -1232,7 +1239,7 @@ button.pick img {
  * glow behind the logo.
  */
 .dialog {
-  border: 3px solid var(--ink);
+  border: 1px solid var(--edge);
   border-radius: 16px;
   padding: 7px;
   background: repeating-conic-gradient(
@@ -1248,7 +1255,7 @@ button.pick img {
   margin: 0;
   padding: 10px 14px;
   border-radius: 10px;
-  border: 3px solid var(--ink);
+  border: 1px solid var(--edge);
   background: var(--paper);
   min-height: 4.4em;
   font-size: 17px;
@@ -1290,17 +1297,17 @@ button.skill {
   padding: 8px 10px 10px 18px;
   text-align: left;
   background: color-mix(in srgb, var(--el, #94a3b8) 32%, white);
-  color: var(--ink);
+  color: var(--text);
   box-shadow:
     inset 8px 0 0 var(--el, #94a3b8),
     inset 0 -4px 0 rgb(6 34 43 / 15%),
-    0 4px 0 var(--ink);
+    0 10px 24px -12px rgb(0 0 0 / 70%);
 }
 
 button.skill:active:not(:disabled) {
   box-shadow:
     inset 8px 0 0 var(--el, #94a3b8),
-    0 1px 0 var(--ink);
+    0 10px 24px -12px rgb(0 0 0 / 70%);
 }
 
 .skill-name {
@@ -1562,9 +1569,9 @@ button.skill:active:not(:disabled) {
   right: 12px;
   padding: 1px 9px;
   border-radius: 999px;
-  border: 2px solid var(--ink);
+  border: 1px solid var(--edge);
   background: var(--purple-2);
-  color: var(--ink);
+  color: var(--text);
   font-size: 12.5px;
   font-weight: 700;
 }
@@ -1579,7 +1586,7 @@ button.skill:active:not(:disabled) {
   display: grid;
   place-items: center;
   border-radius: 50%;
-  border: 3px solid var(--ink);
+  border: 1px solid var(--edge);
   color: #fff;
   font-weight: 700;
   font-size: 15px;
@@ -1608,7 +1615,7 @@ button.skill:active:not(:disabled) {
   font-weight: 700;
   color: #0a6b3a;
   background: color-mix(in srgb, var(--mint) 30%, white);
-  border: 2px solid var(--ink);
+  border: 1px solid var(--edge);
   border-radius: 12px;
   padding: 6px 10px;
 }
@@ -1638,7 +1645,7 @@ button.skill:active:not(:disabled) {
 .sell input {
   width: 6.5em;
   min-height: 36px;
-  border: 2px solid var(--ink);
+  border: 1px solid var(--edge);
   border-radius: 10px;
   padding: 0 8px;
   font: inherit;
@@ -1683,7 +1690,7 @@ button.skill:active:not(:disabled) {
   object-fit: cover;
   object-position: 50% 30%;
   border-radius: 50%;
-  border: 3px solid var(--ink);
+  border: 1px solid var(--edge);
   background: var(--sky-2);
 }
 
@@ -1786,7 +1793,7 @@ button.skill:active:not(:disabled) {
   padding: 12px 0 4px;
   border-radius: 14px;
   background: linear-gradient(180deg, var(--sky-2) 0 60%, var(--meadow-1) 60% 100%);
-  border: 3px solid var(--ink);
+  border: 1px solid var(--edge);
 }
 
 .wardrobe-grid {
@@ -1810,23 +1817,324 @@ button.wardrobe-item {
   padding: 6px 4px 8px;
   min-height: 0;
   background: var(--paper);
-  color: var(--ink);
+  color: var(--text);
   font-size: 13.5px;
   font-weight: 550;
   box-shadow:
-    inset 0 -4px 0 var(--line),
-    0 4px 0 var(--ink);
+    inset 0 1px 0 rgb(255 255 255 / 8%),
+    0 10px 24px -12px rgb(0 0 0 / 70%);
 }
 
 button.wardrobe-item.wearing {
   background: #fff3d6;
   box-shadow:
     inset 0 0 0 3px var(--sun),
-    0 4px 0 var(--ink);
+    0 10px 24px -12px rgb(0 0 0 / 70%);
 }
 
 .wardrobe-name {
   text-align: center;
   line-height: 1.2;
   overflow-wrap: anywhere;
+}
+
+/* ================================================================ the website's look
+
+   Final layer: the shared components in the dark theme. Kept together so the whole look can be
+   read (and changed) in one place. */
+
+h1,
+h2,
+h3 {
+  letter-spacing: -0.01em;
+}
+
+.card {
+  background: linear-gradient(180deg, #141c42, #0e1534);
+  border: 1px solid var(--edge);
+  border-radius: 18px;
+  box-shadow: var(--frame);
+}
+
+.muted {
+  color: var(--ink-soft);
+}
+
+a {
+  color: var(--cyan);
+}
+
+input,
+select,
+textarea {
+  background: #0b1230;
+  color: var(--text);
+  border: 1px solid var(--edge-2);
+  border-radius: 12px;
+}
+
+input::placeholder {
+  color: #6f7aa0;
+}
+
+input:focus,
+select:focus {
+  border-color: var(--cyan);
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(63 208 238 / 25%);
+}
+
+/* buttons: the gradient for the main action, glass for the rest */
+button {
+  color: #04121a;
+  background: var(--grad);
+  border: 0;
+  border-radius: 14px;
+  box-shadow:
+    0 10px 24px -10px rgb(67 242 137 / 50%),
+    inset 0 1px 0 rgb(255 255 255 / 45%);
+  transition:
+    transform 0.12s,
+    box-shadow 0.12s,
+    filter 0.12s;
+}
+
+button:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px) scale(0.99);
+  box-shadow: 0 4px 12px -6px rgb(67 242 137 / 50%);
+}
+
+button:disabled {
+  opacity: 1;
+  color: #6f7aa0;
+  background: rgb(255 255 255 / 5%);
+  border: 1px solid var(--edge);
+  box-shadow: none;
+  filter: none;
+}
+
+button.secondary,
+.chips button,
+button.dex-card,
+button.pick,
+button.wardrobe-item {
+  color: var(--text);
+  background: rgb(255 255 255 / 6%);
+  border: 1px solid var(--edge-2);
+  box-shadow: none;
+}
+
+button.danger {
+  color: #fff;
+  background: linear-gradient(100deg, #ef4a5b, #c81e5a);
+  box-shadow: 0 10px 24px -10px rgb(239 74 91 / 55%);
+}
+
+button.link {
+  color: var(--cyan);
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.chips button[aria-pressed='true'] {
+  color: #0b1024;
+  background: var(--text);
+  border-color: var(--text);
+}
+
+/* bottom navigation */
+.tabs {
+  background: rgb(9 14 36 / 95%);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  border: 1px solid var(--edge);
+  border-bottom: 0;
+  box-shadow: 0 -12px 30px -12px rgb(0 0 0 / 60%);
+}
+
+.tab {
+  color: var(--ink-soft);
+  background: transparent;
+  border: 1px solid transparent;
+  box-shadow: none;
+}
+
+.tab.active {
+  color: #04121a;
+  background: var(--grad);
+  border-color: transparent;
+  box-shadow: 0 8px 20px -10px rgb(63 208 238 / 60%);
+}
+
+/* the header banner sits on the dark page */
+.hero img {
+  border-bottom: 1px solid var(--edge);
+  box-shadow: 0 20px 40px -20px rgb(0 0 0 / 70%);
+}
+
+/* messages */
+.notice {
+  color: #fff3d6;
+  background: rgb(255 207 77 / 12%);
+  border: 1px solid rgb(255 207 77 / 45%);
+}
+
+.warning {
+  color: #ffd9de;
+  background: rgb(239 74 91 / 14%);
+  border: 1px solid rgb(239 74 91 / 55%);
+}
+
+[role='alert'] {
+  color: #ff8a98;
+}
+
+.offline-banner {
+  color: #fff3d6;
+  background: rgb(255 207 77 / 14%);
+  border: 1px solid rgb(255 207 77 / 45%);
+}
+
+.safety {
+  background: rgb(255 255 255 / 4%);
+  border: 1px dashed var(--edge-2);
+  color: var(--ink-soft);
+}
+
+.badge {
+  background: rgb(255 255 255 / 10%);
+  color: var(--text);
+  border: 1px solid var(--edge-2);
+}
+
+.chip {
+  color: #0b1024;
+  border: 0;
+}
+
+.gold-line {
+  color: #2a1c00;
+  background: linear-gradient(100deg, #ffe38a, #ffcf4d);
+  border: 0;
+}
+
+/* lists of places, creatures, items */
+.poi-list li,
+.creature-list li,
+.item-list li,
+.recipe,
+.mission,
+.admin-item {
+  background: rgb(255 255 255 / 5%);
+  border: 1px solid var(--edge);
+}
+
+.poi-list li[data-in-range='true'],
+.creature-list li[data-in-range='true'] {
+  background: rgb(67 242 137 / 10%);
+  box-shadow: inset 0 0 0 1px rgb(67 242 137 / 55%);
+}
+
+.creature-list img {
+  border: 2px solid var(--edge-2);
+}
+
+.steps .check {
+  background: transparent;
+  border: 2px solid var(--edge-2);
+  color: var(--text);
+}
+
+.steps li.done .check {
+  background: var(--grad);
+  border-color: transparent;
+  color: #04121a;
+}
+
+.stats div {
+  background: rgb(255 255 255 / 5%);
+  border: 1px solid var(--edge);
+}
+
+/* the map keeps dark outlines on its markers, which sit on the bright map */
+.map {
+  border: 1px solid var(--edge-2);
+  box-shadow: var(--frame);
+}
+
+.creature-marker {
+  border: 3px solid var(--ink);
+  box-shadow: 0 3px 0 var(--ink);
+}
+
+/* collection and dex cards */
+.dex-card {
+  background: linear-gradient(180deg, #141c42, #0e1534);
+  border: 1px solid var(--edge);
+  color: var(--text);
+}
+
+.dex-card .pic {
+  border: 1px solid var(--edge);
+}
+
+.rarity {
+  color: var(--ink-soft);
+}
+.rarity-rare {
+  color: #7cc8f5;
+}
+.rarity-epic {
+  color: #c49bff;
+}
+.rarity-legendary,
+.rarity-mythic {
+  color: var(--sun);
+}
+
+/* game scenes keep their painted sky; just frame them like the rest */
+.scene,
+.portrait,
+.wardrobe-stage {
+  border: 1px solid var(--edge-2);
+  box-shadow: var(--frame);
+}
+
+.result {
+  background: linear-gradient(180deg, #141c42, #0e1534);
+  border: 1px solid var(--edge);
+}
+
+.result-caught,
+.result-win {
+  background: rgb(67 242 137 / 10%);
+  border-color: rgb(67 242 137 / 45%);
+}
+
+.result-caught strong,
+.result-win strong {
+  color: var(--mint);
+}
+
+.tip-won {
+  color: var(--mint);
+  background: rgb(67 242 137 / 10%);
+  border: 1px solid rgb(67 242 137 / 45%);
+}
+
+button.wardrobe-item.wearing {
+  background: rgb(255 207 77 / 12%);
+  box-shadow: inset 0 0 0 2px var(--sun);
+}
+
+.friend-code {
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
