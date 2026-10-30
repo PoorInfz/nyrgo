@@ -46,8 +46,19 @@ jobs:
           DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
         run: |
           flags=""
-          if [ "${{ inputs.dry_run }}" = "true" ]; then flags="--dry-run"; fi
-          pnpm world:import $flags 2>&1 | tee import.log
+          if [ "${{ inputs.dry_run }}" = "true" ]; then flags="--dry-run"
+          elif [ -z "$DATABASE_URL" ]; then
+            echo "::error title=World import::The repository secret PROD_DATABASE_URL is missing"; exit 1
+          fi
+          if ! pnpm world:import $flags > import.log 2>&1; then
+            cat import.log
+            # the error (never the connection string: it is masked as a secret)
+            grep -iE 'error|refused|denied|timeout|ENOTFOUND|ssl' import.log | head -3 | while read -r l; do
+              echo "::error title=World import::${l:0:400}"
+            done
+            exit 1
+          fi
+          cat import.log
           # the summary as annotations, readable without the log
           grep -E '^(elements|POIs|exclusion|loaded)' import.log | while read -r l; do
             echo "::notice title=World import::${l:0:500}"
