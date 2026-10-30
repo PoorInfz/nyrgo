@@ -5,6 +5,11 @@
 {
   "name": "nyrgo",
   "compatibility_date": "2026-10-01",
+  // both names serve the site; Cloudflare creates the DNS records for custom domains
+  "routes": [
+    { "pattern": "nyrgo.fun", "custom_domain": true },
+    { "pattern": "www.nyrgo.fun", "custom_domain": true },
+  ],
   "assets": {
     "directory": "./dist",
     "html_handling": "auto-trailing-slash",

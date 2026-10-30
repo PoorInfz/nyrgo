@@ -22,6 +22,7 @@ jobs:
             else echo "::error title=$1::FAILED ${out:0:300}"; fail=1; fi
           }
           check "website"       "curl -fsS https://nyrgo.fun/ | grep -o '<title>[^<]*'"
+          check "website www"   "curl -fsS https://www.nyrgo.fun/ | grep -o '<title>[^<]*'"
           check "website es"    "curl -fsS https://nyrgo.fun/es/ | grep -o '<title>[^<]*'"
           check "app"           "curl -fsS https://app.nyrgo.fun/ | grep -o '<title>[^<]*'"
           check "app route"     "curl -fsS -o /dev/null -w '%{http_code}' https://app.nyrgo.fun/auth/verify"
