@@ -24,7 +24,7 @@ import { requireAuth } from '../auth/sessions.js';
 import { requireInteractable } from '../anticheat/movement.js';
 import { assertInRange, distanceToSpawn } from '../capture/routes.js';
 import { addCreatureXp, loadOwned, setHp } from '../creatures/owned.js';
-import { grantReward, GAME_TZ } from '../progress/rewards.js';
+import { grantReward, PLAYER_TZ_SQL } from '../progress/rewards.js';
 import { bumpMissions } from '../economy/missions.js';
 
 const IdParams = Type.Object({ id: Type.String({ format: 'uuid' }) });
@@ -110,13 +110,13 @@ async function healItems(c: PoolClient, userId: string): Promise<Record<string, 
   return Object.fromEntries(rows.map((r) => [r.item_id, r.qty]));
 }
 
-/** Wins that paid a reward today (Europe/Madrid day), for the daily cap. */
+/** Wins that paid a reward today (the player's local day), for the daily cap. */
 async function rewardedWinsToday(c: PoolClient, userId: string): Promise<number> {
   const { rows } = await c.query<{ n: number }>(
     `SELECT count(*)::int AS n FROM battles
       WHERE user_id = $1 AND rewarded
-        AND finished_at >= (date_trunc('day', now() AT TIME ZONE $2) AT TIME ZONE $2)`,
-    [userId, GAME_TZ],
+        AND finished_at >= (date_trunc('day', now() AT TIME ZONE ${PLAYER_TZ_SQL}) AT TIME ZONE ${PLAYER_TZ_SQL})`,
+    [userId],
   );
   return rows[0]!.n;
 }

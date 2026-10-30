@@ -26,6 +26,7 @@
     "@fastify/helmet": "^13.2.0",
     "@fastify/rate-limit": "^11.2.1",
     "@nyrgo/shared": "workspace:*",
+    "@photostructure/tz-lookup": "^11.7.0",
     "@sinclair/typebox": "^0.34.52",
     "fastify": "^5.12.7",
     "near-api-js": "7.4.0",

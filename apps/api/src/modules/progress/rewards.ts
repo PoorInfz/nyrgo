@@ -1,9 +1,11 @@
 import type { PoolClient } from 'pg';
+import tzLookup from '@photostructure/tz-lookup';
 import { DEFAULT_CONFIG, levelForXp } from '@nyrgo/shared';
+import type { Db } from '../../db.js';
 
 /**
  * Grants XP and Gold for gameplay. Gold goes through the append-only ledger and respects the
- * daily gameplay cap (counted per calendar day in Europe/Madrid, the pilot city's time zone).
+ * daily gameplay cap (counted per calendar day in the player's local time zone).
  * Levelling up pays `levelUpGoldPerLevel × new level`, also within the cap.
  */
 export interface RewardResult {
@@ -15,7 +17,37 @@ export interface RewardResult {
   goldCapped: number;
 }
 
-export const GAME_TZ = 'Europe/Madrid';
+/** Players who have not shared a location yet count days in the pilot city's zone. */
+export const DEFAULT_TZ = 'Europe/Madrid';
+
+/** SQL for "the player's time zone", with the player id as `$1`. */
+export const PLAYER_TZ_SQL = `coalesce((SELECT time_zone FROM players WHERE user_id = $1), '${DEFAULT_TZ}')`;
+
+/** The IANA time zone at a point (offline lookup), or null if unknown to this runtime. */
+export function timeZoneAt(lat: number, lng: number): string | null {
+  try {
+    const tz = tzLookup(lat, lng);
+    new Intl.DateTimeFormat('en', { timeZone: tz }); // throws for a zone the runtime lacks
+    return tz;
+  } catch {
+    return null;
+  }
+}
+
+/** Keeps the player's zone in step with where they play (a no-op when unchanged). */
+export async function updateTimeZone(
+  q: Db | PoolClient,
+  userId: string,
+  lat: number,
+  lng: number,
+): Promise<void> {
+  const tz = timeZoneAt(lat, lng);
+  if (!tz) return;
+  await q.query(`UPDATE players SET time_zone = $2 WHERE user_id = $1 AND time_zone <> $2`, [
+    userId,
+    tz,
+  ]);
+}
 
 export async function grantReward(
   c: PoolClient,
@@ -36,8 +68,8 @@ export async function grantReward(
   const { rows: earned } = await c.query<{ sum: string }>(
     `SELECT COALESCE(sum(amount), 0) AS sum FROM gold_ledger
       WHERE user_id = $1 AND amount > 0
-        AND created_at >= (date_trunc('day', now() AT TIME ZONE $2) AT TIME ZONE $2)`,
-    [userId, GAME_TZ],
+        AND created_at >= (date_trunc('day', now() AT TIME ZONE ${PLAYER_TZ_SQL}) AT TIME ZONE ${PLAYER_TZ_SQL})`,
+    [userId],
   );
   const room = Math.max(0, eco.dailyGameplayGoldCap - Number(earned[0]!.sum));
   const wanted = [

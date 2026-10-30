@@ -1,17 +1,17 @@
 import type { PoolClient } from 'pg';
 import { dailyMissions, missionStep, type MissionDef } from '@nyrgo/shared';
 import type { Db } from '../../db.js';
-import { GAME_TZ } from '../progress/rewards.js';
+import { PLAYER_TZ_SQL } from '../progress/rewards.js';
 
 type Q = Db | PoolClient;
 export type MissionEvent =
   { kind: 'catch'; creatureId: string } | { kind: 'win' } | { kind: 'visit' } | { kind: 'throw' };
 
-/** Today's date in the game's time zone, `YYYY-MM-DD`. */
-export async function gameDay(q: Q): Promise<string> {
+/** Today's date in the player's time zone, `YYYY-MM-DD`. */
+export async function gameDay(q: Q, userId: string): Promise<string> {
   const { rows } = await q.query<{ day: string }>(
-    `SELECT to_char(now() AT TIME ZONE $1, 'YYYY-MM-DD') AS day`,
-    [GAME_TZ],
+    `SELECT to_char(now() AT TIME ZONE ${PLAYER_TZ_SQL}, 'YYYY-MM-DD') AS day`,
+    [userId],
   );
   return rows[0]!.day;
 }
@@ -22,7 +22,7 @@ export async function bumpMissions(
   userId: string,
   event: MissionEvent,
 ): Promise<void> {
-  const day = await gameDay(c);
+  const day = await gameDay(c, userId);
   for (const m of dailyMissions(userId, day)) {
     const step = missionStep(m, event);
     if (step === 0) continue;
@@ -48,7 +48,7 @@ export async function todaysMissions(
   q: Q,
   userId: string,
 ): Promise<{ day: string; missions: MissionView[] }> {
-  const day = await gameDay(q);
+  const day = await gameDay(q, userId);
   const picked = dailyMissions(userId, day);
   const { rows } = await q.query<{
     mission_id: string;

@@ -8,6 +8,7 @@ import { requireAuth } from '../auth/sessions.js';
 import { recordFix } from '../anticheat/movement.js';
 import { cellsAround, ensureSpawns, visibleSpawns } from '../spawns/store.js';
 import { areasOf, requestAreas } from './areas.js';
+import { updateTimeZone } from '../progress/rewards.js';
 
 export const LocationSample = Type.Object(
   {
@@ -74,6 +75,9 @@ export async function worldRoutes(
           clientTs: timestamp,
         });
       });
+
+      // The game day follows the player's local time where they play.
+      await updateTimeZone(db, auth.userId, lat, lng);
 
       // Wild creatures around the player: generated on first sight for each cell and window.
       let cells = await cellsAround(db, fix.cell);

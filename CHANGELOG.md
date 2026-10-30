@@ -7,7 +7,9 @@
   trying mirrors and retrying with backoff. Creatures only appear in loaded areas, so they never
   land in a school or a home not yet known; the app says "Exploring this area for the first
   time…" meanwhile. At most 200 areas wait at once.
-- Still Córdoba-only: the street map (tiles) and the daily cap's day (Europe/Madrid).
+- The game day (daily gold cap, missions, rewarded wins) follows each player's local time zone,
+  looked up offline from where they play (`players.time_zone`).
+- Still Córdoba-only: the street map (tiles).
 
 ## 0.18.0 — 2026-10-30 — Live on testnet
 
