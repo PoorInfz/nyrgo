@@ -848,5 +848,20 @@
     "creatureXp": "{{name}} erhält {{xp}} XP.",
     "creatureLevelUp": "{{name}} hat Level {{level}} erreicht!",
     "capReached": "Du hast das heutige Limit für Kampfbelohnungen erreicht."
+  },
+  "chest": {
+    "title": "Dein erstes nyrGo",
+    "tap": "Tippe auf die Truhe, um sie zu öffnen",
+    "open": "Truhe öffnen",
+    "choose": "Wähle deinen Partner",
+    "chooseSub": "Tippe auf eines, um es kennenzulernen",
+    "chosenSub": "Dein Abenteuer beginnt jetzt",
+    "yours": "{{name}} gehört dir!",
+    "sure": "{{name}} begleitet dich von Anfang an. Das lässt sich nicht ändern.",
+    "yes": "Ja, {{name}}!",
+    "back": "Zurück",
+    "continue": "Los geht's!",
+    "failed": "Speichern fehlgeschlagen. Versuch es noch mal.",
+    "later": "Später"
   }
 }

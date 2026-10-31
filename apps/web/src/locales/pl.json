@@ -848,5 +848,20 @@
     "creatureXp": "{{name}} zdobywa {{xp}} XP.",
     "creatureLevelUp": "{{name}} osiąga poziom {{level}}!",
     "capReached": "Osiągnięto dzisiejszy limit nagród za walki."
+  },
+  "chest": {
+    "title": "Twój pierwszy nyrGo",
+    "tap": "Dotknij skrzyni, aby ją otworzyć",
+    "open": "Otwórz skrzynię",
+    "choose": "Wybierz partnera",
+    "chooseSub": "Dotknij jednego, by go poznać",
+    "chosenSub": "Twoja przygoda zaczyna się teraz",
+    "yours": "{{name}} jest twój!",
+    "sure": "{{name}} będzie z tobą od początku. Tego nie można zmienić.",
+    "yes": "Tak, {{name}}!",
+    "back": "Wróć",
+    "continue": "Ruszamy!",
+    "failed": "Nie udało się zapisać. Spróbuj ponownie.",
+    "later": "Później"
   }
 }

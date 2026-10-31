@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.40.0 — 2026-10-31 — The starter chest
+
+- A new player's first creature now comes out of a chest. Tap it: it knocks three times and leaks
+  light, then the lid blows open with a flash, a quake, light rays, sparks, rings and coloured
+  smoke. The smoke's colour depends on the creature's rarity: green for common, blue uncommon,
+  violet rare, pink epic, gold legendary, rainbow mythic, with a wisp of its element's colour.
+  Three lights fly out and land as cards. Tap a card to see it up close (lore and stats), choose
+  it, and confirm with a second "yes". Only then is the pick saved. The chosen card takes the
+  stage in a burst of its colour while the other two fade back into smoke.
+- Sounds are made in the browser (Web Audio), with a mute button. A short buzz plays on phones
+  that support it. There are buttons to skip the show and to leave for later; the chest waits in
+  Collection. With reduced motion the chest opens straight to the cards.
+- All three starters are Common today, so their smoke is green. The other colours were checked
+  with made-up rarities in a test run.
+
 ## 0.39.0 — 2026-10-31 — Nineteen languages
 
 - The game and the website now come in 19 languages: English, Español, Português, Français,

@@ -22,6 +22,7 @@ import {
   type OwnedCreature,
 } from '../api';
 import { cutUrl, useContent } from '../content';
+import { StarterChest } from '../starter/StarterChest';
 
 type Lang = 'es' | 'en';
 
@@ -33,6 +34,7 @@ export function Collection({ api, caller = connectorCaller }: { api: Api; caller
   const [mine, setMine] = useState<OwnedCreature[] | null>(null);
   const [error, setError] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [chestOpen, setChestOpen] = useState(true);
   const [notice, setNotice] = useState<string | null>(null);
   const [loadedAt, setLoadedAt] = useState(0);
   /** The linked NEAR account when this player can take creatures out as NFTs. */
@@ -210,39 +212,42 @@ export function Collection({ api, caller = connectorCaller }: { api: Api; caller
     }
   }
 
-  async function pick(id: string, name: string) {
-    if (!window.confirm(t('starterConfirm', { name }))) return;
-    setBusy(true);
-    await api.pickStarter(id).catch(() => undefined);
-    await reload();
-    setBusy(false);
+  async function pick(id: string): Promise<boolean> {
+    try {
+      await api.pickStarter(id);
+      return true;
+    } catch (e) {
+      // someone else's tab already picked: the collection has a creature now
+      return e instanceof ApiError && e.code === 'starter_taken';
+    }
   }
 
   if (mine.length === 0) {
     const starters = dex.creatures.filter((c) => c.starter);
     return (
-      <section className="stack" aria-labelledby="starter-title">
+      <section className="stack starter-wait" aria-labelledby="starter-title">
         <h2 id="starter-title">{t('starterTitle')}</h2>
         <p className="muted">{t('starterWhy')}</p>
-        <ul className="plain stack">
-          {starters.map((c) => (
-            <li key={c.id} className="card starter">
-              <img src={c.art} alt="" width={120} height={174} />
-              <div className="stack">
-                <h3>{c.name}</h3>
-                <p>
-                  <span className="chip" style={{ background: elements.get(c.element)!.color }}>
-                    {elements.get(c.element)!.name[lang]}
-                  </span>
-                </p>
-                <p className="muted">{c.lore[lang]}</p>
-                <button type="button" disabled={busy} onClick={() => pick(c.id, c.name)}>
-                  {t('pickStarter', { name: c.name })}
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <button type="button" className="starter-open" onClick={() => setChestOpen(true)}>
+          {t('chest.open')}
+        </button>
+        {chestOpen && (
+          <StarterChest
+            starters={starters}
+            element={(id) => {
+              const e = elements.get(id as (typeof dex.elements)[number]['id'])!;
+              return { color: e.color, name: e.name[lang] };
+            }}
+            rarityName={(r) => t(`rarity.${r}`)}
+            lore={(c) => c.lore[lang]}
+            onPick={(c) => pick(c.id)}
+            onClose={() => setChestOpen(false)}
+            onDone={() => {
+              setChestOpen(false);
+              void reload();
+            }}
+          />
+        )}
       </section>
     );
   }

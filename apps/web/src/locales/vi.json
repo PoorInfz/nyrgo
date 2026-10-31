@@ -848,5 +848,20 @@
     "creatureXp": "{{name}} nhận {{xp}} XP.",
     "creatureLevelUp": "{{name}} đã đạt cấp {{level}}!",
     "capReached": "Bạn đã đạt giới hạn phần thưởng chiến đấu hôm nay."
+  },
+  "chest": {
+    "title": "nyrGo đầu tiên của bạn",
+    "tap": "Chạm vào rương để mở",
+    "open": "Mở rương",
+    "choose": "Chọn bạn đồng hành",
+    "chooseSub": "Chạm vào một con để làm quen",
+    "chosenSub": "Cuộc phiêu lưu bắt đầu ngay bây giờ",
+    "yours": "{{name}} là của bạn!",
+    "sure": "{{name}} sẽ đồng hành cùng bạn từ đầu. Không thể thay đổi.",
+    "yes": "Đúng, {{name}}!",
+    "back": "Quay lại",
+    "continue": "Lên đường!",
+    "failed": "Không lưu được. Hãy thử lại.",
+    "later": "Để sau"
   }
 }

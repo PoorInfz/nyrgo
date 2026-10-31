@@ -848,5 +848,20 @@
     "creatureXp": "{{name}}获得了 {{xp}} XP。",
     "creatureLevelUp": "{{name}}升到了 {{level}} 级！",
     "capReached": "你已达到今日对战奖励上限。"
+  },
+  "chest": {
+    "title": "你的第一只 nyrGo",
+    "tap": "点击宝箱打开它",
+    "open": "打开宝箱",
+    "choose": "选择你的伙伴",
+    "chooseSub": "点一只来认识它",
+    "chosenSub": "你的冒险现在开始",
+    "yours": "{{name}} 归你啦！",
+    "sure": "{{name}} 会从一开始陪伴你，选择后无法更改。",
+    "yes": "就是 {{name}}！",
+    "back": "返回",
+    "continue": "出发！",
+    "failed": "保存失败，请重试。",
+    "later": "稍后"
   }
 }

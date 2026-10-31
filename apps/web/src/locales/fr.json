@@ -848,5 +848,20 @@
     "creatureXp": "{{name}} gagne {{xp}} XP.",
     "creatureLevelUp": "{{name}} a atteint le niveau {{level}} !",
     "capReached": "Tu as atteint la limite du jour de récompenses de combat."
+  },
+  "chest": {
+    "title": "Ton premier nyrGo",
+    "tap": "Touche le coffre pour l'ouvrir",
+    "open": "Ouvrir le coffre",
+    "choose": "Choisis ton partenaire",
+    "chooseSub": "Touches-en un pour le découvrir",
+    "chosenSub": "Ton aventure commence maintenant",
+    "yours": "{{name}} est à toi !",
+    "sure": "{{name}} t'accompagnera dès le début. Ce choix est définitif.",
+    "yes": "Oui, {{name}} !",
+    "back": "Retour",
+    "continue": "C'est parti !",
+    "failed": "Impossible d'enregistrer. Réessaie.",
+    "later": "Plus tard"
   }
 }

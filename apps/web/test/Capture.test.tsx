@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import {
   CONTENT_VERSION,
   CREATURES,
@@ -217,7 +217,6 @@ describe('Encounter', () => {
 
 describe('Collection', () => {
   it('offers the three starters to a new player and shows the pick afterwards', async () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
     let mine: unknown[] = [];
     const fetch = serve((url, init) => {
       if (url.endsWith('/v1/me/starter') && init.method === 'POST') {
@@ -242,14 +241,32 @@ describe('Collection', () => {
     expect(
       await screen.findByRole('heading', { name: 'Elige tu primera criatura' }),
     ).toBeInTheDocument();
-    const buttons = screen.getAllByRole('button', { name: /^Elegir a / });
-    expect(buttons.map((b) => b.textContent)).toEqual([
-      'Elegir a Gwisp',
-      'Elegir a Frostkey',
-      'Elegir a Dropling',
+    // the chest opens over the screen; skip the show to the three cards
+    const chest = await screen.findByRole('dialog', { name: 'Tu primer nyrGo' });
+    fireEvent.click(within(chest).getByRole('button', { name: 'Abrir el cofre' }));
+    fireEvent.click(within(chest).getByRole('button', { name: 'Saltar' }));
+    expect(screen.getByRole('heading', { name: 'Elige a tu compañero' })).toBeInTheDocument();
+    const cards = within(chest)
+      .getAllByRole('button', { name: /· Común$/ })
+      .map((b) => b.getAttribute('aria-label'));
+    expect(cards).toEqual([
+      'Gwisp · Gas · Común',
+      'Frostkey · Frío · Común',
+      'Dropling · Airdrop · Común',
     ]);
+    fireEvent.click(within(chest).getByRole('button', { name: 'Dropling · Airdrop · Común' }));
+    fireEvent.click(within(chest).getByRole('button', { name: 'Elegir a Dropling' }));
+    // nothing is saved until the second, explicit yes
+    expect(fetch.mock.calls.some(([u]) => String(u).endsWith('/v1/me/starter'))).toBe(false);
+    expect(
+      within(chest).getByText('Dropling te acompañará desde el principio. No se puede cambiar.'),
+    ).toBeInTheDocument();
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Elegir a Dropling' }));
+      fireEvent.click(within(chest).getByRole('button', { name: '¡Sí, Dropling!' }));
+    });
+    expect(await screen.findByRole('heading', { name: '¡Dropling es tuyo!' })).toBeInTheDocument();
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: '¡Vamos!' }));
     });
     expect(await screen.findByRole('heading', { name: 'Tu colección' })).toBeInTheDocument();
     expect(screen.getByText('Dropling')).toBeInTheDocument();

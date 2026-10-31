@@ -848,5 +848,20 @@
     "creatureXp": "{{name}} mendapat {{xp}} XP.",
     "creatureLevelUp": "{{name}} mencapai level {{level}}!",
     "capReached": "Kamu mencapai batas hadiah pertarungan hari ini."
+  },
+  "chest": {
+    "title": "nyrGo pertamamu",
+    "tap": "Ketuk peti untuk membukanya",
+    "open": "Buka peti",
+    "choose": "Pilih rekanmu",
+    "chooseSub": "Ketuk salah satu untuk berkenalan",
+    "chosenSub": "Petualanganmu dimulai sekarang",
+    "yours": "{{name}} milikmu!",
+    "sure": "{{name}} akan menemanimu sejak awal. Ini tidak bisa diubah.",
+    "yes": "Ya, {{name}}!",
+    "back": "Kembali",
+    "continue": "Ayo!",
+    "failed": "Gagal menyimpan. Coba lagi.",
+    "later": "Nanti"
   }
 }

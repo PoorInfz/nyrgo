@@ -4,7 +4,22 @@
  */
 
 type Sound =
-  'vs' | 'fight' | 'whoosh' | 'hit' | 'crit' | 'miss' | 'heal' | 'ko' | 'win' | 'lose' | 'draw';
+  | 'vs'
+  | 'fight'
+  | 'whoosh'
+  | 'hit'
+  | 'crit'
+  | 'miss'
+  | 'heal'
+  | 'ko'
+  | 'win'
+  | 'lose'
+  | 'draw'
+  | 'rumble'
+  | 'knock'
+  | 'burst'
+  | 'reveal'
+  | 'choose';
 
 const KEY = 'nyrgo-fight-muted';
 let ctx: AudioContext | null = null;
@@ -121,6 +136,37 @@ export function sfx(s: Sound) {
         break;
       case 'draw':
         tone(a, { f0: 440, dur: 0.4, type: 'triangle', gain: 0.08 });
+        break;
+      // the starter chest
+      case 'rumble':
+        tone(a, { f0: 48, f1: 90, dur: 1.5, type: 'sawtooth', gain: 0.12 });
+        noise(a, { dur: 1.5, from: 200, to: 1800, gain: 0.12 });
+        [440, 554, 659, 880].forEach((f, i) =>
+          tone(a, { f0: f, dur: 0.5, type: 'triangle', gain: 0.03, at: 0.3 + i * 0.28 }),
+        );
+        break;
+      case 'knock':
+        tone(a, { f0: 140, f1: 60, dur: 0.12, gain: 0.25 });
+        noise(a, { dur: 0.08, from: 1800, to: 600, gain: 0.12 });
+        break;
+      case 'burst':
+        tone(a, { f0: 160, f1: 30, dur: 1.2, gain: 0.5 });
+        noise(a, { dur: 1.4, from: 5000, to: 300, gain: 0.35 });
+        [523, 659, 784, 1047, 1319].forEach((f, i) =>
+          tone(a, { f0: f, dur: 0.9, type: 'triangle', gain: 0.05, at: 0.15 + i * 0.06 }),
+        );
+        break;
+      case 'reveal':
+        tone(a, { f0: 988, dur: 0.35, type: 'triangle', gain: 0.07 });
+        tone(a, { f0: 1480, dur: 0.5, type: 'sine', gain: 0.05, at: 0.06 });
+        noise(a, { dur: 0.25, from: 2000, to: 6000, gain: 0.06 });
+        break;
+      case 'choose':
+        tone(a, { f0: 90, f1: 40, dur: 0.6, gain: 0.35 });
+        [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) =>
+          tone(a, { f0: f, dur: 0.3, type: 'square', gain: 0.055, at: 0.1 + i * 0.11 }),
+        );
+        noise(a, { dur: 0.9, from: 6000, to: 1500, gain: 0.08, at: 0.1 });
         break;
     }
   } catch {

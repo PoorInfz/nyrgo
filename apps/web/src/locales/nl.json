@@ -848,5 +848,20 @@
     "creatureXp": "{{name}} krijgt {{xp}} XP.",
     "creatureLevelUp": "{{name}} heeft level {{level}} bereikt!",
     "capReached": "Je hebt de limiet voor gevechtsbeloningen van vandaag bereikt."
+  },
+  "chest": {
+    "title": "Je eerste nyrGo",
+    "tap": "Tik op de kist om hem te openen",
+    "open": "Kist openen",
+    "choose": "Kies je partner",
+    "chooseSub": "Tik op een om kennis te maken",
+    "chosenSub": "Je avontuur begint nu",
+    "yours": "{{name}} is van jou!",
+    "sure": "{{name}} is vanaf het begin bij je. Dit kan niet worden gewijzigd.",
+    "yes": "Ja, {{name}}!",
+    "back": "Terug",
+    "continue": "Op pad!",
+    "failed": "Opslaan lukte niet. Probeer het opnieuw.",
+    "later": "Later"
   }
 }

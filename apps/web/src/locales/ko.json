@@ -848,5 +848,20 @@
     "creatureXp": "{{name}}이(가) {{xp}} XP를 얻었다.",
     "creatureLevelUp": "{{name}}이(가) 레벨 {{level}}이 되었다!",
     "capReached": "오늘의 배틀 보상 한도에 도달했습니다."
+  },
+  "chest": {
+    "title": "나의 첫 nyrGo",
+    "tap": "상자를 탭해서 열어 보세요",
+    "open": "상자 열기",
+    "choose": "파트너를 고르세요",
+    "chooseSub": "하나를 탭해 만나 보세요",
+    "chosenSub": "모험이 지금 시작됩니다",
+    "yours": "{{name}}이(가) 내 친구가 되었어요!",
+    "sure": "{{name}}은(는) 처음부터 함께합니다. 변경할 수 없어요.",
+    "yes": "{{name}}(으)로 할래요!",
+    "back": "뒤로",
+    "continue": "출발!",
+    "failed": "저장하지 못했어요. 다시 시도하세요.",
+    "later": "나중에"
   }
 }

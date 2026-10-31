@@ -848,5 +848,20 @@
     "creatureXp": "{{name}} ganha {{xp}} XP.",
     "creatureLevelUp": "{{name}} chegou ao nível {{level}}!",
     "capReached": "Você atingiu o limite de recompensas de batalha de hoje."
+  },
+  "chest": {
+    "title": "Seu primeiro nyrGo",
+    "tap": "Toque no baú para abri-lo",
+    "open": "Abrir o baú",
+    "choose": "Escolha seu parceiro",
+    "chooseSub": "Toque em um para conhecê-lo",
+    "chosenSub": "Sua aventura começa agora",
+    "yours": "{{name}} é seu!",
+    "sure": "{{name}} estará com você desde o início. Isso não pode ser alterado.",
+    "yes": "Sim, {{name}}!",
+    "back": "Voltar",
+    "continue": "Vamos lá!",
+    "failed": "Não foi possível salvar. Tente de novo.",
+    "later": "Depois"
   }
 }

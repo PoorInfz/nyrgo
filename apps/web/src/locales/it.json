@@ -848,5 +848,20 @@
     "creatureXp": "{{name}} guadagna {{xp}} XP.",
     "creatureLevelUp": "{{name}} ha raggiunto il livello {{level}}!",
     "capReached": "Hai raggiunto il limite di oggi per le ricompense di lotta."
+  },
+  "chest": {
+    "title": "Il tuo primo nyrGo",
+    "tap": "Tocca lo scrigno per aprirlo",
+    "open": "Apri lo scrigno",
+    "choose": "Scegli il tuo compagno",
+    "chooseSub": "Toccane uno per conoscerlo",
+    "chosenSub": "La tua avventura inizia ora",
+    "yours": "{{name}} è tuo!",
+    "sure": "{{name}} sarà con te dall'inizio. Non si può cambiare.",
+    "yes": "Sì, {{name}}!",
+    "back": "Indietro",
+    "continue": "Andiamo!",
+    "failed": "Impossibile salvare. Riprova.",
+    "later": "Più tardi"
   }
 }

@@ -848,5 +848,20 @@
     "creatureXp": "{{name}} {{xp}} XP kazanıyor.",
     "creatureLevelUp": "{{name}} seviye {{level}} oldu!",
     "capReached": "Bugünkü savaş ödülü sınırına ulaştın."
+  },
+  "chest": {
+    "title": "İlk nyrGo'n",
+    "tap": "Açmak için sandığa dokun",
+    "open": "Sandığı aç",
+    "choose": "Ortağını seç",
+    "chooseSub": "Tanışmak için birine dokun",
+    "chosenSub": "Maceran şimdi başlıyor",
+    "yours": "{{name}} artık senin!",
+    "sure": "{{name}} baştan itibaren seninle olacak. Bu değiştirilemez.",
+    "yes": "Evet, {{name}}!",
+    "back": "Geri",
+    "continue": "Haydi!",
+    "failed": "Kaydedilemedi. Tekrar dene.",
+    "later": "Sonra"
   }
 }

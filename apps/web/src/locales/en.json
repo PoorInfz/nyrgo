@@ -848,5 +848,20 @@
     "creatureXp": "{{name}} gains {{xp}} XP.",
     "creatureLevelUp": "{{name}} reached level {{level}}!",
     "capReached": "You reached today’s limit of battle rewards."
+  },
+  "chest": {
+    "title": "Your first nyrGo",
+    "tap": "Tap the chest to open it",
+    "open": "Open the chest",
+    "choose": "Choose your partner",
+    "chooseSub": "Tap one to meet it",
+    "chosenSub": "Your adventure starts now",
+    "yours": "{{name}} is yours!",
+    "sure": "{{name}} will be with you from the start. This can't be changed.",
+    "yes": "Yes, {{name}}!",
+    "back": "Back",
+    "continue": "Let's go!",
+    "failed": "It could not be saved. Try again.",
+    "later": "Later"
   }
 }

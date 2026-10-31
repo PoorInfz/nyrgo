@@ -848,5 +848,20 @@
     "creatureXp": "{{name}} gana {{xp}} XP.",
     "creatureLevelUp": "¡{{name}} sube a nivel {{level}}!",
     "capReached": "Has llegado al máximo de recompensas por combate de hoy."
+  },
+  "chest": {
+    "title": "Tu primer nyrGo",
+    "tap": "Toca el cofre para abrirlo",
+    "open": "Abrir el cofre",
+    "choose": "Elige a tu compañero",
+    "chooseSub": "Toca uno para conocerlo",
+    "chosenSub": "Tu aventura empieza ahora",
+    "yours": "¡{{name}} es tuyo!",
+    "sure": "{{name}} te acompañará desde el principio. No se puede cambiar.",
+    "yes": "¡Sí, {{name}}!",
+    "back": "Volver",
+    "continue": "¡Vamos!",
+    "failed": "No se pudo guardar. Inténtalo de nuevo.",
+    "later": "Más tarde"
   }
 }

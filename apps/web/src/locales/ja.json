@@ -848,5 +848,20 @@
     "creatureXp": "{{name}}は{{xp}} XPを獲得。",
     "creatureLevelUp": "{{name}}はレベル{{level}}になった！",
     "capReached": "今日のバトル報酬の上限に達しました。"
+  },
+  "chest": {
+    "title": "はじめての nyrGo",
+    "tap": "宝箱をタップして開けよう",
+    "open": "宝箱を開ける",
+    "choose": "パートナーを選ぼう",
+    "chooseSub": "タップしてくわしく見る",
+    "chosenSub": "冒険のはじまり！",
+    "yours": "{{name}} があなたの仲間に！",
+    "sure": "{{name}} は最初からずっと一緒です。あとから変更できません。",
+    "yes": "{{name}} にする！",
+    "back": "戻る",
+    "continue": "出発！",
+    "failed": "保存できませんでした。もう一度お試しください。",
+    "later": "あとで"
   }
 }
