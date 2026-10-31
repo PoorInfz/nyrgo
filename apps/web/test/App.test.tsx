@@ -93,9 +93,11 @@ describe('signed out', () => {
   });
 });
 
-/** Calls the test is about, leaving out background loads: wallet, tips and the explorer's look. */
+/** Calls the test is about, leaving out background loads: wallet, tips, look, progress. */
 const gameCalls = (fetch: { mock: { calls: unknown[][] } }) =>
-  fetch.mock.calls.filter(([url]) => !/\/v1\/me\/(wallet|tips|avatar)$/.test(String(url)));
+  fetch.mock.calls.filter(
+    ([url]) => !/\/v1\/(me\/(wallet|tips|avatar|creatures)|hub\/me|dex)$/.test(String(url)),
+  );
 
 describe('signed in as guest', () => {
   it('offers to save progress with an email', async () => {

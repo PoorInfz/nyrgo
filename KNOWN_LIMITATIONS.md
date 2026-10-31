@@ -147,6 +147,16 @@ Stated openly so nobody relies on something that is not there.
 - The app refreshes friends and offers every 8 seconds while the tab is open; there are no push
   notifications.
 
+## The town (hub)
+
+- Only the Central Plaza exists; the gym, arena, market and houses announce that they open soon.
+- One live room on one server instance: a few hundred players at once; more instances need a
+  shared bus (Phase 5). A server restart drops connections; clients reconnect on their own.
+- The chat filter is a first line (word list, link and contact patterns); real safety relies on
+  age-group rooms, blocks, reports and moderators. It has not been tried by real players yet.
+- The town's art comes from one owner-supplied sheet that was not drawn for slicing: the plaza's
+  edge shows against the ground, and there are no interiors yet.
+
 ## Data
 
 - OpenStreetMap coverage and tagging vary by street; exclusion zones for Córdoba will need manual review.

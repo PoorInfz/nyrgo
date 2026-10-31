@@ -38,6 +38,9 @@ jobs:
           check "api events"    "curl -fsS 'https://api.nyrgo.fun/v1/events?lat=37.8847&lng=-4.7792' | jq -c '{events: (.events | length)}'"
           check "api duels"     "curl -sS -o /dev/null -w '%{http_code}' https://api.nyrgo.fun/v1/duels | grep -x 401"
           check "api avatar"    "curl -sS -o /dev/null -w '%{http_code}' https://api.nyrgo.fun/v1/me/avatar | grep -x 401"
+          check "api hub"       "curl -sS -o /dev/null -w '%{http_code}' https://api.nyrgo.fun/v1/hub/me | grep -x 401"
+          check "api hub ws"    "curl -sS -o /dev/null -w '%{http_code}' -H 'Connection: Upgrade' -H 'Upgrade: websocket' -H 'Sec-WebSocket-Version: 13' -H 'Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==' -H 'Origin: https://app.nyrgo.fun' https://api.nyrgo.fun/v1/hub/ws | grep -x 401"
+          check "app town art"  "curl -fsS -o /dev/null -w '%{http_code}' https://app.nyrgo.fun/hub/plaza.webp"
           check "api cors"      "curl -fsS -o /dev/null -D - -X OPTIONS https://api.nyrgo.fun/v1/me -H 'Origin: https://app.nyrgo.fun' -H 'Access-Control-Request-Method: PUT' | grep -i '^access-control-allow-origin'"
           check "api render"    "curl -fsS https://nyrgo-api.onrender.com/health"
           exit $fail

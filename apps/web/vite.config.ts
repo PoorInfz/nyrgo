@@ -49,6 +49,15 @@ export default defineConfig({
             },
           },
           {
+            // The town's art: fetched the first time a player walks into town.
+            urlPattern: /\/hub\/.*\.webp$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'town-art',
+              expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 90 },
+            },
+          },
+          {
             // Street map tiles already seen: the map keeps working with a weak signal.
             urlPattern: ({ url }) =>
               url.hostname.startsWith('tiles.') || /\/tiles\/.*\.(pbf|mvt)$/.test(url.pathname),

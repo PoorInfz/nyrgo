@@ -96,6 +96,7 @@ export function Avatar({
   facing = 'right',
   size = 64,
   title,
+  pose = 0,
 }: {
   look: AvatarLook;
   walking?: boolean;
@@ -103,6 +104,11 @@ export function Avatar({
   size?: number;
   /** Accessible name; without it the figure is decorative. */
   title?: string;
+  /**
+   * A fixed walking pose (-1, 0, 1) drawn into the SVG itself, for places where CSS animation
+   * does not apply (the figure drawn as an image on the town's canvas).
+   */
+  pose?: -1 | 0 | 1;
 }) {
   const color = (id: string, fallback: string) => COSMETICS_BY_ID.get(id)?.color ?? fallback;
   const trimOf = (id: string, fallback: string) => COSMETICS_BY_ID.get(id)?.trim ?? fallback;
@@ -117,6 +123,9 @@ export function Avatar({
   const pants = '#2f3a5c';
   const hatHidesHair = hat === 'hat_cap' || hat === 'hat_beanie' || hat === 'hat_explorer';
 
+  const swing = pose * 24;
+  const limb = (angle: number, cx: number, cy: number) =>
+    angle ? { transform: `rotate(${angle} ${cx} ${cy})` } : {};
   const cls = ['avatar', walking ? 'walking' : '', facing === 'left' ? 'facing-left' : '']
     .filter(Boolean)
     .join(' ');
@@ -160,7 +169,7 @@ export function Avatar({
         <BackHair style={look.hair} fill={hair} hidden={hatHidesHair} />
 
         {/* ------------------------------------------------ legs */}
-        <g className="leg leg-back">
+        <g className="leg leg-back" {...limb(-swing, 55.5, 106)}>
           <Cel d="M51 106 L60 106 L59 125 L52 125 Z" fill={shade(pants, 0.25)} />
           <Cel
             d="M50 123 Q50 119 56 119 Q65 119 65 126 L65 130 L50 130 Z"
@@ -170,7 +179,7 @@ export function Avatar({
             <path d="M50 126.5 H65" stroke={topTrim} strokeWidth="2" />
           </Cel>
         </g>
-        <g className="leg leg-front">
+        <g className="leg leg-front" {...limb(swing, 44.5, 106)}>
           <Cel d="M40 106 L49 106 L48 125 L41 125 Z" fill={pants} />
           <Cel
             d="M37 123 Q37 119 43 119 Q52 119 52 126 L52 130 L37 130 Z"
@@ -182,7 +191,7 @@ export function Avatar({
         </g>
 
         {/* ------------------------------------------------ back arm */}
-        <g className="arm arm-back">
+        <g className="arm arm-back" {...limb(swing, 64, 82)}>
           <Cel d="M60 81 Q69 82 70 95 L69 103 Q65.5 105 63 102 L62 92 Z" fill={shade(top, 0.2)} />
           <Cel
             d="M62.5 101 Q66 98.5 69.5 101 Q70.5 107 66 107.5 Q61.5 107 62.5 101 Z"
@@ -205,7 +214,7 @@ export function Avatar({
         )}
 
         {/* ------------------------------------------------ front arm */}
-        <g className="arm arm-front">
+        <g className="arm arm-front" {...limb(-swing, 36, 82)}>
           <Cel d="M40 81 Q31 82 30 95 L31 103 Q34.5 105 37 102 L38 92 Z" fill={top} />
           <Cel
             d="M30.5 101 Q34 98.5 37.5 101 Q38.5 107 34 107.5 Q29.5 107 30.5 101 Z"

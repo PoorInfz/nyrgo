@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, type ReactNode, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Api, Profile } from '../api';
 import { Home } from './Home';
@@ -8,6 +8,9 @@ import { Collection } from './Collection';
 import { Bag } from './Bag';
 import { Social } from './Social';
 import { ensureDeviceCheck } from '../near/deviceCheck';
+
+// the town is a separate chunk: it loads when a player first walks in
+const HubScreen = lazy(() => import('../hub/HubScreen'));
 
 type Tab = 'play' | 'collection' | 'bag' | 'dex' | 'social' | 'profile';
 
@@ -75,6 +78,7 @@ export function Game({
 }) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>('play');
+  const [inTown, setInTown] = useState(false);
   // Android app: today's device check, quietly (rewards may need it; play never does)
   useEffect(() => {
     void ensureDeviceCheck(api).catch(() => undefined);
@@ -92,6 +96,11 @@ export function Game({
 
   return (
     <div className="stack">
+      {inTown && (
+        <Suspense fallback={<div className="hub" role="status" aria-label={t('loading')} />}>
+          <HubScreen api={api} apiUrl={api.baseUrl} onExit={() => setInTown(false)} />
+        </Suspense>
+      )}
       <nav className="tabs" role="tablist" aria-label={t('tabsLabel')}>
         {(['play', 'collection', 'bag', 'dex', 'social', 'profile'] as const).map((id) => (
           <button
@@ -120,6 +129,15 @@ export function Game({
       <div ref={panel} tabIndex={-1} role="tabpanel" aria-label={t(LABELS[tab])} className="panel">
         {/* Play stays mounted while the profile is open so GPS and the map are not restarted. */}
         <div hidden={tab !== 'play'}>
+          <section className="card town-card" aria-labelledby="town-title">
+            <div>
+              <h2 id="town-title">{t('hub.enterTitle')}</h2>
+              <p className="muted small">{t('hub.enterText')}</p>
+            </div>
+            <button type="button" onClick={() => setInTown(true)}>
+              {t('hub.enter')}
+            </button>
+          </section>
           <Play api={api} />
         </div>
         {tab === 'collection' && <Collection api={api} />}

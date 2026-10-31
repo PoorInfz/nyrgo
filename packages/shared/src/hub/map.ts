@@ -233,11 +233,12 @@ function centralPlaza(): HubMap {
 
   const interactions: Interaction[] = [
     {
+      // the portal can be used from any side
       id: 'exit',
       kind: 'exit',
       x: portalX + Math.round(size('portal').w / 2),
-      y: portalY + 118,
-      radius: 70,
+      y: portalY + 60,
+      radius: 120,
     },
     { id: 'gym', kind: 'gym', x: gym.door.x, y: gym.door.y, radius: 56 },
     { id: 'arena', kind: 'arena', x: arena.door.x, y: arena.door.y, radius: 56 },
@@ -265,8 +266,8 @@ function centralPlaza(): HubMap {
     interactions,
     npcs,
     blocked: npcs.map((n) => ({ x: n.x - 12, y: n.y - 10, w: 24, h: 12 })),
-    // in front of the portal (its screen faces south), where players arrive and leave
-    spawn: { x: Math.round(width / 2), y: portalY + size('portal').h + 22 },
+    // just out of the portal, on the path up to the square
+    spawn: { x: Math.round(width / 2), y: portalY - 14 },
   };
 }
 

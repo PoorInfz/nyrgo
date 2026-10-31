@@ -1,6 +1,6 @@
 # Social hub — Phase 1 audit and proposed architecture
 
-Status: **proposal, nothing built yet.** This answers Phase 1 of the hub brief (2026-10-31): what
+Status: **Phase 2 (playable town square) built** — see §6. Phases 3–5 not started. This answers Phase 1 of the hub brief (2026-10-31): what
 exists, what the hub can reuse, the smallest compatible architecture, and the conflicts that
 need a decision before Phase 2.
 
@@ -85,3 +85,41 @@ Daily hub XP limits and diminishing returns on repeated training stop farming on
 | 3. Training and arena | Gym (NPC training with the existing engine, daily limits), arena (casual + ranked with Elo, match history), the 50 % rule live, profile breakdown.                                                                                                  |
 | 4. Market and housing | Off-chain item market (listings, expiry, fees, atomic purchase), residential district, houses, furniture placement, visits with privacy.                                                                                                            |
 | 5. Events and polish  | Quest board, tournaments, seasons, achievements, better animations, scaling, monitoring.                                                                                                                                                            |
+
+## 6. Phase 2 — what was built (2026-10-31)
+
+Decisions taken with the owner: free-text chat **for everyone**, kept **within each age group**
+(adults only hear adults, under-18s only hear under-18s, the same rule as friends); the town is
+drawn with the **owner's art sheet** (`art/hub/sheet-01.png`).
+
+- **Map** (`packages/shared/src/hub/map.ts`): the Central Plaza laid out from the owner's art —
+  gym, arena, market and three houses along the street, the plaza with its fountain, the portal
+  back to the map, trees and props; solid footprints, doors, NPC spots. Shared by server and client.
+- **Art** (`tools/slice-hub.py`): cuts the sheet into sprites (`apps/web/public/hub/`), removing the
+  dark background by flood fill, and writes their sizes (`packages/shared/src/hub/art.ts`). Pieces
+  that resemble another franchise's trademarks were left out on purpose: the red centre with the
+  ball emblem, the ball items, the cap-wearing trainers and the small creatures. Players are drawn
+  with the game's own explorer and followed by their own nyrGo! creature.
+- **Server** (`apps/api/src/modules/hub/`): `/v1/hub/ws` (session cookie, our origins only, refused
+  before the upgrade otherwise), one live room, positions validated against the map and walking
+  speed, 10 Hz updates to players in view only, profiles sent once per viewer, emotes, chat.
+- **Chat safety**: age-group rooms; links, emails, phone numbers and social handles refused (so
+  nobody is drawn off the game); insults masked (whole words); 8 messages a minute, no repeats;
+  block (both ways, also hides players in town), report with a copy kept for moderators; admins
+  hide messages and mute players (audited). Messages are kept 30 days for moderation only.
+- **The 50 % rule** (`countedXp` in shared, enforced in `grantReward()`): XP by source
+  (`main_xp`, `hub_xp`); the level follows `main + min(hub, main·s/(1−s))` with `s` = 0.5 in config.
+  No hub activity grants XP yet (that comes with the gym and arena in Phase 3); the profile shows
+  the breakdown.
+- **Client** (`apps/web/src/hub/`): canvas renderer with depth sorting, local prediction and server
+  corrections, keyboard (arrows/WASD, E, T) and a touch joystick, chat panel, emotes, NPC dialogues,
+  doors that announce what opens next, the portal back to the map, reconnection with back-off.
+
+### What the art needs next (for the owner)
+
+The sheet works, but a sheet drawn for slicing would look better and unlock the next phases:
+
+- Same style, **dark plain background**, pieces **not touching each other**.
+- **Ground tiles** that tile seamlessly (grass, path, stone, water edges) at 32 × 32 px.
+- **Building interiors**: gym, arena and a house floor, plus furniture pieces one by one.
+- **Original** creatures and characters only — no ball emblems or look-alikes of another game.

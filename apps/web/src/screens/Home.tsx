@@ -5,6 +5,7 @@ import { EmailForm } from '../components/EmailForm';
 import { TipsCard } from './TipsCard';
 import { NearWallet } from './NearWallet';
 import { Wardrobe } from './Wardrobe';
+import { ProgressCard } from './ProgressCard';
 
 export function Home({
   api,
@@ -87,6 +88,8 @@ export function Home({
           </div>
         </dl>
       </section>
+
+      <ProgressCard api={api} />
 
       <section className="card stack" aria-labelledby="wardrobe-title">
         <h2 id="wardrobe-title">{t('wardrobe.title')}</h2>

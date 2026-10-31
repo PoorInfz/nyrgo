@@ -36,6 +36,16 @@ interface AuditEntry {
   created_at: string;
 }
 
+interface ChatReport {
+  id: number;
+  reason: string;
+  body: string | null;
+  created_at: string;
+  reported_id: string;
+  reported_name: string;
+  chat_muted_until: string | null;
+  reports_total: number;
+}
 interface AdminEvent {
   id: string;
   title: string;
@@ -79,6 +89,7 @@ export function Admin({ apiUrl }: { apiUrl: string }) {
   const [pois, setPois] = useState<ReportedPoi[]>([]);
   const [audit, setAudit] = useState<AuditEntry[]>([]);
   const [events, setEvents] = useState<AdminEvent[]>([]);
+  const [reports, setReports] = useState<ChatReport[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [reason, setReason] = useState('');
 
@@ -116,6 +127,14 @@ export function Admin({ apiUrl }: { apiUrl: string }) {
     setPois(p.pois);
     setAudit(a.entries);
     setEvents(e.events);
+    // the town's chat reports (optional on older servers)
+    setReports(
+      (
+        await call<{ reports: ChatReport[] }>('GET', '/admin/v1/hub/reports').catch(() => ({
+          reports: [],
+        }))
+      ).reports,
+    );
   }, [call]);
 
   useEffect(() => {
@@ -266,6 +285,72 @@ export function Admin({ apiUrl }: { apiUrl: string }) {
                   }
                 >
                   {p.hidden ? t('admin.restore') : t('admin.hide')}
+                </button>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="card stack" aria-labelledby="reports-title">
+        <h3 id="reports-title">{t('admin.chat.title', { count: reports.length })}</h3>
+        {reports.length === 0 && <p className="muted">{t('admin.chat.none')}</p>}
+        <ul className="plain stack">
+          {reports.map((r) => (
+            <li key={r.id} className="admin-item">
+              <strong>{r.reported_name}</strong>
+              <span>“{r.body ?? '—'}”</span>
+              <span className="muted small">
+                {t('admin.chat.line', {
+                  reason: t(`hub.reason.${r.reason}`, { defaultValue: r.reason }),
+                  total: r.reports_total,
+                  when: new Date(r.created_at).toLocaleString(),
+                })}
+              </span>
+              <span className="row tight">
+                <button
+                  type="button"
+                  className="secondary small"
+                  onClick={() =>
+                    act(() =>
+                      call('POST', `/admin/v1/hub/reports/${r.id}/close`, {
+                        decision: 'dismiss',
+                        reason,
+                      }),
+                    )
+                  }
+                >
+                  {t('admin.chat.dismiss')}
+                </button>
+                <button
+                  type="button"
+                  className="secondary small"
+                  onClick={() =>
+                    act(() =>
+                      call('POST', `/admin/v1/hub/reports/${r.id}/close`, {
+                        decision: 'hide',
+                        reason,
+                      }),
+                    )
+                  }
+                >
+                  {t('admin.chat.hide')}
+                </button>
+                <button
+                  type="button"
+                  className="danger small"
+                  disabled={me.role !== 'admin'}
+                  onClick={() =>
+                    act(() =>
+                      call('POST', `/admin/v1/hub/reports/${r.id}/close`, {
+                        decision: 'mute',
+                        minutes: 60 * 24,
+                        reason,
+                      }),
+                    )
+                  }
+                >
+                  {t('admin.chat.mute')}
                 </button>
               </span>
             </li>

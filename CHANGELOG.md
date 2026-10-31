@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.31.0 — 2026-10-31 — The town (social hub, phase 2)
+
+- **nyrGo! Town**: a shared 2D town square, entered from the map screen and left through its
+  portal, without reloading. Drawn with the owner's art; players see each other in real time,
+  walk with arrows/WASD or a touch joystick, wave and cheer, and talk.
+- Real-time server over WebSocket on the existing API: session and origin checked before the
+  upgrade, moves validated against the map and walking speed, updates only for players in view.
+- Chat for everyone within their age group, with links and contact details refused, insults
+  masked, rate limits, block, report, and admin moderation (hide, mute, audited); 30-day retention.
+- XP is now kept by source; the town can count for at most 50 % of a player's progress
+  (`hub.maxXpShare`), enforced where XP is granted. Profile: progress breakdown and the creature
+  that follows you in town.
+- `docs/HUB.md`: audit, architecture, what was built and what the art needs next.
+
 ## 0.30.0 — 2026-10-31 — English first, language switch
 
 - The app starts in English for everyone (it used to follow the browser, Spanish by default).

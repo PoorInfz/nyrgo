@@ -1,6 +1,7 @@
 import type {
   AgeBand,
   AvatarLook,
+  ProgressBreakdown,
   BattleEvent,
   Element,
   ErrorCode,
@@ -357,6 +358,15 @@ export interface AvatarState {
   gold: number;
 }
 
+export interface HubMe {
+  name: string;
+  ageGroup: 'adult' | 'minor';
+  companion: string | null;
+  companionId: string | null;
+  chatMutedUntil: string | null;
+  progress: ProgressBreakdown;
+}
+
 export interface GameEvent {
   id: string;
   title: string;
@@ -401,6 +411,8 @@ export function createApi(baseUrl: string) {
   }
 
   return {
+    /** The API's base URL (the town connects to it over a WebSocket). */
+    baseUrl,
     me: () => call<Profile>('GET', '/v1/me'),
     createGuest: (birthYear: number, birthMonth: number) =>
       call<Profile>('POST', '/v1/auth/guest', { birthYear, birthMonth }),
@@ -520,6 +532,15 @@ export function createApi(baseUrl: string) {
     /** `key` must stay the same when retrying the same purchase. */
     buyCosmetic: (item: string, key: string) =>
       call<AvatarState>('POST', '/v1/me/cosmetics/buy', { item }, { 'idempotency-key': key }),
+    hubMe: () => call<HubMe>('GET', '/v1/hub/me'),
+    hubCompanion: (creature: string | null) =>
+      call<{ companionId: string | null }>('PUT', '/v1/hub/companion', { creature }),
+    hubReport: (message: number, reason: string) =>
+      call<{ received: true }>('POST', '/v1/hub/reports', { message, reason }),
+    hubBlock: (id: string) =>
+      call<{ blocked: true }>('POST', `/v1/hub/blocks/${encodeURIComponent(id)}`),
+    hubUnblock: (id: string) => call<void>('DELETE', `/v1/hub/blocks/${encodeURIComponent(id)}`),
+    hubBlocks: () => call<{ blocked: { id: string; name: string }[] }>('GET', '/v1/hub/blocks'),
     duels: () => call<{ duels: Duel[] }>('GET', '/v1/duels'),
     challenge: (to: string, creature: string) =>
       call<{ id: string; status: 'pending'; expiresAt: string }>('POST', '/v1/duels', {
