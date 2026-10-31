@@ -1,5 +1,7 @@
 import type { BattleEvent } from '@nyrgo/shared';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { FightCinematic } from '../fight/FightCinematic';
 import type { Dex, Duel } from '../api';
 import { thumbUrl } from '../content';
 
@@ -9,8 +11,18 @@ type Lang = 'es' | 'en';
  * A finished duel, turn by turn, from this player's side. The fight was decided by the server;
  * both players read the same turns.
  */
-export function DuelReplay({ duel, dex }: { duel: Duel; dex: Dex | null }) {
+export function DuelReplay({
+  duel,
+  dex,
+  watchable = false,
+}: {
+  duel: Duel;
+  dex: Dex | null;
+  /** Offer to play the fight as a film (where nothing else does). */
+  watchable?: boolean;
+}) {
   const { t, i18n } = useTranslation();
+  const [watching, setWatching] = useState(false);
   const lang: Lang = i18n.language.startsWith('es') ? 'es' : 'en';
   const fight = duel.fight;
   if (!fight || !duel.toCreatureId) return null;
@@ -74,6 +86,23 @@ export function DuelReplay({ duel, dex }: { duel: Duel; dex: Dex | null }) {
 
   return (
     <div className="duel-replay stack">
+      {watchable && (
+        <button type="button" className="secondary small" onClick={() => setWatching(true)}>
+          ▶ {t('cine.watch')}
+        </button>
+      )}
+      {watching && (
+        <FightCinematic
+          fight={fight}
+          dex={dex}
+          stage="plaza"
+          title={t('cine.duel')}
+          leftSide={mineSide}
+          left={{ creatureId: myCreature, level: myLevel ?? 1, owner: t('cine.you') }}
+          right={{ creatureId: theirCreature, level: theirLevel ?? 1, owner: duel.friendName }}
+          onClose={() => setWatching(false)}
+        />
+      )}
       <div className="duel-vs">
         <figure>
           <img src={thumbUrl(myCreature)} alt="" width={52} height={52} />

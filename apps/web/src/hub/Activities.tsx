@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ApiError,
@@ -15,6 +15,18 @@ import {
 import { useContent } from '../content';
 import { DuelReplay } from '../screens/DuelReplay';
 import { SeasonsList, TournamentTab } from './Board';
+import { FightCinematic, type Fighter } from '../fight/FightCinematic';
+
+/** A fight to play as a film. */
+interface Watch {
+  fight: DuelFight;
+  left: Fighter;
+  right: Fighter;
+  leftSide?: 'player' | 'foe';
+  stage: 'arena' | 'gym';
+  title: string;
+  extra?: ReactNode;
+}
 
 /**
  * What the coach and the arena host offer: training bouts and battles against other players'
@@ -121,6 +133,7 @@ export function GymPanel({ api }: { api: Api }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [result, setResult] = useState<TrainingResult | null>(null);
+  const [watch, setWatch] = useState<Watch | null>(null);
   const name = (id: string) => dex?.creatures.find((c) => c.id === id)?.name ?? id;
 
   useEffect(() => {
@@ -135,6 +148,24 @@ export function GymPanel({ api }: { api: Api }) {
   }, [api]);
   const chosen = mine?.find((c) => c.id === pick) ?? mine?.[0];
 
+  function gymWatch(r: TrainingResult, c: OwnedCreature): Watch {
+    return {
+      fight: r.fight,
+      left: { creatureId: c.creatureId, level: c.level, owner: t('cine.you') },
+      right: { ...r.coach, owner: t('hub.npc.coach.name') },
+      stage: 'gym',
+      title: t('cine.training'),
+      extra: (
+        <>
+          <Reward r={r} />
+          {r.creature.leveledUp && (
+            <p>{t('gym.creatureUp', { name: name(c.creatureId), level: r.creature.level })}</p>
+          )}
+        </>
+      ),
+    };
+  }
+
   async function train(tier: number) {
     if (!chosen) return;
     setBusy(true);
@@ -142,6 +173,7 @@ export function GymPanel({ api }: { api: Api }) {
     try {
       const r = await api.hubTrain(chosen.id, tier);
       setResult(r);
+      setWatch(gymWatch(r, chosen));
       setInfo((i) => (i ? { ...i, left: r.left, hubXpToday: i.hubXpToday + r.hubXp } : i));
     } catch (e) {
       setErr(errorKey(e));
@@ -191,8 +223,18 @@ export function GymPanel({ api }: { api: Api }) {
           {t(err)}
         </p>
       )}
+      {watch && (
+        <FightCinematic {...watch} result={watch.extra} dex={dex} onClose={() => setWatch(null)} />
+      )}
       {result && (
         <div className="stack" aria-live="polite">
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => setWatch(gymWatch(result, chosen))}
+          >
+            ▶ {t('cine.watch')}
+          </button>
           <DuelReplay
             dex={dex}
             duel={asDuel({
@@ -227,6 +269,7 @@ export function ArenaPanel({ api }: { api: Api }) {
   const [err, setErr] = useState<string | null>(null);
   const [result, setResult] = useState<ArenaResult | null>(null);
   const [opened, setOpened] = useState<string | null>(null);
+  const [watch, setWatch] = useState<Watch | null>(null);
   const name = (id: string) => dex?.creatures.find((c) => c.id === id)?.name ?? id;
 
   useEffect(() => {
@@ -246,12 +289,57 @@ export function ArenaPanel({ api }: { api: Api }) {
     setBusy(true);
     setErr(null);
     try {
-      setResult(await api.hubMatch(chosen.id, mode));
+      const r = await api.hubMatch(chosen.id, mode);
+      setResult(r);
+      setWatch(arenaWatch(r, chosen));
     } catch (e) {
       setErr(errorKey(e));
     } finally {
       setBusy(false);
     }
+  }
+
+  function arenaWatch(r: ArenaResult, c: OwnedCreature): Watch {
+    return {
+      fight: r.fight,
+      left: { creatureId: c.creatureId, level: c.level, owner: t('cine.you') },
+      right: {
+        creatureId: r.opponent.creatureId,
+        level: r.opponent.level,
+        owner: r.opponent.name ?? t('hub.npc.host.name'),
+      },
+      stage: 'arena',
+      title: r.mode === 'ranked' ? t('arena.ranked') : t('arena.practice'),
+      extra: (
+        <>
+          {r.ratingAfter !== null && r.ratingBefore !== null && (
+            <p>{t('arena.ratingChange', { from: r.ratingBefore, to: r.ratingAfter })}</p>
+          )}
+          <Reward r={r} />
+        </>
+      ),
+    };
+  }
+
+  /** A fight from the history, from this player's side (defenders fought as `foe`). */
+  function boutWatch(b: HubBout): Watch | null {
+    if (!b.fight) return null;
+    return {
+      fight: b.fight,
+      left: { creatureId: b.creatureId, level: b.level, owner: t('cine.you') },
+      right: {
+        creatureId: b.opponentCreatureId,
+        level: b.opponentLevel,
+        owner: b.opponentName ?? t('hub.npc.host.name'),
+      },
+      leftSide: b.defended ? 'foe' : 'player',
+      stage: 'arena',
+      title: b.defended
+        ? t('arena.defendedAgainst', { name: b.opponentName ?? '?' })
+        : b.kind === 'arena_practice'
+          ? t('arena.practice')
+          : t('arena.ranked'),
+    };
   }
 
   async function defender(id: string) {
@@ -289,6 +377,11 @@ export function ArenaPanel({ api }: { api: Api }) {
         )}
       </button>
       {opened === b.id && b.fight && (
+        <button type="button" className="secondary small" onClick={() => setWatch(boutWatch(b))}>
+          ▶ {t('cine.watch')}
+        </button>
+      )}
+      {opened === b.id && b.fight && (
         <DuelReplay
           dex={dex}
           duel={asDuel({
@@ -306,6 +399,9 @@ export function ArenaPanel({ api }: { api: Api }) {
 
   return (
     <div className="stack">
+      {watch && (
+        <FightCinematic {...watch} result={watch.extra} dex={dex} onClose={() => setWatch(null)} />
+      )}
       <p className="hub-rating">
         <strong>{t('arena.rating', { rating: info.rating })}</strong>{' '}
         <span className="muted small">
@@ -370,6 +466,13 @@ export function ArenaPanel({ api }: { api: Api }) {
           )}
           {result && (
             <div className="stack" aria-live="polite">
+              <button
+                type="button"
+                className="secondary"
+                onClick={() => setWatch(arenaWatch(result, chosen))}
+              >
+                ▶ {t('cine.watch')}
+              </button>
               <DuelReplay
                 dex={dex}
                 duel={asDuel({

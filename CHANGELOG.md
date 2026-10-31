@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.35.0 — 2026-10-31 — Fights you watch
+
+- **Fight cinematics**: arena battles, gym training and friendly duels now play as a vertical
+  film — a VS screen with both creatures' art, "Round 1 — FIGHT!", the two creatures facing
+  each other with Street-Fighter-style health bars, every move called out with its name and
+  animated with the creature's attack frames, hits with elemental effects, damage numbers,
+  critical hits with screen shake, dodges, heals, a K.O. and a result screen with the rewards.
+  Sound effects are synthesised in the browser (one-tap mute); ×2 speed and skip. The text
+  replay stays below for reference, and any past fight can be watched again from the history.
+- Fight results now carry each side's full HP, so health bars are exact (older fights estimate it).
+- Players see the fights where their arena defender was challenged.
+
 ## 0.34.1 — 2026-10-31 — Always the latest version
 
 - The web app updates itself: a new version is installed as soon as it is published and the page

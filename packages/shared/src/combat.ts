@@ -415,6 +415,8 @@ export interface DuelResult {
   turns: DuelTurn[];
   /** HP left on each side at the end. */
   hp: { player: number; foe: number };
+  /** Each side's full HP (both start full); fights stored before this was added lack it. */
+  max?: { player: number; foe: number };
 }
 
 /**
@@ -434,7 +436,12 @@ export function simulateDuel(challenger: Fighter, friend: Fighter, rand: () => n
     turns.push({ turn: state.turn, events: next.events });
   }
   const winner = state.result === 'win' ? 'player' : state.result === 'loss' ? 'foe' : null;
-  return { winner, turns, hp: { player: state.player.hp, foe: state.foe.hp } };
+  return {
+    winner,
+    turns,
+    hp: { player: state.player.hp, foe: state.foe.hp },
+    max: { player: challenger.maxHp, foe: friend.maxHp },
+  };
 }
 
 /** Expected score of A against B (Elo). */

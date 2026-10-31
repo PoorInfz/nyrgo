@@ -309,7 +309,7 @@ export async function hubActivityRoutes(
       `SELECT a.id, a.created_at AS "at", NOT a.won AS won, p.display_name AS "opponentName",
               a.opponent_def AS "creatureId", a.opponent_level AS "level",
               a.creature_def AS "opponentCreatureId", a.creature_level AS "opponentLevel",
-              true AS defended
+              true AS defended, a.fight
          FROM hub_activities a JOIN players p ON p.user_id = a.user_id
         WHERE a.opponent_user = $1 AND a.kind = 'arena_ranked'
         ORDER BY a.created_at DESC LIMIT 10`,

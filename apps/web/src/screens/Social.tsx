@@ -360,7 +360,7 @@ export function Social({ api }: { api: Api }) {
                         ? t('duel.lost')
                         : t('duel.draw')}
                   </button>
-                  {opened === d.id && <DuelReplay duel={d} dex={dex} />}
+                  {opened === d.id && <DuelReplay duel={d} dex={dex} watchable />}
                 </>
               )}
               {d.status !== 'pending' && d.status !== 'done' && (

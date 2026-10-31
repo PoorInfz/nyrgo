@@ -332,6 +332,8 @@ export interface DuelFight {
   winner: 'player' | 'foe' | null;
   turns: { turn: number; events: BattleEvent[] }[];
   hp: { player: number; foe: number };
+  /** Full HP of each side (fights stored before it was added lack it). */
+  max?: { player: number; foe: number };
 }
 
 export interface Duel {

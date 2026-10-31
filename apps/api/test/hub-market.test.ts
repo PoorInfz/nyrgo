@@ -22,6 +22,10 @@ describe.skipIf(!TEST_DB_URL)('the town market and houses', () => {
   beforeAll(async () => {
     t = await makeTestApp({ hubRooms: rooms });
     await syncContent(t.db);
+    // the market lists the 60 cheapest offers: leftovers of earlier runs would crowd these out
+    await t.db.query(
+      `UPDATE hub_listings SET status = 'cancelled', closed_at = now() WHERE status = 'open'`,
+    );
   });
   afterAll(() => t.close());
 
