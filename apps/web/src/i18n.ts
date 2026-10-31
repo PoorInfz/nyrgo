@@ -496,6 +496,14 @@ export const resources = {
         unmute: 'Activar sonido',
         watch: 'Ver el combate',
       },
+      lb: {
+        title: 'Clasificaciones',
+        by: { level: 'Nivel', captures: 'Capturas', species: 'Especies', arena: 'Arena' },
+        you: 'Vas el #{{rank}} ({{value}})',
+        notYet: 'Aún no apareces en esta clasificación.',
+        outside: 'Tú: #{{rank}}',
+        empty: 'Aún no hay nadie.',
+      },
       duel: {
         title: 'Duelos amistosos',
         why: 'Reta a un amigo con una de tus criaturas. Él responde con una de las suyas cuando estéis a menos de 100 m, y el juego decide el combate. Luchan con toda su vida y nadie pierde nada. Hasta 10 al día.',
@@ -1271,6 +1279,14 @@ export const resources = {
         mute: 'Mute sound',
         unmute: 'Turn sound on',
         watch: 'Watch the fight',
+      },
+      lb: {
+        title: 'Leaderboards',
+        by: { level: 'Level', captures: 'Catches', species: 'Species', arena: 'Arena' },
+        you: 'You are #{{rank}} ({{value}})',
+        notYet: 'You are not on this board yet.',
+        outside: 'You: #{{rank}}',
+        empty: 'Nobody here yet.',
       },
       duel: {
         title: 'Friendly duels',

@@ -533,6 +533,22 @@ export interface HousesInfo {
   open: { id: string; name: string; pieces: number }[];
 }
 
+export type LeaderboardBoard = 'level' | 'captures' | 'species' | 'arena';
+export interface Leaderboard {
+  by: LeaderboardBoard;
+  season: string | null;
+  top: {
+    rank: number;
+    id: string;
+    name: string;
+    level: number;
+    value: number;
+    look: AvatarLook;
+    me: boolean;
+  }[];
+  me: { value: number; rank: number | null } | null;
+}
+
 export interface GameEvent {
   id: string;
   title: string;
@@ -759,6 +775,7 @@ export function createApi(baseUrl: string) {
       call<{ joined: true }>('POST', '/v1/hub/tournament/join', { creature }),
     hubLeaveTournament: () => call<void>('DELETE', '/v1/hub/tournament/join'),
     hubSeasons: () => call<SeasonsInfo>('GET', '/v1/hub/seasons'),
+    leaderboard: (by: LeaderboardBoard) => call<Leaderboard>('GET', `/v1/leaderboards?by=${by}`),
     hubBlocks: () => call<{ blocked: { id: string; name: string }[] }>('GET', '/v1/hub/blocks'),
     duels: () => call<{ duels: Duel[] }>('GET', '/v1/duels'),
     challenge: (to: string, creature: string) =>

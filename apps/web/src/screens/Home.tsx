@@ -6,6 +6,7 @@ import { TipsCard } from './TipsCard';
 import { NearWallet } from './NearWallet';
 import { Wardrobe } from './Wardrobe';
 import { ProgressCard } from './ProgressCard';
+import { Leaderboards } from './Leaderboards';
 
 export function Home({
   api,
@@ -90,6 +91,8 @@ export function Home({
       </section>
 
       <ProgressCard api={api} />
+
+      <Leaderboards api={api} />
 
       <section className="card stack" aria-labelledby="wardrobe-title">
         <h2 id="wardrobe-title">{t('wardrobe.title')}</h2>

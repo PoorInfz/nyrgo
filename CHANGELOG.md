@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.36.0 — 2026-10-31 — Leaderboards, bigger explorers
+
+- **Leaderboards** on the profile: level, creatures caught, species caught and the arena's current
+  season, top 50 of your age group with avatars, and your own place.
+- In town, explorers and their creatures are drawn larger: 1.4× on the square and 2× inside the
+  gym, arena and houses, to match the rooms' furniture.
+- Fix: a purple strip covered the left of the profile once a player had town XP (the XP bar
+  shared a class name with the town screen).
+
 ## 0.35.0 — 2026-10-31 — Fights you watch
 
 - **Fight cinematics**: arena battles, gym training and friendly duels now play as a vertical

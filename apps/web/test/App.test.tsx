@@ -96,7 +96,8 @@ describe('signed out', () => {
 /** Calls the test is about, leaving out background loads: wallet, tips, look, progress. */
 const gameCalls = (fetch: { mock: { calls: unknown[][] } }) =>
   fetch.mock.calls.filter(
-    ([url]) => !/\/v1\/(me\/(wallet|tips|avatar|creatures)|hub\/me|dex)$/.test(String(url)),
+    ([url]) =>
+      !/\/v1\/(me\/(wallet|tips|avatar|creatures)|hub\/me|dex|leaderboards\?.*)$/.test(String(url)),
   );
 
 describe('signed in as guest', () => {

@@ -2624,13 +2624,13 @@ button.hub-round {
   height: 100%;
 }
 
-.xp-bar .main,
-.xp-legend .swatch.main {
+.xp-bar .xp-main,
+.xp-legend .swatch.xp-main {
   background: linear-gradient(90deg, #43f289, #3fd0ee);
 }
 
-.xp-bar .hub,
-.xp-legend .swatch.hub {
+.xp-bar .xp-town,
+.xp-legend .swatch.xp-town {
   background: linear-gradient(90deg, #9b6bff, #c49bff);
 }
 
@@ -2650,4 +2650,62 @@ button.hub-round {
   height: 10px;
   border-radius: 3px;
   margin-right: 8px;
+}
+
+/* ---------------------------------------------------------------- leaderboards */
+.lb-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.lb-list li {
+  display: grid;
+  grid-template-columns: 30px 40px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: rgb(255 255 255 / 4%);
+}
+.lb-list li.me {
+  outline: 1px solid var(--mint);
+  background: rgb(67 242 137 / 10%);
+}
+.lb-rank {
+  font-weight: 700;
+  text-align: center;
+  color: var(--ink-soft);
+}
+.lb-rank.r1 {
+  color: var(--sun);
+}
+.lb-rank.r2 {
+  color: #d9e1ff;
+}
+.lb-rank.r3 {
+  color: #f0a46a;
+}
+.lb-av {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: start center;
+  background: rgb(255 255 255 / 8%);
+}
+.lb-name {
+  display: grid;
+  min-width: 0;
+}
+.lb-name strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lb-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }

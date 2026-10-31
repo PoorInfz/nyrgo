@@ -65,6 +65,8 @@ export interface HubMap {
   blocked: Rect[];
   /** Where players appear (feet). */
   spawn: { x: number; y: number };
+  /** How large people and creatures are drawn, relative to the 40×56 px explorer. */
+  actorScale?: number;
 }
 
 const size = (s: HubSprite) => HUB_SPRITES[s];
@@ -291,6 +293,7 @@ function centralPlaza(): HubMap {
     blocked: npcs.map((n) => ({ x: n.x - 12, y: n.y - 10, w: 24, h: 12 })),
     // just out of the portal, on the path up to the square
     spawn: { x: Math.round(width / 2), y: portalY - 14 },
+    actorScale: 1.4,
   };
 }
 
@@ -353,6 +356,8 @@ function interior(o: {
       ...npcs.map((n) => ({ x: n.x - 14, y: n.y - 12, w: 28, h: 14 })),
     ],
     spawn: ROOM_ENTRY[o.id],
+    // the room's art is drawn at 2×; people too, so they fit the furniture
+    actorScale: ROOM_SCALE,
   };
 }
 

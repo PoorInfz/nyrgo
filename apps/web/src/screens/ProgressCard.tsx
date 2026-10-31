@@ -63,16 +63,16 @@ export function ProgressCard({ api }: { api: Api }) {
           need: p.nextLevelXp ?? p.xp,
         })}
       >
-        <span className="main" style={{ width: `${pct(p.mainXp)}%` }} />
-        <span className="hub" style={{ width: `${pct(p.hubCounted)}%` }} />
+        <span className="xp-main" style={{ width: `${pct(p.mainXp)}%` }} />
+        <span className="xp-town" style={{ width: `${pct(p.hubCounted)}%` }} />
       </div>
       <ul className="xp-legend">
         <li>
-          <span className="swatch main" aria-hidden="true" />
+          <span className="swatch xp-main" aria-hidden="true" />
           {t('progress.main', { xp: p.mainXp })}
         </li>
         <li>
-          <span className="swatch hub" aria-hidden="true" />
+          <span className="swatch xp-town" aria-hidden="true" />
           {t('progress.hub', { xp: p.hubCounted, share: Math.round(p.hubShare * 100) })}
         </li>
       </ul>

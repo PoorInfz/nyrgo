@@ -107,6 +107,11 @@ export class Town {
     }
   }
 
+  /** How big people and their creatures are drawn here (interiors are drawn larger). */
+  get k(): number {
+    return this.map.actorScale ?? 1;
+  }
+
   me(): Body | undefined {
     return this.meId ? this.bodies.get(this.meId) : undefined;
   }
@@ -164,7 +169,7 @@ export class Town {
     const w = viewW / z;
     const h = viewH / z;
     const cx = me ? me.x : this.map.spawn.x;
-    const cy = me ? me.y - 30 : this.map.spawn.y;
+    const cy = me ? me.y - 30 * this.k : this.map.spawn.y;
     this.camera.x = Math.max(0, Math.min(this.map.width - w, cx - w / 2));
     this.camera.y = Math.max(0, Math.min(this.map.height - h, cy - h / 2));
     if (w > this.map.width) this.camera.x = (this.map.width - w) / 2;
@@ -238,7 +243,7 @@ export class Town {
       items.push({ base: p.y, draw: () => this.drawPiece(ctx, p) });
     }
     for (const n of this.map.npcs) {
-      if (!inView(n.x - 30, n.y - 70, 60, 80)) continue;
+      if (!inView(n.x - 30 * this.k, n.y - 70 * this.k, 60 * this.k, 80 * this.k)) continue;
       items.push({
         base: n.y,
         draw: () =>
@@ -246,10 +251,10 @@ export class Town {
       });
     }
     for (const b of this.bodies.values()) {
-      if (!inView(b.x - 60, b.y - 90, 120, 100)) continue;
+      if (!inView(b.x - 60 * this.k, b.y - 90 * this.k, 120 * this.k, 100 * this.k)) continue;
       const pet = b.trail[0];
       if (b.companion && pet) {
-        const px = pet.x + (b.facing === 'l' ? 18 : -18);
+        const px = pet.x + (b.facing === 'l' ? 18 : -18) * this.k;
         const py = pet.y + 2;
         items.push({
           base: py,
@@ -267,7 +272,7 @@ export class Town {
     // labels on top of everything
     for (const n of this.map.npcs) this.label(ctx, n.x, n.y, '★', '#ffcf4d');
     for (const b of this.bodies.values()) {
-      if (!inView(b.x - 60, b.y - 120, 120, 140)) continue;
+      if (!inView(b.x - 60 * this.k, b.y - 120 * this.k, 120 * this.k, 140 * this.k)) continue;
       this.label(ctx, b.x, b.y, b.name, b.id === this.meId ? '#43f289' : '#eef3ff');
       if (b.emote)
         this.emoteBubble(ctx, b.x, b.y, EMOTE_ICONS[b.emote.e] ?? '•', b.emote.until - this.time);
@@ -316,7 +321,7 @@ export class Town {
     // soft shadow
     ctx.fillStyle = 'rgba(6, 34, 43, 0.25)';
     ctx.beginPath();
-    ctx.ellipse(x, y - 1, 13, 4, 0, 0, Math.PI * 2);
+    ctx.ellipse(x, y - 1, 13 * this.k, 4 * this.k, 0, 0, Math.PI * 2);
     ctx.fill();
     if (!ready(frame)) return;
     const bob = moving && step % 2 === 1 ? -1.5 : 0;
@@ -325,7 +330,9 @@ export class Town {
     ctx.translate(x, y + bob);
     if (facing === 'l') ctx.scale(-1, 1);
     // the SVG's feet sit at 130/140 of its height
-    ctx.drawImage(frame, -EXPLORER.w / 2, -EXPLORER.h * (130 / 140), EXPLORER.w, EXPLORER.h);
+    const w = EXPLORER.w * this.k;
+    const h = EXPLORER.h * this.k;
+    ctx.drawImage(frame, -w / 2, -h * (130 / 140), w, h);
     ctx.restore();
   }
 
@@ -341,7 +348,7 @@ export class Town {
     const fw = sheet.naturalWidth / 6;
     const fh = sheet.naturalHeight;
     const frame = Math.floor(this.time / 160) % 6;
-    const h = 36;
+    const h = 36 * this.k;
     const w = (h * fw) / fh;
     ctx.save();
     ctx.imageSmoothingEnabled = true;
@@ -355,7 +362,7 @@ export class Town {
     ctx.font = '600 10px system-ui, sans-serif';
     ctx.textAlign = 'center';
     const w = ctx.measureText(text).width + 8;
-    const top = y - EXPLORER.h - 12;
+    const top = y - EXPLORER.h * this.k - 12;
     ctx.fillStyle = 'rgba(7, 11, 31, 0.72)';
     roundRect(ctx, x - w / 2, top - 9, w, 13, 6);
     ctx.fill();
@@ -369,7 +376,7 @@ export class Town {
     const lines = wrap(ctx, text, 150);
     const w = Math.max(...lines.map((l) => ctx.measureText(l).width)) + 14;
     const h = lines.length * 13 + 8;
-    const top = y - EXPLORER.h - 26 - h;
+    const top = y - EXPLORER.h * this.k - 26 - h;
     ctx.fillStyle = '#ffffff';
     roundRect(ctx, x - w / 2, top, w, h, 8);
     ctx.fill();
@@ -392,7 +399,7 @@ export class Town {
     // pops in with a little overshoot during its first 200 ms (emotes last 2.5 s)
     const age = Math.max(0, 2500 - left);
     const k = age < 200 ? 0.6 + 0.6 * Math.sin((age / 200) * (Math.PI / 2)) : 1;
-    const top = y - EXPLORER.h - 44;
+    const top = y - EXPLORER.h * this.k - 44;
     ctx.save();
     ctx.translate(x, top + 10);
     ctx.scale(k, k);
