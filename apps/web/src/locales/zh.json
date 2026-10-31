@@ -101,9 +101,6 @@
   "encounterTitle": "野生的{{name}}出现了！",
   "chooseVault": "选择宝匣",
   "vaultCount": "{{name}}（{{count}}）",
-  "throwHint": "在圆环最小时按下，投掷效果更好。",
-  "throwVault": "投掷宝匣",
-  "throwing": "投掷中…",
   "run": "逃跑",
   "resultCaught": "{{name}}已加入你的收藏！",
   "resultEscaped": "{{name}}挣脱了宝匣，再试一次。",
@@ -902,5 +899,36 @@
     "stats": "基础属性",
     "inRange": "距离足够，可以尝试",
     "leaves": "{{min}} 分钟后离开"
+  },
+  "tg": {
+    "tap": "为保险库充能",
+    "start": "点击为保险库充能！",
+    "hold": "保持住！",
+    "more": "再快点！",
+    "less": "慢一点…",
+    "perfect": "完美！",
+    "how": "点击为保险库充能，并让能量保持在发光带内：保险库周围的圆环越满，投掷越好。",
+    "now": "立即投掷"
+  },
+  "habitat": {
+    "title": "栖息地",
+    "foundIn": "野外出没地：{{places}}",
+    "notWild": "野外不会出现",
+    "water": "流动性泻湖",
+    "fire": "燃烧火山",
+    "nature": "收益农场",
+    "earth": "挖矿矿井",
+    "electric": "Gas 之城",
+    "wind": "空投天空",
+    "ice": "冷存储冰川",
+    "cosmic": "月球基地",
+    "light": "预言机神殿",
+    "shadow": "FUD 废墟"
+  },
+  "place": {
+    "urban": "街道",
+    "park": "公园",
+    "historic": "历史街区",
+    "culture": "文化"
   }
 }

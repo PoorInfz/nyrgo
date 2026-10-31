@@ -182,11 +182,16 @@ export async function captureRoutes(
           expires_at: Date;
           live: boolean;
           event: boolean;
+          biome: string | null;
         }>(
           `SELECT definition_id, level, expires_at,
                   window_start <= now() AND expires_at > now() AS live,
-                  event_id IS NOT NULL AS event
-             FROM spawns WHERE id = $1`,
+                  event_id IS NOT NULL AS event,
+                  -- the place's character, as the spawns use it: the commonest kind of place
+                  -- in the creature's cell (streets when there is none)
+                  (SELECT p.biome FROM pois p WHERE p.h3_r9 = s.h3_r9 AND NOT p.hidden
+                    GROUP BY p.biome ORDER BY count(*) DESC, p.biome LIMIT 1) AS biome
+             FROM spawns s WHERE s.id = $1`,
           [req.params.id],
         );
         const spawn = rows[0];
@@ -262,6 +267,8 @@ export async function captureRoutes(
           creatureId: spawn.definition_id,
           level: enc.level ?? spawn.level,
           rarity: def.rarity,
+          /** Where it was found, for the scene: park, historic, culture or urban. */
+          biome: spawn.biome ?? 'urban',
           status: enc.status,
           attempts: enc.attempts,
           expiresAt: enc.expires_at.toISOString(),

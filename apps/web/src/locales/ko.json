@@ -101,9 +101,6 @@
   "encounterTitle": "야생의 {{name}} 등장!",
   "chooseVault": "볼트 선택",
   "vaultCount": "{{name}} ({{count}})",
-  "throwHint": "링이 가장 작을 때 누르면 더 잘 던질 수 있어요.",
-  "throwVault": "볼트 던지기",
-  "throwing": "던지는 중…",
   "run": "도망",
   "resultCaught": "{{name}}이(가) 컬렉션에 추가되었습니다!",
   "resultEscaped": "{{name}}이(가) 볼트에서 빠져나왔습니다. 다시 시도하세요.",
@@ -902,5 +899,36 @@
     "stats": "기본 능력치",
     "inRange": "시도할 수 있을 만큼 가까워요",
     "leaves": "{{min}}분 뒤 사라져요"
+  },
+  "tg": {
+    "tap": "금고 충전",
+    "start": "탭해서 금고를 충전하세요!",
+    "hold": "거기서 유지!",
+    "more": "더 빠르게!",
+    "less": "살살…",
+    "perfect": "퍼펙트!",
+    "how": "탭해서 금고를 충전하고 에너지를 빛나는 띠 안에 유지하세요. 금고 주위의 링이 많이 찰수록 더 좋은 던지기가 됩니다.",
+    "now": "지금 던지기"
+  },
+  "habitat": {
+    "title": "서식지",
+    "foundIn": "야생에서 나오는 곳: {{places}}",
+    "notWild": "야생에서는 나오지 않음",
+    "water": "유동성 석호",
+    "fire": "소각 화산",
+    "nature": "이자 농장",
+    "earth": "채굴 광산",
+    "electric": "가스 도시",
+    "wind": "에어드롭 하늘",
+    "ice": "콜드 빙하",
+    "cosmic": "달 기지",
+    "light": "오라클 신전",
+    "shadow": "FUD 폐허"
+  },
+  "place": {
+    "urban": "거리",
+    "park": "공원",
+    "historic": "역사 지구",
+    "culture": "문화"
   }
 }

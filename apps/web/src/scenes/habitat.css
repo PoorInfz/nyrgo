@@ -1,0 +1,249 @@
+/* Painted habitats: a backdrop filling its parent. */
+
+.habitat {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+.habitat .hb-drift {
+  animation: hb-drift 26s linear infinite alternate;
+}
+
+.habitat .hb-drift-back {
+  animation: hb-drift 30s linear infinite alternate-reverse;
+}
+
+.habitat .hb-wave {
+  animation: hb-wave 3.2s ease-in-out infinite alternate;
+}
+
+.habitat .hb-rise {
+  animation: hb-rise 4s linear infinite;
+}
+
+.habitat .hb-snow {
+  animation: hb-snow 9s linear infinite;
+}
+
+.habitat .hb-sway {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: hb-sway 5s ease-in-out infinite alternate;
+}
+
+.habitat .hb-float {
+  animation: hb-float 6s ease-in-out infinite alternate;
+}
+
+.habitat .hb-pulse {
+  animation: hb-pulse 2.4s ease-in-out infinite alternate;
+}
+
+.habitat .hb-twinkle {
+  animation: hb-twinkle 2.6s ease-in-out infinite alternate;
+}
+
+.habitat .hb-flicker {
+  animation: hb-twinkle 1.3s steps(2) infinite;
+}
+
+.habitat .hb-bolt {
+  animation: hb-bolt 3.5s linear infinite;
+}
+
+.habitat .hb-glint {
+  animation: hb-pulse 1.8s ease-in-out infinite alternate;
+}
+
+.habitat .hb-spin {
+  animation: hb-spin 40s linear infinite;
+}
+
+.habitat .hb-orbit {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: hb-float 7s ease-in-out infinite alternate;
+}
+
+.habitat .hb-wind {
+  animation: hb-wind 3s ease-in-out infinite;
+}
+
+.habitat .hb-chart {
+  stroke-dasharray: 80;
+  animation: hb-chart 3s ease-in-out infinite;
+}
+
+.habitat .hb-swing {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: hb-sway 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes hb-drift {
+  to {
+    transform: translateX(40px);
+  }
+}
+
+@keyframes hb-wave {
+  to {
+    transform: translateX(-20px);
+  }
+}
+
+@keyframes hb-rise {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-80px);
+    opacity: 0;
+  }
+}
+
+@keyframes hb-snow {
+  from {
+    transform: translateY(-40px);
+  }
+  to {
+    transform: translateY(200px);
+  }
+}
+
+@keyframes hb-sway {
+  from {
+    transform: rotate(-2deg);
+  }
+  to {
+    transform: rotate(2deg);
+  }
+}
+
+@keyframes hb-float {
+  to {
+    transform: translateY(14px);
+  }
+}
+
+@keyframes hb-pulse {
+  to {
+    opacity: 0.55;
+  }
+}
+
+@keyframes hb-twinkle {
+  to {
+    opacity: 0.35;
+  }
+}
+
+@keyframes hb-bolt {
+  0%,
+  86%,
+  100% {
+    opacity: 0;
+  }
+  88%,
+  92% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 0.2;
+  }
+}
+
+@keyframes hb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes hb-wind {
+  0% {
+    transform: translateX(-30px);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+}
+
+@keyframes hb-chart {
+  from {
+    stroke-dashoffset: 80;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .habitat * {
+    animation: none !important;
+  }
+}
+
+/* Dex: the creature at home, in its idle animation */
+.dex-habitat {
+  position: relative;
+  height: 220px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--edge);
+}
+
+.dex-habitat-sprite {
+  position: absolute;
+  left: 50%;
+  bottom: 14%;
+  width: 140px;
+  height: 160px;
+  translate: -50% 0;
+  background-size: 840px 160px;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 6px 4px rgb(0 0 0 / 35%));
+  animation: dex-idle 0.9s steps(6) infinite;
+}
+
+.dex-habitat-name {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  padding: 4px 10px;
+  border-radius: 99px;
+  background: rgb(7 11 31 / 72%);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+@keyframes dex-idle {
+  to {
+    background-position: -840px 0;
+  }
+}
+
+/* Dex grid: each card's picture stands in its habitat */
+.dex-card .pic {
+  position: relative;
+}
+
+.dex-card .pic img {
+  position: relative;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dex-habitat-sprite {
+    animation: none;
+  }
+}

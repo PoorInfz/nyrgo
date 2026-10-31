@@ -101,9 +101,6 @@
   "encounterTitle": "Dziki {{name}}!",
   "chooseVault": "Wybierz skarbiec",
   "vaultCount": "{{name}} ({{count}})",
-  "throwHint": "Naciśnij, gdy pierścień jest najmniejszy, by rzucić lepiej.",
-  "throwVault": "Rzuć skarbiec",
-  "throwing": "Rzucam…",
   "run": "Uciekaj",
   "resultCaught": "{{name}} jest teraz w Twojej kolekcji!",
   "resultEscaped": "{{name}} wyrwał się ze skarbca. Spróbuj ponownie.",
@@ -902,5 +899,36 @@
     "stats": "Statystyki bazowe",
     "inRange": "Wystarczająco blisko, by spróbować",
     "leaves": "znika za {{min}} min"
+  },
+  "tg": {
+    "tap": "Naładuj skarbiec",
+    "start": "Stukaj, by naładować skarbiec!",
+    "hold": "Trzymaj tam!",
+    "more": "Szybciej!",
+    "less": "Wolniej…",
+    "perfect": "IDEALNIE!",
+    "how": "Stukaj, by naładować skarbiec, i trzymaj energię w świecącym pasie: im pełniejszy pierścień wokół skarbca, tym lepszy rzut.",
+    "now": "Rzuć teraz"
+  },
+  "habitat": {
+    "title": "Siedlisko",
+    "foundIn": "Na wolności występuje: {{places}}",
+    "notWild": "Nie występuje na wolności",
+    "water": "Laguna Płynności",
+    "fire": "Wulkan Burn",
+    "nature": "Farma Yield",
+    "earth": "Kopalnia Mining",
+    "electric": "Miasto Gazu",
+    "wind": "Niebo Airdropów",
+    "ice": "Lodowiec Zimna",
+    "cosmic": "Baza księżycowa",
+    "light": "Świątynia Wyroczni",
+    "shadow": "Ruiny FUD"
+  },
+  "place": {
+    "urban": "Ulice",
+    "park": "Park",
+    "historic": "Stare miasto",
+    "culture": "Kultura"
   }
 }

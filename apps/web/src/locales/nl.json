@@ -101,9 +101,6 @@
   "encounterTitle": "Een wilde {{name}}!",
   "chooseVault": "Kies een kluis",
   "vaultCount": "{{name}} ({{count}})",
-  "throwHint": "Druk als de ring het kleinst is voor een betere worp.",
-  "throwVault": "Kluis gooien",
-  "throwing": "Gooien…",
   "run": "Vluchten",
   "resultCaught": "{{name}} zit nu in je collectie!",
   "resultEscaped": "{{name}} brak uit de kluis. Probeer het opnieuw.",
@@ -902,5 +899,36 @@
     "stats": "Basiswaarden",
     "inRange": "Dichtbij genoeg om te proberen",
     "leaves": "vertrekt over {{min}} min"
+  },
+  "tg": {
+    "tap": "Kluis opladen",
+    "start": "Tik om de kluis op te laden!",
+    "hold": "Houd het daar!",
+    "more": "Sneller tikken!",
+    "less": "Rustig aan…",
+    "perfect": "PERFECT!",
+    "how": "Tik om de kluis op te laden en houd de energie binnen de gloeiende band: hoe voller de ring om de kluis, hoe beter de worp.",
+    "now": "Nu gooien"
+  },
+  "habitat": {
+    "title": "Leefgebied",
+    "foundIn": "In het wild te vinden in: {{places}}",
+    "notWild": "Niet in het wild te vinden",
+    "water": "Liquiditeitslagune",
+    "fire": "Burn-vulkaan",
+    "nature": "Yield-boerderij",
+    "earth": "Mining-mijn",
+    "electric": "Gasstad",
+    "wind": "Airdrop-luchten",
+    "ice": "Koudegletsjer",
+    "cosmic": "Maanbasis",
+    "light": "Orakeltempel",
+    "shadow": "FUD-ruïnes"
+  },
+  "place": {
+    "urban": "Straten",
+    "park": "Park",
+    "historic": "Historisch centrum",
+    "culture": "Cultuur"
   }
 }

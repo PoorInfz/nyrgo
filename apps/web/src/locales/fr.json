@@ -101,9 +101,6 @@
   "encounterTitle": "Un {{name}} sauvage !",
   "chooseVault": "Choisis un coffre",
   "vaultCount": "{{name}} ({{count}})",
-  "throwHint": "Appuie quand l’anneau est au plus petit pour un meilleur lancer.",
-  "throwVault": "Lancer le coffre",
-  "throwing": "Lancer…",
   "run": "Fuir",
   "resultCaught": "{{name}} est maintenant dans ta collection !",
   "resultEscaped": "{{name}} s’est échappé du coffre. Réessaie.",
@@ -902,5 +899,36 @@
     "stats": "Stats de base",
     "inRange": "Assez près pour essayer",
     "leaves": "part dans {{min}} min"
+  },
+  "tg": {
+    "tap": "Charger le coffre",
+    "start": "Touche pour charger le coffre !",
+    "hold": "Tiens bon !",
+    "more": "Plus vite !",
+    "less": "Doucement…",
+    "perfect": "PARFAIT !",
+    "how": "Touche pour charger le coffre et garde l'énergie dans la bande lumineuse : plus l'anneau du coffre se remplit, meilleur est le lancer.",
+    "now": "Lancer maintenant"
+  },
+  "habitat": {
+    "title": "Habitat",
+    "foundIn": "Dans la nature, on le trouve : {{places}}",
+    "notWild": "Introuvable dans la nature",
+    "water": "Lagon de Liquidité",
+    "fire": "Volcan du Burn",
+    "nature": "Ferme de Yield",
+    "earth": "Mine de Minage",
+    "electric": "Ville du Gaz",
+    "wind": "Ciel des Airdrops",
+    "ice": "Glacier du Froid",
+    "cosmic": "Base lunaire",
+    "light": "Temple de l'Oracle",
+    "shadow": "Ruines du FUD"
+  },
+  "place": {
+    "urban": "Rues",
+    "park": "Parc",
+    "historic": "Quartier historique",
+    "culture": "Culture"
   }
 }

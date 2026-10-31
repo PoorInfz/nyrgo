@@ -101,9 +101,6 @@
   "encounterTitle": "¡{{name}} salvaje!",
   "chooseVault": "Elige bóveda",
   "vaultCount": "{{name}} ({{count}})",
-  "throwHint": "Pulsa cuando el anillo sea más pequeño para lanzar mejor.",
-  "throwVault": "Lanzar bóveda",
-  "throwing": "Lanzando…",
   "run": "Huir",
   "resultCaught": "¡{{name}} guardada en tu colección!",
   "resultEscaped": "{{name}} se ha escapado de la bóveda. Inténtalo otra vez.",
@@ -902,5 +899,36 @@
     "stats": "Estadísticas base",
     "inRange": "Lo bastante cerca para intentarlo",
     "leaves": "se va en {{min}} min"
+  },
+  "tg": {
+    "tap": "Cargar la bóveda",
+    "start": "¡Toca para cargar la bóveda!",
+    "hold": "¡Mantenlo ahí!",
+    "more": "¡Más rápido!",
+    "less": "Afloja…",
+    "perfect": "¡PERFECTO!",
+    "how": "Toca para cargar la bóveda y mantén la energía dentro de la franja brillante: cuanto más se llene el anillo de la bóveda, mejor será el lanzamiento.",
+    "now": "Lanzar ya"
+  },
+  "habitat": {
+    "title": "Hábitat",
+    "foundIn": "En libertad aparece en: {{places}}",
+    "notWild": "No aparece en libertad",
+    "water": "Laguna de Liquidez",
+    "fire": "Volcán de la Quema",
+    "nature": "Granja de Farming",
+    "earth": "Mina de Minado",
+    "electric": "Ciudad del Gas",
+    "wind": "Cielos del Airdrop",
+    "ice": "Glaciar del Frío",
+    "cosmic": "Base Lunar",
+    "light": "Templo del Oráculo",
+    "shadow": "Ruinas del FUD"
+  },
+  "place": {
+    "urban": "Calles",
+    "park": "Parque",
+    "historic": "Casco histórico",
+    "culture": "Cultura"
   }
 }

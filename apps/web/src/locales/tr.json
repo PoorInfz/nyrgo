@@ -101,9 +101,6 @@
   "encounterTitle": "Vahşi bir {{name}}!",
   "chooseVault": "Bir kasa seç",
   "vaultCount": "{{name}} ({{count}})",
-  "throwHint": "Daha iyi atış için halka en küçükken bas.",
-  "throwVault": "Kasayı at",
-  "throwing": "Atılıyor…",
   "run": "Kaç",
   "resultCaught": "{{name}} artık koleksiyonunda!",
   "resultEscaped": "{{name}} kasadan kurtuldu. Tekrar dene.",
@@ -902,5 +899,36 @@
     "stats": "Temel değerler",
     "inRange": "Denemek için yeterince yakın",
     "leaves": "{{min}} dk içinde gider"
+  },
+  "tg": {
+    "tap": "Kasayı doldur",
+    "start": "Kasayı doldurmak için dokun!",
+    "hold": "Orada tut!",
+    "more": "Daha hızlı!",
+    "less": "Yavaşla…",
+    "perfect": "MÜKEMMEL!",
+    "how": "Kasayı doldurmak için dokun ve enerjiyi parlayan bandın içinde tut: kasanın halkası ne kadar dolarsa atış o kadar iyi olur.",
+    "now": "Şimdi at"
+  },
+  "habitat": {
+    "title": "Yaşam alanı",
+    "foundIn": "Doğada şuralarda bulunur: {{places}}",
+    "notWild": "Doğada bulunmaz",
+    "water": "Likidite Lagünü",
+    "fire": "Yakım Yanardağı",
+    "nature": "Getiri Çiftliği",
+    "earth": "Madencilik Ocağı",
+    "electric": "Gaz Şehri",
+    "wind": "Airdrop Gökleri",
+    "ice": "Soğuk Buzul",
+    "cosmic": "Ay Üssü",
+    "light": "Kahin Tapınağı",
+    "shadow": "FUD Harabeleri"
+  },
+  "place": {
+    "urban": "Sokaklar",
+    "park": "Park",
+    "historic": "Tarihi bölge",
+    "culture": "Kültür"
   }
 }

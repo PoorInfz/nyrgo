@@ -101,9 +101,6 @@
   "encounterTitle": "{{name}} liar muncul!",
   "chooseVault": "Pilih brankas",
   "vaultCount": "{{name}} ({{count}})",
-  "throwHint": "Tekan saat cincin paling kecil untuk lemparan lebih baik.",
-  "throwVault": "Lempar brankas",
-  "throwing": "Melempar…",
   "run": "Kabur",
   "resultCaught": "{{name}} kini ada di koleksimu!",
   "resultEscaped": "{{name}} lolos dari brankas. Coba lagi.",
@@ -902,5 +899,36 @@
     "stats": "Statistik dasar",
     "inRange": "Cukup dekat untuk mencoba",
     "leaves": "pergi dalam {{min}} menit"
+  },
+  "tg": {
+    "tap": "Isi brankas",
+    "start": "Ketuk untuk mengisi brankas!",
+    "hold": "Tahan di situ!",
+    "more": "Lebih cepat!",
+    "less": "Pelan-pelan…",
+    "perfect": "SEMPURNA!",
+    "how": "Ketuk untuk mengisi brankas dan jaga energi di dalam pita yang menyala: makin penuh cincin di sekitar brankas, makin bagus lemparannya.",
+    "now": "Lempar sekarang"
+  },
+  "habitat": {
+    "title": "Habitat",
+    "foundIn": "Di alam liar ada di: {{places}}",
+    "notWild": "Tidak ada di alam liar",
+    "water": "Laguna Likuiditas",
+    "fire": "Gunung Burn",
+    "nature": "Ladang Yield",
+    "earth": "Tambang Mining",
+    "electric": "Kota Gas",
+    "wind": "Langit Airdrop",
+    "ice": "Gletser Dingin",
+    "cosmic": "Pangkalan Bulan",
+    "light": "Kuil Oracle",
+    "shadow": "Reruntuhan FUD"
+  },
+  "place": {
+    "urban": "Jalanan",
+    "park": "Taman",
+    "historic": "Kawasan bersejarah",
+    "culture": "Budaya"
   }
 }

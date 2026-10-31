@@ -1,8 +1,10 @@
 import { type CSSProperties, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Element } from '@nyrgo/shared';
+import { CREATURES_BY_ID, type Element } from '@nyrgo/shared';
 import type { Api, Dex, DexCreature, DexEntry } from '../api';
-import { cutUrl } from '../content';
+import { cutUrl, spriteUrl } from '../content';
+import { Habitat } from '../scenes/Habitat';
+import '../scenes/habitat.css';
 
 type Lang = 'es' | 'en';
 
@@ -42,6 +44,8 @@ export function DexScreen({ api }: { api: Api }) {
     const evolvesTo = open.evolution ? byId.get(open.evolution.to) : undefined;
     const evolvesFrom = dex.creatures.find((c) => c.evolution?.to === open.id);
     const max = Math.max(...Object.values(open.stats));
+    /** The kinds of map place where it turns up in the wild. */
+    const places = CREATURES_BY_ID.get(open.id)?.biomes ?? [];
     return (
       <article className="stack" aria-labelledby="dex-name">
         <button type="button" className="link" onClick={() => setOpenId(null)}>
@@ -64,6 +68,26 @@ export function DexScreen({ api }: { api: Api }) {
             <img src={open.art} alt={t('artLabel', { name: open.name })} width={384} height={558} />
           </div>
           <p>{open.lore[lang]}</p>
+        </section>
+
+        <section className="card stack" aria-labelledby="dex-habitat">
+          <h3 id="dex-habitat">{t('habitat.title')}</h3>
+          <div className="dex-habitat">
+            <Habitat kind={open.element} />
+            <span
+              className="dex-habitat-sprite"
+              style={{ backgroundImage: `url(${spriteUrl(open.id, 'idle')})` }}
+              aria-hidden="true"
+            />
+            <span className="dex-habitat-name">{t(`habitat.${open.element}`)}</span>
+          </div>
+          <p className="muted">
+            {open.wild && places.length > 0
+              ? t('habitat.foundIn', {
+                  places: places.map((b) => t(`place.${b}`)).join(', '),
+                })
+              : t('habitat.notWild')}
+          </p>
         </section>
 
         <section className="card stack" aria-labelledby="dex-stats">
@@ -201,6 +225,7 @@ export function DexScreen({ api }: { api: Api }) {
             <li key={c.id}>
               <button type="button" className="dex-card" onClick={() => setOpenId(c.id)}>
                 <span className="pic">
+                  <Habitat kind={c.element} />
                   <img
                     src={cutUrl(c.id)}
                     alt=""

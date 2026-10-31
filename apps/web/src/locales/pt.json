@@ -101,9 +101,6 @@
   "encounterTitle": "Um {{name}} selvagem!",
   "chooseVault": "Escolha um cofre",
   "vaultCount": "{{name}} ({{count}})",
-  "throwHint": "Toque quando o anel estiver menor para um lançamento melhor.",
-  "throwVault": "Lançar cofre",
-  "throwing": "Lançando…",
   "run": "Fugir",
   "resultCaught": "{{name}} agora está na sua coleção!",
   "resultEscaped": "{{name}} escapou do cofre. Tente de novo.",
@@ -902,5 +899,36 @@
     "stats": "Atributos base",
     "inRange": "Perto o bastante para tentar",
     "leaves": "vai embora em {{min}} min"
+  },
+  "tg": {
+    "tap": "Carregar o cofre",
+    "start": "Toque para carregar o cofre!",
+    "hold": "Segure aí!",
+    "more": "Mais rápido!",
+    "less": "Devagar…",
+    "perfect": "PERFEITO!",
+    "how": "Toque para carregar o cofre e mantenha a energia dentro da faixa brilhante: quanto mais o anel do cofre encher, melhor o lançamento.",
+    "now": "Lançar já"
+  },
+  "habitat": {
+    "title": "Habitat",
+    "foundIn": "Aparece na natureza em: {{places}}",
+    "notWild": "Não aparece na natureza",
+    "water": "Lagoa da Liquidez",
+    "fire": "Vulcão da Queima",
+    "nature": "Fazenda de Yield",
+    "earth": "Mina de Mineração",
+    "electric": "Cidade do Gás",
+    "wind": "Céus do Airdrop",
+    "ice": "Geleira do Frio",
+    "cosmic": "Base Lunar",
+    "light": "Templo do Oráculo",
+    "shadow": "Ruínas do FUD"
+  },
+  "place": {
+    "urban": "Ruas",
+    "park": "Parque",
+    "historic": "Centro histórico",
+    "culture": "Cultura"
   }
 }

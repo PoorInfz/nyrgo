@@ -101,9 +101,6 @@
   "encounterTitle": "Một {{name}} hoang dã!",
   "chooseVault": "Chọn vault",
   "vaultCount": "{{name}} ({{count}})",
-  "throwHint": "Nhấn khi vòng nhỏ nhất để ném tốt hơn.",
-  "throwVault": "Ném vault",
-  "throwing": "Đang ném…",
   "run": "Chạy",
   "resultCaught": "{{name}} đã vào bộ sưu tập của bạn!",
   "resultEscaped": "{{name}} đã thoát khỏi vault. Thử lại nhé.",
@@ -902,5 +899,36 @@
     "stats": "Chỉ số gốc",
     "inRange": "Đủ gần để thử",
     "leaves": "rời đi sau {{min}} phút"
+  },
+  "tg": {
+    "tap": "Nạp két",
+    "start": "Chạm để nạp két!",
+    "hold": "Giữ ở đó!",
+    "more": "Nhanh hơn!",
+    "less": "Chậm lại…",
+    "perfect": "HOÀN HẢO!",
+    "how": "Chạm để nạp két và giữ năng lượng trong dải sáng: vòng quanh két càng đầy thì cú ném càng tốt.",
+    "now": "Ném ngay"
+  },
+  "habitat": {
+    "title": "Môi trường sống",
+    "foundIn": "Ngoài tự nhiên có ở: {{places}}",
+    "notWild": "Không có ngoài tự nhiên",
+    "water": "Đầm phá Thanh khoản",
+    "fire": "Núi lửa Đốt",
+    "nature": "Nông trại Lợi suất",
+    "earth": "Mỏ Đào",
+    "electric": "Thành phố Gas",
+    "wind": "Bầu trời Airdrop",
+    "ice": "Sông băng Lạnh",
+    "cosmic": "Căn cứ Mặt Trăng",
+    "light": "Đền Oracle",
+    "shadow": "Phế tích FUD"
+  },
+  "place": {
+    "urban": "Đường phố",
+    "park": "Công viên",
+    "historic": "Khu phố cổ",
+    "culture": "Văn hóa"
   }
 }

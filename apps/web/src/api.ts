@@ -75,6 +75,8 @@ export interface Encounter {
   creatureId: string;
   level: number;
   rarity: Rarity;
+  /** The kind of place it was found in (sets the scene). */
+  biome?: 'urban' | 'park' | 'historic' | 'culture';
   status: 'open' | 'caught' | 'fled';
   attempts: number;
   expiresAt: string;

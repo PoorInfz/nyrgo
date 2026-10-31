@@ -11,9 +11,10 @@ import {
 } from '../api';
 import { thumbUrl, useContent } from '../content';
 import { Battle, Sprite } from './Battle';
-
-/** Seconds for one shrink of the timing ring (kept in sync with the CSS animation). */
-export const RING_PERIOD_MS = 1400;
+import { ThrowGame, type ThrowOutcome } from './ThrowGame';
+import { Habitat, isNight } from '../scenes/Habitat';
+import '../scenes/habitat.css';
+import './throwgame.css';
 
 const VAULTS = ['vault-basic', 'vault-reinforced', 'vault-cold'] as const;
 
@@ -31,8 +32,9 @@ function newKey(): string {
 }
 
 /**
- * Facing a wild creature: pick a vault and throw it. The server decides the outcome; the client
- * only sends the vault and a timing score (0–1) from the shrinking ring.
+ * Facing a wild creature, in a scene of the kind of place it was found: pick a vault, tune it in
+ * the mini-game and throw it. The server decides the outcome; the client only sends the vault and
+ * the mini-game's score (0–1).
  */
 /** Reasons for no tip worth telling the player (the rest: minors, tips off). */
 const TIP_HINTS = new Set([
@@ -67,8 +69,13 @@ export function Encounter({
   const [picking, setPicking] = useState<OwnedCreature[] | null>(null);
   const [battle, setBattle] = useState<BattleView | null>(null);
   const pendingKey = useRef<string | null>(null);
-  const ringStart = useRef(0);
   const still = useMemo(() => reducedMotion(), []);
+  const night = useMemo(() => isNight(), []);
+  /** The server's answer, held until the vault has finished shaking. */
+  const [outcome, setOutcome] = useState<ThrowOutcome | null>(null);
+  const answer = useRef<{ r: CaptureResult; item: string } | null>(null);
+  /** Bumped for a fresh mini-game (after an escape or an error). */
+  const [round, setRound] = useState(0);
 
   const def = dex?.creatures.find((c) => c.id === spawn.creatureId);
   const name = def?.name ?? spawn.creatureId;
@@ -86,7 +93,6 @@ export function Encounter({
       .then((e) => {
         if (!live) return;
         setEnc(e);
-        ringStart.current = performance.now();
         const first = VAULTS.find((v) => e.inventory.some((i) => i.id === v && i.qty > 0));
         setItem(first ?? null);
       })
@@ -100,36 +106,47 @@ export function Encounter({
 
   const qty = (id: string) => enc?.inventory.find((i) => i.id === id)?.qty ?? 0;
 
-  async function throwVault() {
+  async function throwVault(skill: number) {
     if (!enc || !item) return;
-    // Score: how far through its shrink the ring is (1 = smallest). Fixed without animation.
-    const phase = still
-      ? 0.5
-      : ((performance.now() - ringStart.current) % RING_PERIOD_MS) / RING_PERIOD_MS;
-    const skill = Math.round(phase * 100) / 100;
     pendingKey.current ??= newKey();
     setBusy(true);
     setError(null);
+    setResult(null);
     try {
       const r = await api.capture(enc.id, item, skill, pendingKey.current);
       pendingKey.current = null;
-      setResult(r);
-      setEnc({
-        ...enc,
-        attempts: r.attempts,
-        status: r.result === 'caught' ? 'caught' : r.result === 'fled' ? 'fled' : 'open',
-        inventory: enc.inventory.map((i) => (i.id === item ? { ...i, qty: r.itemsLeft } : i)),
-      });
-      if (r.itemsLeft === 0) {
-        setItem(VAULTS.find((v) => v !== item && qty(v) > 0) ?? null);
-      }
+      answer.current = { r, item };
+      // the mini-game plays the shakes, then calls finishThrow
+      setOutcome(r.result);
     } catch (err) {
       // Only a lost connection keeps the key: the throw may have happened, and retrying with
       // the same key returns that result instead of spending a second vault.
       if (!(err instanceof ApiError && err.code === 'network')) pendingKey.current = null;
       setError(errorText(err));
-    } finally {
+      setRound((n) => n + 1);
       setBusy(false);
+    }
+  }
+
+  function finishThrow() {
+    const a = answer.current;
+    answer.current = null;
+    setBusy(false);
+    if (!a || !enc) return;
+    const { r } = a;
+    setResult(r);
+    setEnc({
+      ...enc,
+      attempts: r.attempts,
+      status: r.result === 'caught' ? 'caught' : r.result === 'fled' ? 'fled' : 'open',
+      inventory: enc.inventory.map((i) => (i.id === a.item ? { ...i, qty: r.itemsLeft } : i)),
+    });
+    if (r.itemsLeft === 0) {
+      setItem(VAULTS.find((v) => v !== a.item && qty(v) > 0) ?? null);
+    }
+    if (r.result === 'escaped') {
+      setOutcome(null);
+      setRound((n) => n + 1);
     }
   }
 
@@ -201,8 +218,10 @@ export function Encounter({
       <p className="muted">
         {t('levelShort', { level: spawn.level })}
         {def ? ` · ${t(`rarity.${def.rarity}`)}` : ''}
+        {enc?.biome ? ` · ${t(`place.${enc.biome}`)}` : ''}
       </p>
       <div className="scene encounter-scene">
+        <Habitat kind={enc?.biome ?? 'urban'} night={night} />
         <div
           className="spot"
           role="img"
@@ -212,7 +231,19 @@ export function Encounter({
           <Sprite id={spawn.creatureId} fx={null} fainted={false} />
           <span className="platform" aria-hidden="true" />
         </div>
-        {!over && enc && <span className={still ? 'ring still' : 'ring'} aria-hidden="true" />}
+        {enc && def && (outcome !== null || (!over && !noVaults && item)) && (
+          <ThrowGame
+            key={round}
+            rarity={def.rarity}
+            color={dex?.elements.find((e) => e.id === def.element)?.color ?? '#43f289'}
+            vault={item ?? 'vault-basic'}
+            disabled={busy && outcome === null}
+            outcome={outcome}
+            still={still}
+            onThrow={(skill) => void throwVault(skill)}
+            onFinished={finishThrow}
+          />
+        )}
       </div>
       {def && <p>{def.lore[lang]}</p>}
       {enc && !over && enc.foeHp !== null && enc.foeMaxHp !== null && (
@@ -270,16 +301,7 @@ export function Encounter({
               </label>
             ))}
           </fieldset>
-          {noVaults ? (
-            <p>{t('noVaults')}</p>
-          ) : (
-            <>
-              {!still && <p className="muted small">{t('throwHint')}</p>}
-              <button type="button" onClick={throwVault} disabled={busy || !item}>
-                {busy ? t('throwing') : t('throwVault')}
-              </button>
-            </>
-          )}
+          {noVaults ? <p>{t('noVaults')}</p> : <p className="muted small">{t('tg.how')}</p>}
         </>
       )}
       {enc && !over && !enc.worn && enc.foeHp !== 0 && !picking && (

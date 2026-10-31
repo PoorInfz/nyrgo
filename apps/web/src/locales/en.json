@@ -101,9 +101,6 @@
   "encounterTitle": "A wild {{name}}!",
   "chooseVault": "Choose a vault",
   "vaultCount": "{{name}} ({{count}})",
-  "throwHint": "Press when the ring is smallest for a better throw.",
-  "throwVault": "Throw vault",
-  "throwing": "Throwing…",
   "run": "Run",
   "resultCaught": "{{name}} is now in your collection!",
   "resultEscaped": "{{name}} broke out of the vault. Try again.",
@@ -902,5 +899,36 @@
     "stats": "Base stats",
     "inRange": "Close enough to try",
     "leaves": "leaves in {{min}} min"
+  },
+  "tg": {
+    "tap": "Charge the vault",
+    "start": "Tap to charge the vault!",
+    "hold": "Hold it there!",
+    "more": "Tap faster!",
+    "less": "Ease off…",
+    "perfect": "PERFECT!",
+    "how": "Tap to charge the vault and keep the energy inside the glowing band: the fuller the ring around the vault, the better the throw.",
+    "now": "Throw now"
+  },
+  "habitat": {
+    "title": "Habitat",
+    "foundIn": "Found in the wild in: {{places}}",
+    "notWild": "Not found in the wild",
+    "water": "Liquidity Lagoon",
+    "fire": "Burn Volcano",
+    "nature": "Yield Farm",
+    "earth": "Hash Mine",
+    "electric": "Gas City",
+    "wind": "Airdrop Skies",
+    "ice": "Cold Storage Glacier",
+    "cosmic": "Moon Base",
+    "light": "Oracle Temple",
+    "shadow": "FUD Ruins"
+  },
+  "place": {
+    "urban": "Streets",
+    "park": "Park",
+    "historic": "Historic quarter",
+    "culture": "Culture"
   }
 }

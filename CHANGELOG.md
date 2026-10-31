@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.44.0 — 2026-10-31 — Tune the vault, and habitats
+
+- **New capture mini-game, "Tune the vault"**, replacing the shrinking ring:
+  - Tap anywhere on the scene to pump energy into the vault; the energy keeps draining.
+  - A glowing band in the creature's colour drifts up and down the tube. Keep the energy inside
+    it to fill the lock ring around the vault.
+  - A full ring throws at once ("PERFECT!"); otherwise the vault is thrown after 4 seconds,
+    scored by how full the ring is. Rarer creatures have a narrower, faster band.
+  - The vault then spins to the creature, pulls it in and shakes: three shakes and it clicks
+    shut in a burst of stars, otherwise it bursts open and the creature pops back out (or runs
+    off).
+  - "Throw now" throws with whatever is charged, for anyone who cannot tap quickly. With reduced
+    motion the band stays still and the result shows at once.
+  - The score is still the only thing the client sends; the server rolls the catch as before.
+- **Encounter scenes match the place**: streets, a park, a historic quarter or a cultural spot,
+  from the kind of places around where the creature was found (the encounter now returns
+  `biome`). After dark they turn to night with stars.
+- **Habitats in the Dex**: every creature's card stands in its element's home: Liquidity Lagoon,
+  Burn Volcano, Yield Farm, Hash Mine, Gas City, Airdrop Skies, Cold Storage Glacier, Moon Base,
+  Oracle Temple and FUD Ruins. Its page shows it there in its idle animation, with the kinds of
+  place where it turns up in the wild.
+- All scenes are original SVG drawings with slow ambient movement. Texts are in all 19 languages.
+
 ## 0.43.0 — 2026-10-31 — Holder outfits, redrawn
 
 - The 22 holder outfits are now drawn as the game's own cel-shaded chibi explorer instead of

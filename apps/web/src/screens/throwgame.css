@@ -1,0 +1,368 @@
+/* "Tune the vault": the capture mini-game, laid over the encounter scene. */
+
+.tg {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  --band: #43f289;
+  --vault: #8fa4d8;
+  --vault-dark: #3a4a7a;
+}
+
+.tg-pad {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tg-pad:hover,
+.tg-pad:active {
+  filter: none;
+  transform: none;
+  box-shadow: none;
+}
+
+.tg-pad:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: -6px;
+}
+
+/* the energy tube, on the right */
+.tg-tube {
+  position: absolute;
+  z-index: 2;
+  right: 14px;
+  top: 10%;
+  bottom: 14%;
+  width: 26px;
+  border-radius: 99px;
+  background: linear-gradient(
+    90deg,
+    rgb(255 255 255 / 30%),
+    rgb(255 255 255 / 10%) 60%,
+    rgb(255 255 255 / 25%)
+  );
+  border: 3px solid #1b1530;
+  box-shadow:
+    0 0 0 2px rgb(255 255 255 / 60%),
+    inset 0 0 10px rgb(0 0 0 / 30%);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.tg-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc((var(--center) - var(--width) / 2) * 100%);
+  height: calc(var(--width) * 100%);
+  background: repeating-linear-gradient(
+    0deg,
+    color-mix(in srgb, var(--band) 75%, transparent) 0 4px,
+    color-mix(in srgb, var(--band) 45%, transparent) 4px 8px
+  );
+  box-shadow:
+    0 0 12px 2px var(--band),
+    inset 0 0 0 2px #fff;
+}
+
+.tg-fill {
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  height: calc(var(--charge) * (100% - 6px));
+  border-radius: 99px;
+  background: linear-gradient(0deg, #ffcf4d, #fff6c9);
+  box-shadow: 0 0 10px #ffcf4d;
+  opacity: 0.85;
+}
+
+.tg-level {
+  position: absolute;
+  left: -2px;
+  right: -2px;
+  bottom: calc(var(--charge) * 100%);
+  height: 4px;
+  translate: 0 50%;
+  background: #fff;
+  box-shadow: 0 0 6px #fff;
+}
+
+.tg-in .tg-tube {
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 18px 4px var(--band),
+    inset 0 0 10px rgb(0 0 0 / 30%);
+}
+
+/* the vault and its lock ring */
+.tg-vault {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: 5%;
+  width: 78px;
+  aspect-ratio: 1;
+  translate: -50% 0;
+  pointer-events: none;
+  transition:
+    bottom 0.65s cubic-bezier(0.3, 1.4, 0.5, 1),
+    width 0.65s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+.tg-ring {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  background: conic-gradient(var(--band) calc(var(--lock) * 360deg), rgb(255 255 255 / 25%) 0);
+  mask: radial-gradient(closest-side, transparent 72%, #000 74% 100%);
+  filter: drop-shadow(0 0 6px var(--band));
+}
+
+.tg-box {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 4px 0 rgb(0 0 0 / 30%));
+}
+
+.tg-ready .tg-vault {
+  animation: tg-breathe 1.2s ease-in-out infinite alternate;
+}
+
+.tg-in .tg-box {
+  animation: tg-buzz 0.12s linear infinite;
+}
+
+/* thrown: up to the creature, spinning */
+.tg-flying .tg-vault,
+.tg-shaking .tg-vault,
+.tg-done .tg-vault {
+  bottom: 30%;
+  width: 62px;
+}
+
+.tg-flying .tg-ring,
+.tg-shaking .tg-ring,
+.tg-done .tg-ring {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.tg-flying .tg-box {
+  animation: tg-spin 0.65s ease-out;
+}
+
+.tg-shaking .tg-box {
+  animation: tg-wobble 0.65s ease-in-out infinite;
+  transform-origin: 50% 90%;
+}
+
+.tg-done.tg-caught .tg-box {
+  animation: tg-click 0.5s ease-out both;
+}
+
+.tg-done.tg-escaped .tg-box,
+.tg-done.tg-fled .tg-box {
+  animation: tg-burst 0.45s ease-out both;
+}
+
+/* the creature is pulled into the vault, and comes back out if it escapes */
+.encounter-scene:has(.tg-flying) .spot .sprite,
+.encounter-scene:has(.tg-shaking) .spot .sprite,
+.encounter-scene:has(.tg-done.tg-caught) .spot .sprite {
+  animation: tg-pull 0.55s ease-in 0.3s both;
+}
+
+.encounter-scene:has(.tg-done.tg-escaped) .spot .sprite {
+  animation: tg-pop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+
+.encounter-scene:has(.tg-done.tg-fled) .spot .sprite {
+  animation:
+    tg-pop 0.4s ease-out both,
+    tg-run 0.8s ease-in 0.5s both;
+}
+
+.tg-stars {
+  position: absolute;
+  inset: 0;
+}
+
+.tg-stars i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin: -5px;
+  background: #ffcf4d;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  animation: tg-star 0.9s ease-out both;
+  rotate: var(--a);
+}
+
+.tg-hint,
+.tg-perfect {
+  position: absolute;
+  z-index: 2;
+  left: 12px;
+  right: 52px;
+  top: 10px;
+  margin: 0;
+  text-align: center;
+  font-weight: 800;
+  font-size: 17px;
+  color: #fff;
+  text-shadow:
+    0 2px 0 #1b1530,
+    0 0 8px #1b1530;
+  pointer-events: none;
+}
+
+.tg-time {
+  margin-inline-start: 8px;
+  padding: 1px 8px;
+  border-radius: 99px;
+  background: rgb(27 21 48 / 70%);
+  font-variant-numeric: tabular-nums;
+}
+
+.tg-perfect {
+  font-size: 26px;
+  color: #ffcf4d;
+  animation: tg-pop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+
+.tg-ripple {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  bottom: 5%;
+  width: 110px;
+  aspect-ratio: 1;
+  translate: -50% 16%;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  pointer-events: none;
+}
+
+@keyframes tg-breathe {
+  to {
+    scale: 1.08;
+  }
+}
+
+@keyframes tg-buzz {
+  50% {
+    translate: 1px -1px;
+  }
+}
+
+@keyframes tg-spin {
+  from {
+    transform: rotate(-540deg) scale(1.2);
+  }
+}
+
+@keyframes tg-wobble {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  25% {
+    transform: rotate(-16deg);
+  }
+  75% {
+    transform: rotate(16deg);
+  }
+}
+
+@keyframes tg-click {
+  0% {
+    filter: brightness(2) drop-shadow(0 0 16px #ffcf4d);
+    scale: 1.25;
+  }
+  100% {
+    filter: drop-shadow(0 0 8px #ffcf4d);
+    scale: 1;
+  }
+}
+
+@keyframes tg-burst {
+  to {
+    scale: 1.6;
+    opacity: 0;
+  }
+}
+
+@keyframes tg-pull {
+  to {
+    scale: 0.1;
+    translate: 0 30%;
+    opacity: 0;
+    filter: brightness(3);
+  }
+}
+
+@keyframes tg-pop {
+  from {
+    scale: 0.1;
+    opacity: 0;
+  }
+  to {
+    scale: 1;
+    opacity: 1;
+  }
+}
+
+@keyframes tg-run {
+  to {
+    translate: 160% -10%;
+    opacity: 0;
+  }
+}
+
+@keyframes tg-star {
+  from {
+    transform: translateX(0) scale(0.4);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(70px) scale(1.2);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tg *,
+  .encounter-scene .spot .sprite {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+.tg-now {
+  position: absolute;
+  z-index: 2;
+  left: 10px;
+  bottom: 10px;
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 14px;
+  color: #fff;
+  background: rgb(27 21 48 / 72%);
+  border: 1px solid rgb(255 255 255 / 30%);
+  box-shadow: none;
+}

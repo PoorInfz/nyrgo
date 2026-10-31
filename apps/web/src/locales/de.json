@@ -101,9 +101,6 @@
   "encounterTitle": "Ein wildes {{name}}!",
   "chooseVault": "Wähle einen Tresor",
   "vaultCount": "{{name}} ({{count}})",
-  "throwHint": "Drück, wenn der Ring am kleinsten ist, für einen besseren Wurf.",
-  "throwVault": "Tresor werfen",
-  "throwing": "Wurf…",
   "run": "Fliehen",
   "resultCaught": "{{name}} ist jetzt in deiner Sammlung!",
   "resultEscaped": "{{name}} ist aus dem Tresor ausgebrochen. Versuch es noch mal.",
@@ -902,5 +899,36 @@
     "stats": "Basiswerte",
     "inRange": "Nah genug für einen Versuch",
     "leaves": "verschwindet in {{min}} Min."
+  },
+  "tg": {
+    "tap": "Tresor aufladen",
+    "start": "Tippe, um den Tresor aufzuladen!",
+    "hold": "Halt es da!",
+    "more": "Schneller tippen!",
+    "less": "Langsamer…",
+    "perfect": "PERFEKT!",
+    "how": "Tippe, um den Tresor aufzuladen, und halte die Energie im leuchtenden Band: Je voller der Ring um den Tresor, desto besser der Wurf.",
+    "now": "Jetzt werfen"
+  },
+  "habitat": {
+    "title": "Lebensraum",
+    "foundIn": "In freier Wildbahn: {{places}}",
+    "notWild": "Nicht in freier Wildbahn",
+    "water": "Liquiditätslagune",
+    "fire": "Burn-Vulkan",
+    "nature": "Yield-Farm",
+    "earth": "Mining-Mine",
+    "electric": "Gas-Stadt",
+    "wind": "Airdrop-Himmel",
+    "ice": "Kältegletscher",
+    "cosmic": "Mondbasis",
+    "light": "Orakeltempel",
+    "shadow": "FUD-Ruinen"
+  },
+  "place": {
+    "urban": "Straßen",
+    "park": "Park",
+    "historic": "Altstadt",
+    "culture": "Kultur"
   }
 }

@@ -101,9 +101,6 @@
   "encounterTitle": "野生の{{name}}が現れた！",
   "chooseVault": "ボールトを選ぶ",
   "vaultCount": "{{name}}（{{count}}）",
-  "throwHint": "リングが一番小さい時に押すと、うまく投げられます。",
-  "throwVault": "ボールトを投げる",
-  "throwing": "投げています…",
   "run": "逃げる",
   "resultCaught": "{{name}}をコレクションに加えた！",
   "resultEscaped": "{{name}}がボールトから飛び出した。もう一度！",
@@ -902,5 +899,36 @@
     "stats": "基本ステータス",
     "inRange": "挑戦できる距離です",
     "leaves": "あと {{min}} 分でいなくなります"
+  },
+  "tg": {
+    "tap": "金庫をチャージ",
+    "start": "タップして金庫をチャージ！",
+    "hold": "そのままキープ！",
+    "more": "もっと速く！",
+    "less": "ゆっくり…",
+    "perfect": "パーフェクト！",
+    "how": "タップして金庫をチャージし、エネルギーを光る帯の中に保とう。金庫のまわりのリングが満ちるほど、投げが上手くいきます。",
+    "now": "今すぐ投げる"
+  },
+  "habitat": {
+    "title": "生息地",
+    "foundIn": "野生で見つかる場所：{{places}}",
+    "notWild": "野生では見つからない",
+    "water": "リクイディティの入り江",
+    "fire": "バーン火山",
+    "nature": "イールド農場",
+    "earth": "マイニング鉱山",
+    "electric": "ガスの街",
+    "wind": "エアドロップの空",
+    "ice": "コールドの氷河",
+    "cosmic": "月面基地",
+    "light": "オラクル神殿",
+    "shadow": "FUD の廃墟"
+  },
+  "place": {
+    "urban": "街なか",
+    "park": "公園",
+    "historic": "歴史地区",
+    "culture": "文化施設"
   }
 }

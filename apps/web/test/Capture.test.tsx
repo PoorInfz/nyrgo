@@ -95,6 +95,10 @@ const captureCalls = (fetch: ReturnType<typeof serve>) =>
     .filter(([u]) => u.includes('/capture'));
 
 describe('Encounter', () => {
+  // reduced motion: the vault's shakes are skipped, so the answer shows at once
+  beforeEach(() => {
+    vi.stubGlobal('matchMedia', (q: string) => ({ matches: q.includes('reduce'), media: q }));
+  });
   it('opens the encounter, throws the chosen vault and shows the catch', async () => {
     const result: CaptureResult = {
       result: 'caught',
@@ -117,7 +121,7 @@ describe('Encounter', () => {
     expect(screen.getByRole('radio', { name: 'Bóveda fría (0)' })).toBeDisabled();
 
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Lanzar bóveda' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Lanzar ya' }));
     });
     expect(await screen.findByText('¡Shrimpie guardada en tu colección!')).toBeInTheDocument();
     expect(screen.getByText('Probabilidad de este lanzamiento: 71 %')).toBeInTheDocument();
@@ -159,11 +163,11 @@ describe('Encounter', () => {
     );
     await screen.findByRole('radio', { name: 'Bóveda básica (2)' });
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Lanzar bóveda' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Lanzar ya' }));
     });
     expect(await screen.findByRole('alert')).toHaveTextContent('no se gastará otra bóveda');
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Lanzar bóveda' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Lanzar ya' }));
     });
     expect(await screen.findByText(/se ha escapado/)).toBeInTheDocument();
     const keys = captureCalls(fetch).map(
@@ -173,7 +177,7 @@ describe('Encounter', () => {
     expect(keys[1]).toBe(keys[0]);
     // the next throw is a new action with a new key
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Lanzar bóveda' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Lanzar ya' }));
     });
     const after = captureCalls(fetch).map(
       ([, init]) => (init.headers as Record<string, string>)['idempotency-key'],
@@ -189,7 +193,7 @@ describe('Encounter', () => {
       <Encounter api={createApi('http://api.test')} spawn={SPAWN} onClose={() => undefined} />,
     );
     expect(await screen.findByRole('alert')).toHaveTextContent('Acércate a menos de 40 m');
-    expect(screen.queryByRole('button', { name: 'Lanzar bóveda' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Lanzar ya' })).not.toBeInTheDocument();
   });
 
   it('ends when the creature runs away', async () => {
@@ -206,10 +210,10 @@ describe('Encounter', () => {
     render(<Encounter api={createApi('http://api.test')} spawn={SPAWN} onClose={onClose} />);
     await screen.findByRole('radio', { name: 'Bóveda básica (2)' });
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Lanzar bóveda' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Lanzar ya' }));
     });
     expect(await screen.findByText('Shrimpie ha huido.')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Lanzar bóveda' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Lanzar ya' })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Volver al mapa' }));
     expect(onClose).toHaveBeenCalledWith(true);
   });

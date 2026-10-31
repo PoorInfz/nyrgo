@@ -101,9 +101,6 @@
   "encounterTitle": "Un {{name}} selvatico!",
   "chooseVault": "Scegli uno scrigno",
   "vaultCount": "{{name}} ({{count}})",
-  "throwHint": "Premi quando l’anello è più piccolo per un lancio migliore.",
-  "throwVault": "Lancia lo scrigno",
-  "throwing": "Lancio…",
   "run": "Scappa",
   "resultCaught": "{{name}} ora è nella tua collezione!",
   "resultEscaped": "{{name}} è uscito dallo scrigno. Riprova.",
@@ -902,5 +899,36 @@
     "stats": "Statistiche base",
     "inRange": "Abbastanza vicino per provarci",
     "leaves": "se ne va tra {{min}} min"
+  },
+  "tg": {
+    "tap": "Carica lo scrigno",
+    "start": "Tocca per caricare lo scrigno!",
+    "hold": "Tienilo lì!",
+    "more": "Più veloce!",
+    "less": "Piano…",
+    "perfect": "PERFETTO!",
+    "how": "Tocca per caricare lo scrigno e tieni l'energia dentro la fascia luminosa: più si riempie l'anello dello scrigno, migliore è il lancio.",
+    "now": "Lancia ora"
+  },
+  "habitat": {
+    "title": "Habitat",
+    "foundIn": "In natura si trova in: {{places}}",
+    "notWild": "Non si trova in natura",
+    "water": "Laguna della Liquidità",
+    "fire": "Vulcano del Burn",
+    "nature": "Fattoria dello Yield",
+    "earth": "Miniera del Mining",
+    "electric": "Città del Gas",
+    "wind": "Cieli dell'Airdrop",
+    "ice": "Ghiacciaio del Freddo",
+    "cosmic": "Base lunare",
+    "light": "Tempio dell'Oracolo",
+    "shadow": "Rovine del FUD"
+  },
+  "place": {
+    "urban": "Strade",
+    "park": "Parco",
+    "historic": "Centro storico",
+    "culture": "Cultura"
   }
 }
