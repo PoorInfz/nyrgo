@@ -11,7 +11,7 @@ on:
       game_account:
         description: Game account on testnet (owns the token's supply)
         required: true
-        default: nyrgo-game.testnet
+        default: nyrgo.testnet
       send:
         description: Optional test tokens to send, e.g. alice.testnet=5000000,bob.testnet=1000000
         required: false
