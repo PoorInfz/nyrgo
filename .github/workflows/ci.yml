@@ -60,7 +60,15 @@ jobs:
           pnpm db:migrate
 
       - name: Tests
-        run: pnpm test
+        shell: bash
+        run: |
+          set -o pipefail
+          if ! pnpm test 2>&1 | tee test.log; then
+            # the failing tests as annotations, readable without downloading the log
+            grep -E "FAIL |×|AssertionError|Error:|expected" test.log | head -40 |
+              while IFS= read -r line; do echo "::error title=test::${line:0:400}"; done
+            exit 1
+          fi
 
       - name: Build
         run: pnpm build
