@@ -21,7 +21,8 @@
     "pmtiles": "^4.5.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "react-i18next": "^17.1.9"
+    "react-i18next": "^17.1.9",
+    "workbox-window": "7.4.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^7.0.1",

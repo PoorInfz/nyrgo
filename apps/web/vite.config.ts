@@ -2,11 +2,18 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// shown on the profile screen, so a player (or support) can tell which version is running
+const BUILD = `${new Date().toISOString().slice(0, 16).replace('T', ' ')} UTC · ${(process.env.GITHUB_SHA ?? 'local').slice(0, 7)}`;
+
 export default defineConfig({
+  define: { __BUILD__: JSON.stringify(BUILD) },
   plugins: [
     react(),
     VitePWA({
-      registerType: 'prompt',
+      // a new version takes over as soon as it is downloaded (see src/update.ts): players never
+      // stay on an old build because an installed app was never fully closed
+      registerType: 'autoUpdate',
+      injectRegister: false,
       includeAssets: ['header-800.webp', 'icon-192.png', 'apple-touch-icon.png'],
       manifest: {
         name: 'nyrGo!',
@@ -30,6 +37,8 @@ export default defineConfig({
         // Take over open pages as soon as the worker is installed, so the first visit already
         // fills the runtime caches below.
         clientsClaim: true,
+        skipWaiting: true,
+        cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
             urlPattern: /\/creatures\/.*\.webp$/,

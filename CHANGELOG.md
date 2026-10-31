@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.34.1 — 2026-10-31 — Always the latest version
+
+- The web app updates itself: a new version is installed as soon as it is published and the page
+  reloads into it. It checks when the app comes back to the foreground and every 30 minutes.
+  Before, an installed app kept the old version until every window of it was closed.
+- The profile shows the build (date and commit), to tell which version is running.
+
 ## 0.34.0 — 2026-10-31 — Quests, seasons and tournaments (social hub, phase 5)
 
 - **Notice board**: Ivy gives three daily town quests per player (train, win, greet, visit a

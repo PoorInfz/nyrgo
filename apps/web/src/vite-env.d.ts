@@ -1,3 +1,8 @@
+/// <reference types="vite-plugin-pwa/client" />
+
+/** When and from which commit this build was made. */
+declare const __BUILD__: string;
+
 interface ImportMetaEnv {
   readonly VITE_API_URL?: string;
   /** URL of the PMTiles basemap file (e.g. /tiles/cordoba.pmtiles). Plain background if unset. */

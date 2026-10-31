@@ -132,6 +132,9 @@ export function Home({
       </section>
 
       {message && <p role="alert">{message}</p>}
+      <p className="muted small" style={{ textAlign: 'center' }}>
+        {t('build', { build: __BUILD__ })}
+      </p>
     </div>
   );
 }
