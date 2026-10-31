@@ -28,6 +28,8 @@ const contract = process.env.NEAR_TOKEN_CONTRACT || `token.${game}`;
 
 function fail(msg: string): never {
   process.stderr.write(`${msg}\n`);
+  // as an annotation too: readable from the run page without the log
+  if (process.env.GITHUB_ACTIONS) process.stdout.write(`::error title=Token deploy::${msg}\n`);
   process.exit(1);
 }
 if (!game.endsWith('.testnet'))
@@ -57,12 +59,10 @@ const report = await deployToken(nearTokenTarget(rpc, game, key), {
   log: (l) => {
     lines.push(l);
     process.stdout.write(`${l}\n`);
+    if (process.env.GITHUB_ACTIONS) process.stdout.write(`::notice title=Token deploy::${l}\n`);
   },
-});
+}).catch((e: unknown) => fail(String((e as Error)?.message ?? e).slice(0, 500)));
 process.stdout.write(
   `\ntoken      ${contract} (${report.deployed}${report.created ? ', account created' : ''}); ${report.sent} transfers\n` +
     `explorer   https://testnet.nearblocks.io/address/${contract}\n`,
 );
-if (process.env.GITHUB_ACTIONS) {
-  for (const l of lines) process.stdout.write(`::notice title=Token deploy::${l}\n`);
-}
