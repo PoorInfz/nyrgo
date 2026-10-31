@@ -83,6 +83,7 @@ async function todaysQuests(q: Q, userId: string) {
 /**
  * Starts the current arena season for players still in an older one (one player, or everyone):
  * their record is kept in the season's results and their rating carries halfway back to 1000.
+ * The sweep over everyone skips players who never entered a season (they join one on first use).
  */
 export async function rollSeason(q: Q, userId?: string): Promise<number> {
   const cur = arenaSeason();
@@ -102,7 +103,7 @@ export async function rollSeason(q: Q, userId?: string): Promise<number> {
         arena_rating = CASE WHEN p.arena_season = '' THEN p.arena_rating
                             ELSE round(1000 + (p.arena_rating - 1000) / 2.0) END,
         arena_wins = 0, arena_losses = 0, arena_season = $1
-      WHERE p.arena_season <> $1 ${only}`,
+      WHERE p.arena_season <> $1 ${userId ? only : "AND p.arena_season <> ''"}`,
     params,
   );
   return res.rowCount ?? 0;
