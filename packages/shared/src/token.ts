@@ -10,8 +10,8 @@ export const TOKEN = {
   decimals: 18,
   /** Whole tokens minted once to the game account. */
   supply: 1_000_000_000,
-  /** A rank counts the smallest balance seen over this many days. */
-  holdDays: 7,
+  /** A rank counts the smallest balance seen over this many hours. */
+  holdHours: 24,
   /** How often balances are read (hours). */
   snapshotHours: 1,
   /** At most this share of a day's tip budget may go to boosts; beyond it, plain tips. */
@@ -20,7 +20,7 @@ export const TOKEN = {
 
 export interface HolderTier {
   id: 'h1' | 'h2' | 'h3' | 'h4' | 'h5';
-  /** Whole tokens needed, held for `TOKEN.holdDays`. */
+  /** Whole tokens needed, held for `TOKEN.holdHours`. */
   amount: number;
   /** Percent added to each NEAR catch tip. */
   tipBoostPct: number;

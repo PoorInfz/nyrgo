@@ -30,27 +30,27 @@ describe('holder rank from balances', () => {
       balance: tokens(f(ago)),
     }));
 
-  it('needs the whole week watched before a rank counts', () => {
+  it('needs the whole window watched before a rank counts', () => {
     const r = rankFrom(
-      hourly(24 * 3, () => 5_000_000),
+      hourly(12, () => 5_000_000),
       now,
     );
     expect(r.tier).toBeNull();
     expect(r.next?.tier.id).toBe('h3');
-    // it counts a week after the first snapshot
-    expect(r.next!.countsAt.getTime()).toBe(now.getTime() - 72 * H + TOKEN.holdDays * 24 * H);
+    // it counts a full window after the first snapshot
+    expect(r.next!.countsAt.getTime()).toBe(now.getTime() - 12 * H + TOKEN.holdHours * H);
   });
 
-  it('counts the smallest balance of the week', () => {
+  it('counts the smallest balance of the window', () => {
     const r = rankFrom(
-      hourly(24 * 7, (ago) => (ago === 30 ? 1_500_000 : 20_000_000)),
+      hourly(48, (ago) => (ago === 10 ? 1_500_000 : 20_000_000)),
       now,
     );
     expect(r.tier).toBe(tier('h1'));
     expect(r.balance).toBe(tokens(20_000_000));
-    // the top rank counts a week after the dip
+    // the top rank counts a full window after the dip
     expect(r.next?.tier.id).toBe('h5');
-    expect(r.next!.countsAt.getTime()).toBe(now.getTime() - 29 * H + TOKEN.holdDays * 24 * H);
+    expect(r.next!.countsAt.getTime()).toBe(now.getTime() - 9 * H + TOKEN.holdHours * H);
   });
 
   it('gives each rank at its amount and nothing below the first', () => {
@@ -77,7 +77,7 @@ describe('holder rank from balances', () => {
   });
 
   it('grants nothing on stale balances', () => {
-    const old = hourly(24 * 8, () => 20_000_000).slice(0, -12);
+    const old = hourly(48, () => 20_000_000).slice(0, -12);
     expect(rankFrom(old, now)).toMatchObject({ tier: null, stale: true });
   });
 });
@@ -119,7 +119,7 @@ describe.skipIf(!TEST_DB_URL)('holder ranks in the game', () => {
     await ensureTodaysPool(t.db, treasury);
   });
 
-  async function holder(amount: number, daysHeld: number) {
+  async function holder(amount: number, hoursHeld: number) {
     const g = await createGuest(t.app, 1990);
     const id = g.profile.id as string;
     await t.db.query(`UPDATE players SET time_zone = $2 WHERE user_id = $1`, [id, daytimeZone()]);
@@ -130,12 +130,12 @@ describe.skipIf(!TEST_DB_URL)('holder ranks in the game', () => {
       [id, account],
     );
     balances.set(account, tokens(amount));
-    // a week of hourly balances, as the job would have kept them
+    // hourly balances, as the job would have kept them
     await t.db.query(
       `INSERT INTO holder_snapshots (user_id, account_id, taken_at, balance)
        SELECT $1, $2, now() - make_interval(hours => h), $3
          FROM generate_series(1, $4) h`,
-      [id, account, tokens(amount).toString(), daysHeld * 24],
+      [id, account, tokens(amount).toString(), hoursHeld],
     );
     const call = (method: 'GET' | 'POST' | 'PUT', url: string, payload?: object) =>
       injectAs(t.app, {
@@ -163,7 +163,7 @@ describe.skipIf(!TEST_DB_URL)('holder ranks in the game', () => {
   }
 
   it('shows the rank and boosts the NEAR tip by it', async () => {
-    const h = await holder(10_000_000, 8); // 1 %: +50 %
+    const h = await holder(10_000_000, 30); // 1 %: +50 %
     const me = (await h.call('GET', '/v1/me/holder')).json();
     expect(me).toMatchObject({
       contract: 'token.game.testnet',
@@ -184,14 +184,14 @@ describe.skipIf(!TEST_DB_URL)('holder ranks in the game', () => {
   });
 
   it('gives a plain tip when a rank is too new or the boost share of the day is used', async () => {
-    const fresh = await holder(20_000_000, 2);
+    const fresh = await holder(20_000_000, 12);
     expect((await fresh.call('GET', '/v1/me/holder')).json()).toMatchObject({
       tier: null,
       next: { tier: 'h5' },
     });
     expect((await fresh.caught()).tip).toMatchObject({ boostPct: 0, amountNear: '0.005' });
 
-    const top = await holder(20_000_000, 8);
+    const top = await holder(20_000_000, 30);
     await t.db.query(
       `UPDATE tips_pool SET boost_spent_yocto = floor(budget_yocto * $1)
         WHERE day = (now() AT TIME ZONE 'UTC')::date`,
@@ -201,7 +201,7 @@ describe.skipIf(!TEST_DB_URL)('holder ranks in the game', () => {
   });
 
   it('lets 0.5 % holders wear holder outfits, and takes them off when the rank drops', async () => {
-    const small = await holder(3_000_000, 8);
+    const small = await holder(3_000_000, 30);
     const look = (outfit: string) => ({
       avatar: {
         skin: 'skin_2',
@@ -216,7 +216,7 @@ describe.skipIf(!TEST_DB_URL)('holder ranks in the game', () => {
     expect((await small.call('GET', '/v1/me/avatar')).json().holderOutfits).toBe(false);
     expect((await small.call('PUT', '/v1/me/avatar', look('skin_knight'))).statusCode).toBe(400);
 
-    const big = await holder(5_000_000, 8);
+    const big = await holder(5_000_000, 30);
     expect((await big.call('GET', '/v1/me/avatar')).json().holderOutfits).toBe(true);
     const put = await big.call('PUT', '/v1/me/avatar', look('skin_knight'));
     expect(put.statusCode).toBe(200);

@@ -363,7 +363,7 @@ export interface HolderState {
   contract: string | null;
   account: string | null;
   symbol: string;
-  holdDays: number;
+  holdHours: number;
   /** Whole tokens in the latest reading. */
   balance: number | null;
   checkedAt: string | null;

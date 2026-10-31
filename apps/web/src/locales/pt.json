@@ -870,7 +870,7 @@
   },
   "holder": {
     "title": "Token {{symbol}} (testnet)",
-    "why": "Um token de teste sem valor, na NEAR {{network}}. Mantenha-o na sua conta NEAR vinculada: seu nível conta o menor saldo dos últimos {{days}} dias, então um nível começa {{days}} dias depois de alcançá-lo.",
+    "why": "Um token de teste sem valor, na NEAR {{network}}. Mantenha-o na sua conta NEAR vinculada: seu nível conta o menor saldo das últimas {{hours}} horas, então um nível começa {{hours}} horas depois de alcançá-lo.",
     "noAccount": "Vincule uma conta NEAR acima para ter um nível.",
     "notRead": "Saldo ainda não lido.",
     "balance": "Saldo: {{n}} {{symbol}}",

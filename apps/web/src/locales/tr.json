@@ -870,7 +870,7 @@
   },
   "holder": {
     "title": "{{symbol}} token (testnet)",
-    "why": "NEAR {{network}} üzerinde değeri olmayan bir test token'ı. Bağlı NEAR hesabında tut: rütben son {{days}} gündeki en düşük bakiyeyi sayar, yani bir rütbe ulaştıktan {{days}} gün sonra başlar.",
+    "why": "NEAR {{network}} üzerinde değeri olmayan bir test token'ı. Bağlı NEAR hesabında tut: rütben son {{hours}} saatteki en düşük bakiyeyi sayar, yani bir rütbe ulaştıktan {{hours}} saat sonra başlar.",
     "noAccount": "Rütbe almak için yukarıdan bir NEAR hesabı bağla.",
     "notRead": "Bakiye henüz okunmadı.",
     "balance": "Bakiye: {{n}} {{symbol}}",

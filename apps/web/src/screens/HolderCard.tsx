@@ -51,7 +51,7 @@ export function HolderCard({ api }: { api: Api }) {
   return (
     <section className="card stack holder-card" aria-labelledby="holder-title">
       <h2 id="holder-title">{t('holder.title', { symbol: s.symbol })}</h2>
-      <p className="muted">{t('holder.why', { days: s.holdDays, network: s.network })}</p>
+      <p className="muted">{t('holder.why', { hours: s.holdHours, network: s.network })}</p>
 
       {!s.account ? (
         <p>{t('holder.noAccount')}</p>

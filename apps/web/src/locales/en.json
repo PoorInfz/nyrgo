@@ -870,7 +870,7 @@
   },
   "holder": {
     "title": "{{symbol}} token (testnet)",
-    "why": "A test token with no value, on NEAR {{network}}. Keep it in your linked NEAR account: your rank counts the smallest balance of the last {{days}} days, so a rank starts {{days}} days after you reach it.",
+    "why": "A test token with no value, on NEAR {{network}}. Keep it in your linked NEAR account: your rank counts the smallest balance of the last {{hours}} hours, so a rank starts {{hours}} hours after you reach it.",
     "noAccount": "Link a NEAR account above to get a rank.",
     "notRead": "Balance not read yet.",
     "balance": "Balance: {{n}} {{symbol}}",

@@ -53,9 +53,9 @@ minted once to the game account, no further minting, never sold, no value. The w
 so ranks can be tried.
 
 Every hour (`holders` job) the API reads `ft_balance_of` for each adult's linked account and
-keeps the reading for 8 days (`holder_snapshots`). A player's rank is the highest one reached by
-the **smallest balance of the last 7 days**, and only once the account has been watched for the
-whole 7 days: tokens bought just before a catch and sold after it count for nothing. Readings
+keeps the reading for 48 hours (`holder_snapshots`). A player's rank is the highest one reached by
+the **smallest balance of the last 24 hours**, and only once the account has been watched for the
+whole 24 hours: tokens bought just before a catch and sold after it count for nothing. Readings
 older than 6 hours grant nothing (the job has stopped). "Check again now" in the profile reads the
 balance at once (6 times per 10 minutes).
 

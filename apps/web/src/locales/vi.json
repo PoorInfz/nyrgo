@@ -870,7 +870,7 @@
   },
   "holder": {
     "title": "Token {{symbol}} (testnet)",
-    "why": "Một token thử nghiệm không có giá trị, trên NEAR {{network}}. Hãy giữ nó trong tài khoản NEAR đã liên kết: hạng của bạn tính theo số dư thấp nhất trong {{days}} ngày gần nhất, nên hạng có hiệu lực {{days}} ngày sau khi bạn đạt được.",
+    "why": "Một token thử nghiệm không có giá trị, trên NEAR {{network}}. Hãy giữ nó trong tài khoản NEAR đã liên kết: hạng của bạn tính theo số dư thấp nhất trong {{hours}} giờ gần nhất, nên hạng có hiệu lực {{hours}} giờ sau khi bạn đạt được.",
     "noAccount": "Liên kết một tài khoản NEAR ở trên để có hạng.",
     "notRead": "Chưa đọc số dư.",
     "balance": "Số dư: {{n}} {{symbol}}",

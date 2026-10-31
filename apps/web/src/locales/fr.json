@@ -870,7 +870,7 @@
   },
   "holder": {
     "title": "Jeton {{symbol}} (testnet)",
-    "why": "Un jeton de test sans valeur, sur NEAR {{network}}. Garde-le sur ton compte NEAR lié : ton rang compte le solde le plus bas des {{days}} derniers jours, donc un rang commence {{days}} jours après l'avoir atteint.",
+    "why": "Un jeton de test sans valeur, sur NEAR {{network}}. Garde-le sur ton compte NEAR lié : ton rang compte le solde le plus bas des {{hours}} dernières heures, donc un rang commence {{hours}} heures après l'avoir atteint.",
     "noAccount": "Lie un compte NEAR ci-dessus pour obtenir un rang.",
     "notRead": "Solde pas encore lu.",
     "balance": "Solde : {{n}} {{symbol}}",

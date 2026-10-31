@@ -870,7 +870,7 @@
   },
   "holder": {
     "title": "{{symbol}} 代币（测试网）",
-    "why": "NEAR {{network}} 上没有价值的测试代币。请保存在已绑定的 NEAR 账户中：等级按最近 {{days}} 天的最低余额计算，因此达到后需 {{days}} 天才会生效。",
+    "why": "NEAR {{network}} 上没有价值的测试代币。请保存在已绑定的 NEAR 账户中：等级按最近 {{hours}} 小时的最低余额计算，因此达到后需 {{hours}} 小时才会生效。",
     "noAccount": "请先在上方绑定 NEAR 账户以获得等级。",
     "notRead": "尚未读取余额。",
     "balance": "余额：{{n}} {{symbol}}",

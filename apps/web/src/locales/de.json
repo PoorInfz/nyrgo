@@ -870,7 +870,7 @@
   },
   "holder": {
     "title": "{{symbol}}-Token (Testnet)",
-    "why": "Ein Test-Token ohne Wert, auf NEAR {{network}}. Behalte ihn in deinem verknüpften NEAR-Konto: Dein Rang zählt den kleinsten Kontostand der letzten {{days}} Tage, ein Rang gilt also {{days}} Tage, nachdem du ihn erreicht hast.",
+    "why": "Ein Test-Token ohne Wert, auf NEAR {{network}}. Behalte ihn in deinem verknüpften NEAR-Konto: Dein Rang zählt den kleinsten Kontostand der letzten {{hours}} Stunden, ein Rang gilt also {{hours}} Stunden, nachdem du ihn erreicht hast.",
     "noAccount": "Verknüpfe oben ein NEAR-Konto, um einen Rang zu bekommen.",
     "notRead": "Kontostand noch nicht gelesen.",
     "balance": "Kontostand: {{n}} {{symbol}}",

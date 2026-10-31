@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.41.1 — 2026-10-31 — Ranks count after 24 hours
+
+- A holder rank now counts the smallest token balance of the last **24 hours** (was 7 days), so
+  it starts a day after the tokens arrive. Balances are kept 48 hours.
+
 ## 0.41.0 — 2026-10-31 — Test token holder ranks (testnet)
 
 - **NYRGO test token** (`contracts/token`, NEP-141, testnet only, no value): 1,000,000,000 minted

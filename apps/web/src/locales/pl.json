@@ -870,7 +870,7 @@
   },
   "holder": {
     "title": "Token {{symbol}} (testnet)",
-    "why": "Testowy token bez wartości, w NEAR {{network}}. Trzymaj go na połączonym koncie NEAR: twoja ranga liczy najniższe saldo z ostatnich {{days}} dni, więc ranga zaczyna obowiązywać {{days}} dni po jej osiągnięciu.",
+    "why": "Testowy token bez wartości, w NEAR {{network}}. Trzymaj go na połączonym koncie NEAR: twoja ranga liczy najniższe saldo z ostatnich {{hours}} godzin, więc ranga zaczyna obowiązywać {{hours}} godzin po jej osiągnięciu.",
     "noAccount": "Połącz konto NEAR powyżej, aby mieć rangę.",
     "notRead": "Saldo jeszcze nie odczytane.",
     "balance": "Saldo: {{n}} {{symbol}}",

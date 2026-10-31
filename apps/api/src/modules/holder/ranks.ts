@@ -14,12 +14,12 @@ import type { NearRpc } from '../wallet/rpc.js';
 
 /**
  * Test token holder ranks (testnet). Every hour the job reads the token balance of each adult's
- * linked account and keeps it for `TOKEN.holdDays` (+1) days. A rank is the highest one the
+ * linked account and keeps it for `TOKEN.holdHours` (+1 day). A rank is the highest one the
  * *smallest* balance of the whole window reaches, and only once the account has been watched for
  * the whole window: tokens bought just before a catch and sold after it count for nothing.
  */
 
-const DAY = 86_400_000;
+const HOUR = 3_600_000;
 /** Slack for the hourly job running a little late. */
 const SLACK = 90 * 60_000;
 /** Older than this, the balances are too stale to grant anything (the job has stopped). */
@@ -46,7 +46,7 @@ export function rankFrom(snaps: Snapshot[], now: Date): Rank {
   const last = snaps[snaps.length - 1];
   if (!last) return { tier: null, balance: null, checkedAt: null, next: null, stale: false };
   const stale = now.getTime() - last.at.getTime() > STALE;
-  const windowStart = now.getTime() - TOKEN.holdDays * DAY;
+  const windowStart = now.getTime() - TOKEN.holdHours * HOUR;
   const covered = snaps[0]!.at.getTime() <= windowStart + SLACK;
   let tier: HolderTier | null = null;
   if (covered && !stale) {
@@ -63,7 +63,7 @@ export function rankFrom(snaps: Snapshot[], now: Date): Rank {
     for (let i = 0; i < snaps.length; i++) {
       if (snaps[i]!.balance < need) since = snaps[i + 1]?.at ?? last.at;
     }
-    next = { tier: target, countsAt: new Date(since.getTime() + TOKEN.holdDays * DAY) };
+    next = { tier: target, countsAt: new Date(since.getTime() + TOKEN.holdHours * HOUR) };
   }
   return { tier, balance: last.balance, checkedAt: last.at, next, stale };
 }
@@ -74,9 +74,9 @@ export async function rankOf(c: Db | PoolClient, userId: string, network: string
     `SELECT s.taken_at, s.balance FROM holder_snapshots s
        JOIN wallet_links w ON w.user_id = s.user_id AND w.account_id = s.account_id
       WHERE s.user_id = $1 AND w.network = $2
-        AND s.taken_at > now() - make_interval(days => $3)
+        AND s.taken_at > now() - make_interval(hours => $3)
       ORDER BY s.taken_at`,
-    [userId, network, TOKEN.holdDays + 1],
+    [userId, network, TOKEN.holdHours + 24],
   );
   return rankFrom(
     rows.map((r) => ({ at: r.taken_at, balance: BigInt(r.balance) })),
@@ -154,10 +154,10 @@ export async function runHolders(
   }
   const dropped = await db.query(
     `DELETE FROM holder_snapshots s
-      WHERE s.taken_at < now() - make_interval(days => $1)
+      WHERE s.taken_at < now() - make_interval(hours => $1)
          OR NOT EXISTS (SELECT 1 FROM wallet_links w
                          WHERE w.user_id = s.user_id AND w.account_id = s.account_id)`,
-    [TOKEN.holdDays + 1],
+    [TOKEN.holdHours + 24],
   );
   const undressed = await takeOffOutfits(db, network);
   return { read, failed, dropped: dropped.rowCount ?? 0, undressed };
@@ -188,7 +188,7 @@ export function rankView(rank: Rank, contract: string | null, account: string | 
     contract,
     account,
     symbol: TOKEN.symbol,
-    holdDays: TOKEN.holdDays,
+    holdHours: TOKEN.holdHours,
     balance: rank.balance === null ? null : wholeTokens(rank.balance),
     checkedAt: rank.checkedAt?.toISOString() ?? null,
     stale: rank.stale,

@@ -870,7 +870,7 @@
   },
   "holder": {
     "title": "Token {{symbol}} (testnet)",
-    "why": "Token uji tanpa nilai, di NEAR {{network}}. Simpan di akun NEAR yang tertaut: peringkatmu dihitung dari saldo terendah {{days}} hari terakhir, jadi peringkat berlaku {{days}} hari setelah kamu mencapainya.",
+    "why": "Token uji tanpa nilai, di NEAR {{network}}. Simpan di akun NEAR yang tertaut: peringkatmu dihitung dari saldo terendah {{hours}} jam terakhir, jadi peringkat berlaku {{hours}} jam setelah kamu mencapainya.",
     "noAccount": "Tautkan akun NEAR di atas untuk mendapat peringkat.",
     "notRead": "Saldo belum dibaca.",
     "balance": "Saldo: {{n}} {{symbol}}",

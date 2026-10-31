@@ -870,7 +870,7 @@
   },
   "holder": {
     "title": "{{symbol}}-token (testnet)",
-    "why": "Een testtoken zonder waarde, op NEAR {{network}}. Houd hem in je gekoppelde NEAR-account: je rang telt het laagste saldo van de afgelopen {{days}} dagen, dus een rang begint {{days}} dagen nadat je hem bereikt.",
+    "why": "Een testtoken zonder waarde, op NEAR {{network}}. Houd hem in je gekoppelde NEAR-account: je rang telt het laagste saldo van de afgelopen {{hours}} uur, dus een rang begint {{hours}} uur nadat je hem bereikt.",
     "noAccount": "Koppel hierboven een NEAR-account om een rang te krijgen.",
     "notRead": "Saldo nog niet gelezen.",
     "balance": "Saldo: {{n}} {{symbol}}",
