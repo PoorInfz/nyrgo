@@ -1,0 +1,2 @@
+# The RFC 6455 sample WebSocket key in a production check (not a secret); replaced since.
+c2c8ab346d31f3012aa0df95ab82865e5636270d:.github/workflows/prod-check.yml:generic-api-key:42
