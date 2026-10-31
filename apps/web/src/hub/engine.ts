@@ -9,14 +9,23 @@ import {
   type Interaction,
 } from '@nyrgo/shared';
 import { wearsOutfit } from '../avatar/Avatar';
+import { OUTFITS } from '../avatar/outfits';
+
 import {
   EXPLORER,
+  EXPLORER_HEADROOM,
   companionSheet,
   explorerFrames,
   groundImage,
   ready,
   townSprite,
 } from './sprites';
+
+/** Tall outfit hats rise above the explorer: names go a little higher over them. */
+const hatLift = (look: AvatarLook) => {
+  const hat = wearsOutfit(look) ? OUTFITS[look.outfit]?.hat : undefined;
+  return hat === 'witch' || hat === 'wizard' ? 14 : hat === 'helmet' || hat === 'toque' ? 8 : 0;
+};
 
 /**
  * The town on a canvas: the owner's art, the player and the others, their creatures, names,
@@ -274,7 +283,13 @@ export class Town {
     for (const n of this.map.npcs) this.label(ctx, n.x, n.y, '★', '#ffcf4d');
     for (const b of this.bodies.values()) {
       if (!inView(b.x - 60 * this.k, b.y - 120 * this.k, 120 * this.k, 140 * this.k)) continue;
-      this.label(ctx, b.x, b.y, b.name, b.id === this.meId ? '#43f289' : '#eef3ff');
+      this.label(
+        ctx,
+        b.x,
+        b.y - hatLift(b.look) * this.k,
+        b.name,
+        b.id === this.meId ? '#43f289' : '#eef3ff',
+      );
       if (b.emote)
         this.emoteBubble(ctx, b.x, b.y, EMOTE_ICONS[b.emote.e] ?? '•', b.emote.until - this.time);
       else if (b.bubble) this.speech(ctx, b.x, b.y, b.bubble.text);
@@ -318,8 +333,7 @@ export class Town {
   ) {
     const frames = explorerFrames(look);
     const step = moving ? Math.floor(this.time / 140) % 4 : 0;
-    const outfit = wearsOutfit(look);
-    const frame = outfit ? frames[moving ? 1 : 0]! : frames[[0, 1, 0, 2][step]!]!;
+    const frame = frames[[0, 1, 0, 2][step]!]!;
     // soft shadow
     ctx.fillStyle = 'rgba(6, 34, 43, 0.25)';
     ctx.beginPath();
@@ -329,22 +343,13 @@ export class Town {
     const bob = moving && step % 2 === 1 ? -1.5 : 0;
     ctx.save();
     ctx.translate(x, y + bob);
-    if (outfit) {
-      // pixel art: whole pixels, the walking picture faces left
-      ctx.imageSmoothingEnabled = false;
-      if (moving && facing === 'r') ctx.scale(-1, 1);
-      const h = EXPLORER.h * this.k * (122 / 140) * 1.05;
-      const w = (frame.naturalWidth / frame.naturalHeight) * h;
-      ctx.drawImage(frame, -w / 2, -h, w, h);
-      ctx.restore();
-      return;
-    }
     ctx.imageSmoothingEnabled = true;
     if (facing === 'l') ctx.scale(-1, 1);
-    // the SVG's feet sit at 130/140 of its height
+    // the image is the SVG's 100×140 box plus headroom above; its feet sit at y 130
+    const unit = (EXPLORER.h * this.k) / 140;
     const w = EXPLORER.w * this.k;
-    const h = EXPLORER.h * this.k;
-    ctx.drawImage(frame, -w / 2, -h * (130 / 140), w, h);
+    const h = (140 + EXPLORER_HEADROOM) * unit;
+    ctx.drawImage(frame, -w / 2, -(130 + EXPLORER_HEADROOM) * unit, w, h);
     ctx.restore();
   }
 

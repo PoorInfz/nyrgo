@@ -1,4 +1,3 @@
-import { useId, type ReactNode } from 'react';
 import { COSMETICS_BY_ID, type AvatarLook } from '@nyrgo/shared';
 
 /**
@@ -8,85 +7,16 @@ import { COSMETICS_BY_ID, type AvatarLook } from '@nyrgo/shared';
  * combines with every other. `walking` swings arms and legs; `facing` mirrors the figure.
  */
 
-const INK = '#1b1530';
-const LINE = 2.2;
-
-// ------------------------------------------------------------------ colour helpers
-
-function hexToRgb(hex: string): [number, number, number] {
-  const h = hex.replace('#', '');
-  const n = parseInt(
-    h.length === 3
-      ? h
-          .split('')
-          .map((c) => c + c)
-          .join('')
-      : h,
-    16,
-  );
-  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-}
-
-function mix(a: string, b: string, t: number): string {
-  const x = hexToRgb(a);
-  const y = hexToRgb(b);
-  const c = x.map((v, i) => Math.round(v + (y[i]! - v) * t));
-  return `#${c.map((v) => v.toString(16).padStart(2, '0')).join('')}`;
-}
-
-/** Anime shadows lean cool: towards a deep violet rather than black. */
-const shade = (c: string, t = 0.32) => mix(c, '#3b2466', t);
-const light = (c: string, t = 0.45) => mix(c, '#ffffff', t);
-
-// ------------------------------------------------------------------ cel-shaded shape
-
-/**
- * A shape with a hard shadow: filled with the shadow colour, then the base colour drawn again
- * shifted towards the light and clipped to the shape, leaving a crescent of shadow on the far
- * side. Then the outline on top.
- */
-function Cel({
-  d,
-  fill,
-  shadow,
-  dx = 2.4,
-  dy = 2.6,
-  stroke = INK,
-  strokeWidth = LINE,
-  children,
-}: {
-  d: string;
-  fill: string;
-  shadow?: string;
-  dx?: number;
-  dy?: number;
-  stroke?: string;
-  strokeWidth?: number;
-  /** Extra details drawn inside the shape (clipped to it), before the outline. */
-  children?: ReactNode;
-}) {
-  const id = useId().replace(/:/g, '');
-  return (
-    <g>
-      <clipPath id={`c${id}`}>
-        <path d={d} />
-      </clipPath>
-      <path d={d} fill={shadow ?? shade(fill)} />
-      <g clipPath={`url(#c${id})`}>
-        <path d={d} fill={fill} transform={`translate(${-dx} ${-dy})`} />
-        {children}
-      </g>
-      <path
-        d={d}
-        fill="none"
-        stroke={stroke}
-        strokeWidth={strokeWidth}
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-    </g>
-  );
-}
+import { Cel, INK, light, mix, shade } from './cel';
+import {
+  FaceExtras,
+  HAT_HIDES_HAIR,
+  OUTFITS,
+  OutfitHat,
+  OutfitSkirt,
+  OutfitTopDetails,
+  Pauldrons,
+} from './outfits';
 
 // ------------------------------------------------------------------ the figure
 
@@ -104,57 +34,13 @@ type AvatarProps = {
   pose?: -1 | 0 | 1;
 };
 
-/** Whether this look wears a holder outfit (a whole pixel-art character). */
+/** Whether this look wears a holder outfit. */
 export const wearsOutfit = (look: AvatarLook) =>
   !!look.outfit && COSMETICS_BY_ID.get(look.outfit)?.holder === true;
 
-/** The outfit's pictures: standing (facing the viewer) and walking (facing left). */
-export const outfitUrl = (id: string, view: 'front' | 'side') => `/skins/${id}-${view}.webp`;
-
-/** The player's explorer, or the holder outfit worn over it. */
+/** The player's explorer, wearing a holder outfit if they have one on. */
 export function Avatar(props: AvatarProps) {
-  return wearsOutfit(props.look) ? <OutfitAvatar {...props} /> : <DrawnAvatar {...props} />;
-}
-
-/**
- * A holder outfit in the same 100×140 box as the drawn explorer (feet at 130). It stands facing
- * the viewer and turns to the side while walking; the side picture faces left, so it is
- * mirrored to walk right.
- */
-function OutfitAvatar({ look, walking = false, facing = 'right', size = 64, title }: AvatarProps) {
-  const side = walking;
-  const cls = [
-    'avatar',
-    'outfit',
-    walking ? 'walking' : '',
-    side && facing === 'right' ? 'facing-left' : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
-  return (
-    <svg
-      className={cls}
-      viewBox="0 0 100 140"
-      width={size}
-      height={(size * 140) / 100}
-      role={title ? 'img' : undefined}
-      aria-hidden={title ? undefined : true}
-      aria-label={title}
-    >
-      <ellipse cx="50" cy="134" rx="22" ry="4.5" fill={INK} opacity="0.2" />
-      <g className="avatar-body">
-        <image
-          href={outfitUrl(look.outfit, side ? 'side' : 'front')}
-          x="8"
-          y="10"
-          width="84"
-          height="122"
-          preserveAspectRatio="xMidYMax meet"
-          style={{ imageRendering: 'pixelated' }}
-        />
-      </g>
-    </svg>
-  );
+  return <DrawnAvatar {...props} />;
 }
 
 function DrawnAvatar({
@@ -177,18 +63,39 @@ function DrawnAvatar({
    */
   pose?: -1 | 0 | 1;
 }) {
-  const color = (id: string, fallback: string) => COSMETICS_BY_ID.get(id)?.color ?? fallback;
-  const trimOf = (id: string, fallback: string) => COSMETICS_BY_ID.get(id)?.trim ?? fallback;
-  const skin = color(look.skin, '#f5c6a0');
-  const hair = color(look.hairColor, '#6b4226');
-  const top = color(look.top, '#2bb5a0');
-  const topTrim = trimOf(look.top, '#1d7f71');
-  const hat = look.hat;
-  const acc = look.accessory;
+  const baseColor = (id: string, fallback: string) => COSMETICS_BY_ID.get(id)?.color ?? fallback;
+  const baseTrim = (id: string, fallback: string) => COSMETICS_BY_ID.get(id)?.trim ?? fallback;
+  // a holder outfit replaces the clothes, hair and hat, never the skin or the way it moves
+  const o = wearsOutfit(look) ? OUTFITS[look.outfit] : undefined;
+  const skin = baseColor(look.skin, '#f5c6a0');
+  const hairStyle = o ? (o.hair ?? 'hair_short') : look.hair;
+  const hair = o?.hairColor ?? baseColor(look.hairColor, '#6b4226');
+  const top = o?.top ?? baseColor(look.top, '#2bb5a0');
+  const topTrim = o?.trim ?? baseTrim(look.top, '#1d7f71');
+  const hat = o ? 'hat_none' : look.hat;
+  const acc = o
+    ? o.cape
+      ? 'acc_cape'
+      : o.backpack
+        ? 'acc_backpack'
+        : o.glasses
+          ? 'acc_glasses'
+          : 'acc_none'
+    : look.accessory;
+  const accColor = o?.cape ?? o?.backpack ?? o?.glasses;
+  const color = (id: string, fallback: string) =>
+    o && id === acc && accColor ? accColor : baseColor(id, fallback);
+  const trimOf = (id: string, fallback: string) =>
+    o && id === acc && o.capeTrim ? o.capeTrim : baseTrim(id, fallback);
+  const glasses = o ? o.glasses : acc === 'acc_glasses' ? color(acc, INK) : undefined;
   // eyes take a jewel tone that suits the hair
   const iris = mix(hair === '#2a211c' ? '#3f6fd8' : hair, '#2bb5a0', 0.35);
-  const pants = '#2f3a5c';
-  const hatHidesHair = hat === 'hat_cap' || hat === 'hat_beanie' || hat === 'hat_explorer';
+  const pants = o?.pants ?? '#2f3a5c';
+  const shoe = o?.shoes ?? '#ffffff';
+  const outfitHair = o?.hat ? HAT_HIDES_HAIR[o.hat] : undefined;
+  const hatHidesHair = o
+    ? outfitHair !== undefined
+    : hat === 'hat_cap' || hat === 'hat_beanie' || hat === 'hat_explorer';
 
   const swing = pose * 24;
   const limb = (angle: number, cx: number, cy: number) =>
@@ -233,15 +140,15 @@ function DrawnAvatar({
             <path d="M62 95 H77" stroke={INK} strokeWidth="1.4" />
           </Cel>
         )}
-        <BackHair style={look.hair} fill={hair} hidden={hatHidesHair} />
+        {outfitHair !== 'all' && <BackHair style={hairStyle} fill={hair} hidden={hatHidesHair} />}
 
         {/* ------------------------------------------------ legs */}
         <g className="leg leg-back" {...limb(-swing, 55.5, 106)}>
           <Cel d="M51 106 L60 106 L59 125 L52 125 Z" fill={shade(pants, 0.25)} />
           <Cel
             d="M50 123 Q50 119 56 119 Q65 119 65 126 L65 130 L50 130 Z"
-            fill="#f4f1ea"
-            shadow="#b9b3c9"
+            fill={o ? shade(shoe, 0.12) : '#f4f1ea'}
+            shadow={o ? shade(shoe, 0.4) : '#b9b3c9'}
           >
             <path d="M50 126.5 H65" stroke={topTrim} strokeWidth="2" />
           </Cel>
@@ -250,12 +157,14 @@ function DrawnAvatar({
           <Cel d="M40 106 L49 106 L48 125 L41 125 Z" fill={pants} />
           <Cel
             d="M37 123 Q37 119 43 119 Q52 119 52 126 L52 130 L37 130 Z"
-            fill="#ffffff"
-            shadow="#c9c3d9"
+            fill={shoe}
+            shadow={o ? shade(shoe, 0.35) : '#c9c3d9'}
           >
             <path d="M37 126.5 H52" stroke={topTrim} strokeWidth="2" />
           </Cel>
         </g>
+
+        {o && <OutfitSkirt o={o} />}
 
         {/* ------------------------------------------------ back arm */}
         <g className="arm arm-back" {...limb(swing, 64, 82)}>
@@ -268,7 +177,7 @@ function DrawnAvatar({
 
         {/* ------------------------------------------------ torso */}
         <Cel d="M39 80 Q50 75 61 80 L64 108 Q50 112 36 108 Z" fill={top} shadow={shade(top, 0.35)}>
-          <TopDetails top={look.top} trim={topTrim} base={top} />
+          {o ? <OutfitTopDetails o={o} /> : <TopDetails top={look.top} trim={topTrim} base={top} />}
         </Cel>
         {acc === 'acc_backpack' && (
           <path
@@ -288,6 +197,8 @@ function DrawnAvatar({
             fill={skin}
           />
         </g>
+
+        {o && <Pauldrons o={o} />}
 
         {/* ------------------------------------------------ neck, scarf */}
         <Cel d="M45.5 72 L54.5 72 L54.5 80 Q50 82 45.5 80 Z" fill={shade(skin, 0.18)} />
@@ -319,8 +230,11 @@ function DrawnAvatar({
         <Cel d="M79 48 Q86 47 85 54 Q84 60 77 59 Z" fill={skin} dx={1} dy={1} />
 
         <Face iris={iris} skin={skin} />
+        {o && <FaceExtras o={o} skin={skin} />}
 
-        <FrontHair style={look.hair} fill={hair} underHat={hatHidesHair} />
+        {outfitHair !== 'all' && (
+          <FrontHair style={hairStyle} fill={hair} underHat={hatHidesHair} />
+        )}
         {/* brows show through the fringe, as in anime */}
         <path
           d="M30 37.5 Q36 34.5 42 36.5"
@@ -339,8 +253,8 @@ function DrawnAvatar({
           opacity="0.85"
         />
 
-        {acc === 'acc_glasses' && (
-          <g fill="rgba(200,240,255,0.25)" stroke={color(acc, INK)} strokeWidth="2">
+        {glasses && (
+          <g fill="rgba(200,240,255,0.25)" stroke={glasses} strokeWidth="2">
             <rect x="26.5" y="43.5" width="21" height="18" rx="7" />
             <rect x="52.5" y="43.5" width="21" height="18" rx="7" />
             <path d="M47.5 51 Q50 48.5 52.5 51" fill="none" />
@@ -349,7 +263,13 @@ function DrawnAvatar({
         )}
 
         <g transform="translate(50 30) scale(1.14) translate(-50 -33)">
-          <Hat hat={hat} color={color(hat, '#ef4a5b')} trim={trimOf(hat, '#ffffff')} />
+          {o?.hat === 'cap' ? (
+            <Hat hat="hat_cap" color={o.hatColor ?? top} trim={o.hatTrim ?? '#ffffff'} />
+          ) : o?.hat ? (
+            <OutfitHat kind={o.hat} color={o.hatColor ?? top} trim={o.hatTrim ?? topTrim} />
+          ) : (
+            <Hat hat={hat} color={color(hat, '#ef4a5b')} trim={trimOf(hat, '#ffffff')} />
+          )}
         </g>
       </g>
     </svg>

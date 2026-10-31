@@ -25,7 +25,7 @@ export interface CosmeticDef {
   color?: string;
   trim?: string;
   /**
-   * A holder outfit: a whole pixel-art character worn over the explorer, not sold for Gold but
+   * A holder outfit: a whole look (hair, clothes, hat, extras) drawn on the explorer, not sold for Gold but
    * unlocked by a token holder rank that includes outfits (testnet).
    */
   holder?: true;

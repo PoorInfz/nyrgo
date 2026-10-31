@@ -73,5 +73,6 @@ a day's budget may go to boosts (`tips_pool.boost_spent_yocto`); once that share
 paid without the boost. A refused tip returns its whole amount to the day's budget but not its
 boost share (the boost share only ever errs on the side of paying less).
 
-Holder outfits (22 pixel-art characters from the owner's sheet) can be worn from rank 3. When a
+Holder outfits (22 looks drawn as the game's own chibi explorer, inspired by the owner's character
+sheet) can be worn from rank 3. When a
 rank drops below 3, the next hourly job takes the outfit off.

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.43.0 — 2026-10-31 — Holder outfits, redrawn
+
+- The 22 holder outfits are now drawn as the game's own cel-shaded chibi explorer instead of
+  pixel-art pictures: each outfit sets the hair, clothes, shoes and hat, and some add extras
+  (robes and dresses, coat tails, armour plates, a cape, a backpack, glasses, a beard or
+  moustache, pointed ears). They keep the player's skin tone and walk, swing their arms and blink
+  exactly like every explorer, on the map, in the town and in the wardrobe.
+- New hats for them: witch, wizard, knight's helmet with plume, hood, chef's toque, police cap,
+  straw hat, nurse cap, headphones and a circlet.
+- Tall hats are no longer cut off in the town.
+
 ## 0.42.0 — 2026-10-31 — Creatures walk on the map
 
 - Creatures on the map are now their own figure instead of a round portrait: their 6-frame idle

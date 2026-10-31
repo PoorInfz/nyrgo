@@ -1985,7 +1985,8 @@ button.skill:active:not(:disabled) {
   display: grid;
   justify-items: center;
   gap: 8px;
-  padding: 12px 0 4px;
+  padding: 40px 0 4px;
+  overflow: hidden;
   border-radius: 14px;
   background: linear-gradient(180deg, var(--sky-2) 0 60%, var(--meadow-1) 60% 100%);
   border: 1px solid var(--edge);
@@ -2987,10 +2988,6 @@ button.hub-round {
   font-weight: 700;
 }
 
-.wardrobe-item .avatar.outfit image,
-.avatar.outfit image {
-  image-rendering: pixelated;
-}
 
 /* ================================================================ creature details (map) */
 
