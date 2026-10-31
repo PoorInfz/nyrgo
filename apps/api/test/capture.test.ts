@@ -240,8 +240,8 @@ describe.skipIf(!TEST_DB_URL)('spawns, encounters and captures', () => {
   });
 
   it('adds a caught creature to the collection and the Dex, pays XP and Gold, and hides it for that player', async () => {
-    // Cold vault, perfect timing, a common creature: 95 % per throw. Retry with a new spawn
-    // in the rare case it runs away.
+    // Cold vault, perfect timing, a common creature: 95 % per throw. Only a catch on the first
+    // throw counts (a miss pays its own XP and Gold); otherwise start again with a new player.
     let caught: {
       p: Awaited<ReturnType<typeof player>>;
       spawn: string;
@@ -254,21 +254,15 @@ describe.skipIf(!TEST_DB_URL)('spawns, encounters and captures', () => {
         `INSERT INTO inventory (user_id, item_id, qty) VALUES ($1, 'vault-cold', 5)`,
         [p.id],
       );
-      for (let i = 0; i < 5; i++) {
-        const res = (
-          await p.call(
-            'POST',
-            `/v1/encounters/${enc.id}/capture`,
-            { item: 'vault-cold', skill: 1 },
-            { 'idempotency-key': key() },
-          )
-        ).json();
-        if (res.result === 'caught') {
-          caught = { p, spawn, enc, res };
-          break;
-        }
-        if (res.result === 'fled') break;
-      }
+      const res = (
+        await p.call(
+          'POST',
+          `/v1/encounters/${enc.id}/capture`,
+          { item: 'vault-cold', skill: 1 },
+          { 'idempotency-key': key() },
+        )
+      ).json();
+      if (res.result === 'caught') caught = { p, spawn, enc, res };
     }
     expect(caught).not.toBeNull();
     const { p, spawn, enc, res } = caught!;
