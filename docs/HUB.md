@@ -1,6 +1,6 @@
 # Social hub — Phase 1 audit and proposed architecture
 
-Status: **Phase 2 (playable town square) built** — see §6. Phases 3–5 not started. This answers Phase 1 of the hub brief (2026-10-31): what
+Status: **Phases 2 and 3 built** (town square; gym and arena) — see §6 and §7. Phases 4–5 not started. This answers Phase 1 of the hub brief (2026-10-31): what
 exists, what the hub can reuse, the smallest compatible architecture, and the conflicts that
 need a decision before Phase 2.
 
@@ -114,6 +114,31 @@ drawn with the **owner's art sheet** (`art/hub/sheet-01.png`).
 - **Client** (`apps/web/src/hub/`): canvas renderer with depth sorting, local prediction and server
   corrections, keyboard (arrows/WASD, E, T) and a touch joystick, chat panel, emotes, NPC dialogues,
   doors that announce what opens next, the portal back to the map, reconnection with back-off.
+
+## 7. Phase 3 — gym and arena (2026-10-31)
+
+- **Art**: the owner's second sheet (`art/hub/sheet-02.png`) gives the ground tiles (the square's
+  paths), the gym, arena and house interiors and props. Interiors are drawn at 2× with walls and
+  furniture as solid areas (`interior()` in `map.ts`).
+- **Rooms**: plaza, gym and arena are separate live rooms. A door (`Interaction.to`) moves a
+  player only when they stand at it (`go` over the socket; refused with `too_far` otherwise).
+  The house interior is cut but not used until Phase 4 (housing).
+- **Gym** (`POST /v1/hub/training`, only while in the gym room): the coach's creature is picked at
+  random from the wild ones, at the player's creature level + the tier's offset
+  (`hub.trainingTiers`). Shared duel engine, full health, nothing hurt. Creature XP every bout,
+  town XP on a win (`trainingWinXp + tier × trainingTierXp`) or a little on a loss. 10 a day.
+- **Arena** (`POST /v1/hub/arena/match`, only while in the arena room): `ranked` looks for another
+  active player of the same age group with a creature, in widening rating windows
+  (`hub.matchWindows`), not blocked either way, preferring opponents not faced recently, at most 3
+  ranked a day against the same one; they fight with their chosen defender (or companion, or
+  strongest). Elo with K = `hub.eloK` for the challenger and half for the absent defender.
+  `practice` moves nothing and pays nothing. `GET /v1/hub/arena`: rating, record, history,
+  challenges to your defender, top 20 of your age group. `PUT /v1/hub/arena/defender`.
+- **Town XP**: every activity is stored in `hub_activities` with its fight; the daily cap
+  (`hub.xpPerDay`, 250) is summed from there; XP goes through `grantReward(source: 'hub')`, so the
+  50 % rule applies on top.
+- **Not done yet**: live PvP between two connected players (battles are against a defender, like
+  an asynchronous ladder), seasons and rating decay, tournaments (Phase 5).
 
 ### What the art needs next (for the owner)
 

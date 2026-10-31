@@ -2443,6 +2443,57 @@ button.hub-round {
   justify-self: center;
 }
 
+.hub-dialog.wide {
+  width: min(94vw, 480px);
+  max-height: min(86vh, 720px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.hub-tiers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+  gap: 8px;
+}
+
+.hub-tiers button {
+  display: grid;
+  gap: 2px;
+  padding: 10px 6px;
+}
+
+.hub-rating {
+  margin: 0;
+}
+
+.hub-board,
+.hub-history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.hub-board li {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
+  align-items: baseline;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.hub-board li.me {
+  outline: 1px solid var(--mint);
+}
+
+.hub-history .link {
+  justify-self: start;
+  text-align: left;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hub-stick span {
     transition: none;

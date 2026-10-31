@@ -367,6 +367,75 @@ export interface HubMe {
   progress: ProgressBreakdown;
 }
 
+/** One bout in the gym or the arena, as the history lists it. */
+export interface HubBout {
+  id: string;
+  kind?: 'training' | 'arena_ranked' | 'arena_practice';
+  at: string;
+  won: boolean | null;
+  tier?: number | null;
+  creatureId: string;
+  level: number;
+  opponentCreatureId: string;
+  opponentLevel: number;
+  opponentName: string | null;
+  ratingBefore?: number | null;
+  ratingAfter?: number | null;
+  hubXp?: number;
+  creatureXp?: number;
+  /** True when someone challenged this player's defender. */
+  defended: boolean;
+  fight?: DuelFight;
+}
+
+export interface HubReward {
+  id: string;
+  hubXp: number;
+  /** Town XP past today's cap (not paid). */
+  xpCapped: number;
+  level: number | null;
+  leveledUp: boolean;
+  won: boolean | null;
+  fight: DuelFight;
+}
+
+export interface TrainingInfo {
+  tiers: number[];
+  left: number;
+  perDay: number;
+  hubXpToday: number;
+  hubXpPerDay: number;
+  history: HubBout[];
+}
+
+export interface TrainingResult extends HubReward {
+  coach: { creatureId: string; level: number };
+  creature: { level: number; leveledUp: boolean; xp: number };
+  left: number;
+}
+
+export interface ArenaInfo {
+  rating: number;
+  wins: number;
+  losses: number;
+  defenderId: string | null;
+  rankedLeft: number;
+  rankedPerDay: number;
+  hubXpToday: number;
+  hubXpPerDay: number;
+  history: HubBout[];
+  defended: HubBout[];
+  leaderboard: { me: boolean; name: string; rating: number; wins: number; losses: number }[];
+}
+
+export interface ArenaResult extends HubReward {
+  mode: 'ranked' | 'practice';
+  opponent: { name: string | null; creatureId: string; level: number };
+  ratingBefore: number | null;
+  ratingAfter: number | null;
+  rankedLeft: number;
+}
+
 export interface GameEvent {
   id: string;
   title: string;
@@ -540,6 +609,14 @@ export function createApi(baseUrl: string) {
     hubBlock: (id: string) =>
       call<{ blocked: true }>('POST', `/v1/hub/blocks/${encodeURIComponent(id)}`),
     hubUnblock: (id: string) => call<void>('DELETE', `/v1/hub/blocks/${encodeURIComponent(id)}`),
+    hubTraining: () => call<TrainingInfo>('GET', '/v1/hub/training'),
+    hubTrain: (creature: string, tier: number) =>
+      call<TrainingResult>('POST', '/v1/hub/training', { creature, tier }),
+    hubArena: () => call<ArenaInfo>('GET', '/v1/hub/arena'),
+    hubMatch: (creature: string, mode: 'ranked' | 'practice') =>
+      call<ArenaResult>('POST', '/v1/hub/arena/match', { creature, mode }),
+    hubDefender: (creature: string | null) =>
+      call<{ defenderId: string | null }>('PUT', '/v1/hub/arena/defender', { creature }),
     hubBlocks: () => call<{ blocked: { id: string; name: string }[] }>('GET', '/v1/hub/blocks'),
     duels: () => call<{ duels: Duel[] }>('GET', '/v1/duels'),
     challenge: (to: string, creature: string) =>

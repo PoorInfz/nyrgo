@@ -184,6 +184,22 @@ export interface HubConfig {
   tickHz: number;
   /** Fastest walking speed in the town, in tiles per second (moves faster are refused). */
   maxSpeedTiles: number;
+  /** Most town XP a player can earn in a day (all activities together). */
+  xpPerDay: number;
+  /** Gym: trainings a day; the coach's creature level is yours plus the tier's offset. */
+  trainingsPerDay: number;
+  trainingTiers: number[];
+  /** Town XP for a training: `trainingWinXp + tier × trainingTierXp` for a win. */
+  trainingWinXp: number;
+  trainingTierXp: number;
+  trainingLossXp: number;
+  /** Arena: ranked battles a day, town XP for them, and the rating's K factor. */
+  rankedPerDay: number;
+  rankedWinXp: number;
+  rankedLossXp: number;
+  eloK: number;
+  /** Ranked opponents are looked for within these rating gaps, widening in turn. */
+  matchWindows: number[];
 }
 
 export interface GameConfig {
@@ -293,6 +309,17 @@ export const DEFAULT_CONFIG: GameConfig = {
     viewRadius: 14,
     tickHz: 10,
     maxSpeedTiles: 6,
+    xpPerDay: 250,
+    trainingsPerDay: 10,
+    trainingTiers: [-3, -1, 1, 3, 5],
+    trainingWinXp: 8,
+    trainingTierXp: 4,
+    trainingLossXp: 3,
+    rankedPerDay: 10,
+    rankedWinXp: 20,
+    rankedLossXp: 5,
+    eloK: 24,
+    matchWindows: [150, 300, 600],
   },
   tips: {
     amountMilliNear: 5,

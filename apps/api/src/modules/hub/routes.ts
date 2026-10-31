@@ -11,8 +11,9 @@ import { withTx, type Db } from '../../db.js';
 import { HttpProblem } from '../../http/problem.js';
 import { requireAuth } from '../auth/sessions.js';
 import { loadOwned } from '../creatures/owned.js';
+import { hubActivityRoutes } from './activities.js';
 import { checkChat } from './chat.js';
-import { Room, type AgeGroup } from './room.js';
+import { Room, type AgeGroup, type Member, type Socket } from './room.js';
 
 /**
  * The hub (the town): one live room per district over a WebSocket, plus REST for what must last
@@ -44,9 +45,16 @@ export interface HubDeps {
 }
 
 export async function hubRoutes(app: FastifyInstance, { db, corsOrigins, rooms: given }: HubDeps) {
-  const rooms = given ?? new Map([['plaza', new Room('plaza')]]);
+  const rooms =
+    given ?? new Map(['plaza', 'gym', 'arena'].map((id) => [id, new Room(id)] as const));
+  /** Each player's one live connection and the room they are in. */
+  const where = new Map<string, { socket: Socket; room: Room }>();
   app.addHook('onClose', async () => {
     for (const r of rooms.values()) r.stop();
+  });
+  await hubActivityRoutes(app, {
+    db,
+    inRoom: (userId, id) => rooms.get(id)?.members.has(userId) ?? false,
   });
 
   /** Everything the hub needs to show a player: who they are there, and the 50 % rule. */
@@ -204,7 +212,7 @@ export async function hubRoutes(app: FastifyInstance, { db, corsOrigins, rooms: 
     async (socket, req) => {
       if (!req.auth) return socket.close(4001, 'unauthenticated');
       const userId = req.auth.userId;
-      const room = rooms.get('plaza')!;
+      let room = rooms.get('plaza')!;
       // messages that arrive while the player is being loaded are dropped
       let ready = false;
       let closed = false;
@@ -225,6 +233,8 @@ export async function hubRoutes(app: FastifyInstance, { db, corsOrigins, rooms: 
             msg.f === 'l' ? 'l' : 'r',
             msg.m === 1 || msg.m === true,
           );
+        } else if (msg.t === 'go' && typeof msg.id === 'string') {
+          go(msg.id);
         } else if (msg.t === 'emote' && typeof msg.e === 'string') {
           room.emote(userId, msg.e);
         } else if (msg.t === 'chat' && typeof msg.text === 'string') {
@@ -234,7 +244,37 @@ export async function hubRoutes(app: FastifyInstance, { db, corsOrigins, rooms: 
       socket.on('close', () => {
         closed = true;
         room.leave(userId, socket);
+        if (where.get(userId)?.socket === socket) where.delete(userId);
       });
+
+      /** Through a door: only when standing at it, into the room it leads to. */
+      function go(id: string) {
+        const door = room.map.interactions.find((i) => i.id === id && i.to);
+        const m = room.members.get(userId);
+        if (!door?.to || !m || m.socket !== socket) return;
+        if (Math.hypot(m.x - door.x, m.y - door.y) > door.radius + 24) {
+          return room.error(userId, 'too_far');
+        }
+        const next = rooms.get(door.to.room);
+        if (!next) return;
+        const keep: Omit<
+          Member,
+          'x' | 'y' | 'facing' | 'moving' | 'lastMoveAt' | 'chatAt' | 'lastChat' | 'known'
+        > = {
+          userId,
+          name: m.name,
+          level: m.level,
+          look: m.look,
+          companion: m.companion,
+          ageGroup: m.ageGroup,
+          muted: m.muted,
+          socket,
+        };
+        room.leave(userId, socket);
+        room = next;
+        room.join(keep, { x: door.to.x, y: door.to.y });
+        where.set(userId, { socket, room });
+      }
 
       async function chat(raw: string) {
         const member = room.members.get(userId);
@@ -269,6 +309,13 @@ export async function hubRoutes(app: FastifyInstance, { db, corsOrigins, rooms: 
         [userId],
       );
       if (closed) return;
+      // one connection per player: an older one (another tab, another room) is closed
+      const old = where.get(userId);
+      if (old && old.socket !== socket) {
+        old.room.leave(userId, old.socket);
+        old.socket.close(4000, 'replaced');
+      }
+      where.set(userId, { socket, room });
       const ageGroup: AgeGroup = canUseWeb3(p.age_band) ? 'adult' : 'minor';
       room.join({
         userId,

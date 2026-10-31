@@ -436,3 +436,25 @@ export function simulateDuel(challenger: Fighter, friend: Fighter, rand: () => n
   const winner = state.result === 'win' ? 'player' : state.result === 'loss' ? 'foe' : null;
   return { winner, turns, hp: { player: state.player.hp, foe: state.foe.hp } };
 }
+
+/** Expected score of A against B (Elo). */
+export function eloExpected(a: number, b: number): number {
+  return 1 / (1 + 10 ** ((b - a) / 400));
+}
+
+/**
+ * New ratings after a ranked battle: the challenger moves by the full K, the defender (who was
+ * not there to play) by half of it.
+ */
+export function eloUpdate(
+  challenger: number,
+  defender: number,
+  score: 0 | 0.5 | 1,
+  k: number,
+): { challenger: number; defender: number } {
+  const e = eloExpected(challenger, defender);
+  return {
+    challenger: Math.round(challenger + k * (score - e)),
+    defender: Math.round(defender + (k / 2) * (1 - score - (1 - e))),
+  };
+}

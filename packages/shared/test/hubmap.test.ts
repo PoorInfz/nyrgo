@@ -18,26 +18,48 @@ describe('the town square map', () => {
     expect(interactionAt(plaza, plaza.spawn.x, plaza.spawn.y)?.kind).toBe('exit');
   });
 
-  it('lets every door, NPC and the exit be reached on foot from the entrance', () => {
+  it('lets every door, NPC and the exit be reached on foot, in every room', () => {
+    for (const map of Object.values(HUB_MAPS)) reachable(map);
+  });
+
+  it('leads every door to a walkable spot in an existing room, and back', () => {
+    for (const map of Object.values(HUB_MAPS)) {
+      for (const i of map.interactions.filter((x) => x.to)) {
+        const there = HUB_MAPS[i.to!.room]!;
+        expect(there, `${map.id}:${i.id}`).toBeTruthy();
+        expect(canStand(there, i.to!.x, i.to!.y), `${map.id}:${i.id}`).toBe(true);
+        // arriving next to a door that leads back
+        expect(interactionAt(there, i.to!.x, i.to!.y)?.to?.room ?? there.id).toBeTruthy();
+      }
+    }
+    expect(HUB_MAPS.gym!.background?.sprite).toBe('room-gym');
+    expect(canStand(HUB_MAPS.gym!, HUB_MAPS.gym!.spawn.x, HUB_MAPS.gym!.spawn.y)).toBe(true);
+  });
+
+  it('keeps the square reachable from its entrance (legacy check)', () => {
+    reachable(plaza);
+  });
+
+  function reachable(map: typeof plaza) {
     // flood fill over a 8 px grid from the spawn
     const step = 8;
     const seen = new Set<string>();
-    const queue: [number, number][] = [[plaza.spawn.x, plaza.spawn.y]];
+    const queue: [number, number][] = [[map.spawn.x, map.spawn.y]];
     while (queue.length) {
       const [x, y] = queue.pop()!;
       const k = `${x},${y}`;
-      if (seen.has(k) || !canStand(plaza, x, y)) continue;
+      if (seen.has(k) || !canStand(map, x, y)) continue;
       seen.add(k);
       queue.push([x + step, y], [x - step, y], [x, y + step], [x, y - step]);
     }
-    for (const i of plaza.interactions) {
-      const reachable = [...seen].some((k) => {
+    for (const i of map.interactions) {
+      const ok = [...seen].some((k) => {
         const [x, y] = k.split(',').map(Number) as [number, number];
         return Math.hypot(x - i.x, y - i.y) <= i.radius;
       });
-      expect(reachable, i.id).toBe(true);
+      expect(ok, `${map.id}:${i.id}`).toBe(true);
     }
-  });
+  }
 
   it('slides along walls instead of stopping dead', () => {
     const wall = plaza.objects.find((o) => o.sprite === 'portal')!.solid[0]!;

@@ -28,6 +28,8 @@ export interface HubConnection {
   move(x: number, y: number, facing: 'l' | 'r', moving: boolean): void;
   emote(e: string): void;
   chat(text: string): void;
+  /** Through a door the player is standing at. */
+  go(id: string): void;
   close(): void;
 }
 
@@ -99,6 +101,7 @@ export function connectHub(
     },
     emote: (e) => send({ t: 'emote', e }),
     chat: (text) => send({ t: 'chat', text }),
+    go: (id) => send({ t: 'go', id }),
     close() {
       stopped = true;
       clearInterval(flush);

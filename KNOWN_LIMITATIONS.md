@@ -149,13 +149,19 @@ Stated openly so nobody relies on something that is not there.
 
 ## The town (hub)
 
-- Only the Central Plaza exists; the gym, arena, market and houses announce that they open soon.
-- One live room on one server instance: a few hundred players at once; more instances need a
+- The plaza, gym and arena exist; the market and houses still announce that they open soon.
+- Arena battles are against another player's defender (an asynchronous ladder), not live
+  between two connected players. With few players, ranked battles often find nobody in range
+  ("no opponent"); practice then falls back to the host. No seasons or rating decay yet.
+- The gym's and arena's numbers (XP, limits, tiers, Elo K) are first guesses in config, not tuned
+  with real players.
+- Live rooms run on one server instance: a few hundred players at once; more instances need a
   shared bus (Phase 5). A server restart drops connections; clients reconnect on their own.
 - The chat filter is a first line (word list, link and contact patterns); real safety relies on
   age-group rooms, blocks, reports and moderators. It has not been tried by real players yet.
-- The town's art comes from one owner-supplied sheet that was not drawn for slicing: the plaza's
-  edge shows against the ground, and there are no interiors yet.
+- The town's art comes from two owner-supplied sheets that were not drawn for slicing: some
+  edges show against the ground, and interiors are drawn at 2× from small pictures, so they look
+  soft on large screens.
 
 ## Data
 

@@ -86,7 +86,19 @@ export class Town {
   private groundPattern = new Map<string, CanvasPattern | null>();
   private time = 0;
 
-  constructor(readonly map: HubMap) {}
+  constructor(public map: HubMap) {}
+
+  /** Moves the view to another room (a building's inside, or back to the square). */
+  setMap(map: HubMap) {
+    if (map === this.map) return;
+    this.map = map;
+    const me = this.me();
+    this.bodies.clear();
+    if (me) {
+      me.trail = [];
+      this.bodies.set(me.id, me);
+    }
+  }
 
   me(): Body | undefined {
     return this.meId ? this.bodies.get(this.meId) : undefined;
@@ -167,9 +179,20 @@ export class Town {
     ctx.imageSmoothingEnabled = false;
     const view = { x: camX, y: camY, w: viewW / zoom, h: viewH / zoom };
 
-    // ground
-    ctx.fillStyle = this.pattern(ctx, this.map.ground) ?? '#45ad4d';
-    ctx.fillRect(view.x, view.y, view.w, view.h);
+    // ground: a repeated texture outdoors; indoors the room's picture is the floor
+    if (this.map.ground) {
+      ctx.fillStyle = this.pattern(ctx, this.map.ground) ?? '#45ad4d';
+      ctx.fillRect(view.x, view.y, view.w, view.h);
+    } else {
+      ctx.fillStyle = '#0b0d14';
+      ctx.fillRect(view.x, view.y, view.w, view.h);
+    }
+    const bg = this.map.background;
+    if (bg) {
+      const img = townSprite(bg.sprite);
+      const s = HUB_SPRITES[bg.sprite];
+      if (ready(img)) ctx.drawImage(img, 0, 0, s.w * bg.scale, s.h * bg.scale);
+    }
     for (const p of this.map.patches) {
       const pat = this.pattern(ctx, p.ground);
       ctx.fillStyle = pat ?? '#e8c47a';

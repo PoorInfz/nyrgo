@@ -54,9 +54,13 @@ function client(ws: WebSocket) {
 describe.skipIf(!TEST_DB_URL)('the hub', () => {
   let t: TestApp;
   const room = new Room('plaza', { autoTick: false });
+  const gym = new Room('gym', { autoTick: false });
   beforeAll(async () => {
     t = await makeTestApp({
-      hubRooms: new Map([['plaza', room]]),
+      hubRooms: new Map([
+        ['plaza', room],
+        ['gym', gym],
+      ]),
       env: { ADMIN_TOKENS: `mod:admin:${ADMIN}` },
     });
     await syncContent(t.db);
@@ -177,6 +181,33 @@ describe.skipIf(!TEST_DB_URL)('the hub', () => {
     const hidden = await t.db.query(`SELECT hidden_at FROM hub_chat WHERE id = $1`, [heard.mid]);
     expect(hidden.rows[0].hidden_at).not.toBeNull();
     for (const c of [ca, ca2, ct]) c.ws.terminate();
+  });
+
+  it('walks through doors into a building and back, only when standing at the door', async () => {
+    const a = await player();
+    const ca = await a.open();
+    ca.send({ t: 'go', id: 'gym' });
+    expect(await ca.next((m) => m.t === 'error')).toEqual({ t: 'error', code: 'too_far' });
+    const door = room.map.interactions.find((i) => i.id === 'gym')!;
+    const me = room.members.get(a.id)!;
+    me.x = door.x;
+    me.y = door.y;
+    ca.send({ t: 'go', id: 'gym' });
+    const w = await ca.next((m) => m.t === 'welcome' && m.room === 'gym');
+    expect([w.x, w.y]).toEqual([door.to!.x, door.to!.y]);
+    expect(room.members.has(a.id)).toBe(false);
+    expect(gym.members.has(a.id)).toBe(true);
+    // the way out leads back to the square, in front of the gym
+    const out = gym.map.interactions.find((i) => i.to?.room === 'plaza')!;
+    const inside = gym.members.get(a.id)!;
+    inside.x = out.x;
+    inside.y = out.y;
+    ca.got.length = 0;
+    ca.send({ t: 'go', id: out.id });
+    const back = await ca.next((m) => m.t === 'welcome' && m.room === 'plaza');
+    expect([back.x, back.y]).toEqual([out.to!.x, out.to!.y]);
+    expect(gym.members.has(a.id)).toBe(false);
+    ca.ws.terminate();
   });
 
   it('lets players block each other: they stop hearing and seeing each other', async () => {

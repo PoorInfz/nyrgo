@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.32.0 — 2026-10-31 — The gym and the arena (social hub, phase 3)
+
+- **Buildings you walk into**: the gym and the arena now open from their doors on the square,
+  drawn with the owner's second art sheet (interiors, ground tiles, new props); the server moves
+  players between rooms only when they stand at the door. The square has proper paths now.
+- **Gym**: Coach Rook trains your creature against one of his at five difficulties (your level
+  −3 to +5). Every bout gives creature XP, wins give more; up to 10 a day.
+- **Arena**: ranked battles against another explorer's defender, matched by rating (Elo, K 24;
+  the absent defender moves by half) within the same age group, skipping blocked players and at
+  most 3 a day against the same opponent; 10 ranked a day. Practice battles count for nothing and
+  fall back to the host's creature when nobody is around. Leaderboard, history with replays,
+  challenges to your defender, and a choice of defender.
+- **Town XP**: training and ranked battles pay town XP, at most 250 a day, still subject to the
+  50 % rule: it only counts as far as XP earned outdoors allows.
+
 ## 0.31.0 — 2026-10-31 — The town (social hub, phase 2)
 
 - **nyrGo! Town**: a shared 2D town square, entered from the map screen and left through its

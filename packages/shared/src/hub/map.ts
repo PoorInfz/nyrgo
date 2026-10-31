@@ -2,9 +2,10 @@ import { HUB_SPRITES, type HubGround, type HubSprite } from './art.js';
 import { DEFAULT_AVATAR, type AvatarLook } from '../content/cosmetics.js';
 
 /**
- * The town square (Central Plaza): the hub's first district. One description of the world shared
- * by the server (which validates every move against it) and the client (which draws it).
- * Coordinates are world pixels; 1 art pixel = 1 world pixel; a tile is 32 px.
+ * The town: the square (Central Plaza) and the buildings you can walk into (gym, arena). One
+ * description of the world shared by the server (which validates every move against it) and the
+ * client (which draws it). Coordinates are world pixels; on the square 1 art pixel = 1 world
+ * pixel; interiors are drawn at 2×. A tile is 32 px.
  */
 
 export const TILE = 32;
@@ -25,7 +26,7 @@ export interface Placed {
   solid: Rect[];
 }
 
-export type InteractionKind = 'exit' | 'gym' | 'arena' | 'market' | 'house' | 'npc';
+export type InteractionKind = 'exit' | 'gym' | 'arena' | 'market' | 'house' | 'npc' | 'door';
 
 export interface Interaction {
   id: string;
@@ -34,6 +35,8 @@ export interface Interaction {
   x: number;
   y: number;
   radius: number;
+  /** For doors: the room it leads to and where you appear there (feet). */
+  to?: { room: string; x: number; y: number };
 }
 
 export interface Npc {
@@ -49,7 +52,10 @@ export interface HubMap {
   id: string;
   width: number;
   height: number;
-  ground: HubGround;
+  /** Repeated ground texture, or null for interiors (their art is the floor). */
+  ground: HubGround | null;
+  /** An interior's picture, drawn at the top-left, scaled. */
+  background?: { sprite: HubSprite; scale: number };
   /** Ground patches drawn over the base ground (paths). */
   patches: { ground: HubGround; rect: Rect }[];
   objects: Placed[];
@@ -187,6 +193,17 @@ function centralPlaza(): HubMap {
     prop('trophy', 1040, 300, 16),
     prop('banner-blue', 1180, 290, 14),
     prop('board', 480, 290, 16),
+    // from the second sheet
+    prop('vending', market.placed.x + size('market').w + 6, top + 140, 18),
+    prop('first-aid', gym.placed.x - 70, top + 150, 18),
+    prop('statue-knight', 1000, 700, 40),
+    prop('lamp-tall', 70, 330, 14),
+    prop('lamp-tall', width - 110, 330, 14),
+    prop('hedge', 470, 1040, 40),
+    prop('hedge', 920, 1040, 40),
+    prop('flower-bed', 700, 286, 30),
+    prop('planter', 1240, 820, 20),
+    prop('bench-wood', 1240, 600, 18),
   ];
 
   const npcs: Npc[] = [
@@ -201,19 +218,6 @@ function centralPlaza(): HubMap {
         hairColor: 'hc_mint',
         top: 'top_explorer',
         hat: 'hat_explorer',
-      }),
-    },
-    {
-      id: 'coach',
-      x: gym.door.x + 70,
-      y: gym.door.y + 40,
-      facing: 'left',
-      look: look({
-        skin: 'skin_4',
-        hair: 'hair_spiky',
-        hairColor: 'hc_black',
-        top: 'top_track',
-        hat: 'hat_cap',
       }),
     },
     {
@@ -240,14 +244,31 @@ function centralPlaza(): HubMap {
       y: portalY + 60,
       radius: 120,
     },
-    { id: 'gym', kind: 'gym', x: gym.door.x, y: gym.door.y, radius: 56 },
-    { id: 'arena', kind: 'arena', x: arena.door.x, y: arena.door.y, radius: 56 },
+    {
+      id: 'gym',
+      kind: 'gym',
+      x: gym.door.x,
+      y: gym.door.y,
+      radius: 56,
+      to: { room: 'gym', ...ROOM_ENTRY.gym },
+    },
+    {
+      id: 'arena',
+      kind: 'arena',
+      x: arena.door.x,
+      y: arena.door.y,
+      radius: 56,
+      to: { room: 'arena', ...ROOM_ENTRY.arena },
+    },
     { id: 'market', kind: 'market', x: market.door.x, y: market.door.y, radius: 56 },
     { id: 'house-red', kind: 'house', x: houseRed.door.x, y: houseRed.door.y, radius: 50 },
     { id: 'house-blue', kind: 'house', x: houseBlue.door.x, y: houseBlue.door.y, radius: 50 },
     { id: 'house-purple', kind: 'house', x: housePurple.door.x, y: housePurple.door.y, radius: 50 },
     ...npcs.map((n) => ({ id: `npc:${n.id}`, kind: 'npc' as const, x: n.x, y: n.y, radius: 60 })),
   ];
+
+  PLAZA_DOORS.gym = { x: gym.door.x, y: gym.door.y + 22 };
+  PLAZA_DOORS.arena = { x: arena.door.x, y: arena.door.y + 22 };
 
   return {
     id: 'plaza',
@@ -256,9 +277,9 @@ function centralPlaza(): HubMap {
     ground: 'grass',
     patches: [
       // the street in front of the buildings, and the way down to the portal
-      { ground: 'sand', rect: { x: 60, y: top + 200, w: width - 120, h: 84 } },
+      { ground: 'path', rect: { x: 60, y: top + 200, w: width - 120, h: 84 } },
       {
-        ground: 'sand',
+        ground: 'path',
         rect: { x: Math.round(width / 2) - 50, y: py + size('plaza').h - 20, w: 100, h: 110 },
       },
     ],
@@ -271,7 +292,147 @@ function centralPlaza(): HubMap {
   };
 }
 
-export const HUB_MAPS: Record<string, HubMap> = { plaza: centralPlaza() };
+/** Where you stand on the square after leaving a building. */
+const PLAZA_DOORS: Record<string, { x: number; y: number }> = {};
+
+/** Interiors are drawn at twice the art's size, so people fit their furniture. */
+const ROOM_SCALE = 2;
+const r2 = (x: number, y: number, w: number, h: number): Rect => ({
+  x: x * ROOM_SCALE,
+  y: y * ROOM_SCALE,
+  w: w * ROOM_SCALE,
+  h: h * ROOM_SCALE,
+});
+
+/** Where you appear inside each building (feet, world px). */
+const ROOM_ENTRY: Record<'gym' | 'arena', { x: number; y: number }> = {
+  gym: { x: 187 * ROOM_SCALE, y: 352 * ROOM_SCALE },
+  arena: { x: 160 * ROOM_SCALE, y: 342 * ROOM_SCALE },
+};
+
+/**
+ * An interior: its art as the floor, walls and furniture as solid rects (in art pixels, measured
+ * on the sheet), a door back to the square and the people who work there.
+ */
+function interior(o: {
+  id: 'gym' | 'arena';
+  sprite: HubSprite;
+  solid: Rect[];
+  door: { x: number; y: number };
+  npcs: Npc[];
+}): HubMap {
+  const { w, h } = size(o.sprite);
+  const npcs = o.npcs.map((n) => ({ ...n, x: n.x * ROOM_SCALE, y: n.y * ROOM_SCALE }));
+  return {
+    id: o.id,
+    width: w * ROOM_SCALE,
+    height: h * ROOM_SCALE,
+    ground: null,
+    background: { sprite: o.sprite, scale: ROOM_SCALE },
+    patches: [],
+    objects: [],
+    interactions: [
+      {
+        id: 'out',
+        kind: 'door',
+        x: o.door.x * ROOM_SCALE,
+        y: o.door.y * ROOM_SCALE,
+        radius: 70,
+        to: { room: 'plaza', ...PLAZA_DOORS[o.id]! },
+      },
+      ...npcs.map((n) => ({ id: `npc:${n.id}`, kind: 'npc' as const, x: n.x, y: n.y, radius: 70 })),
+    ],
+    npcs,
+    blocked: [
+      ...o.solid.map((r) => r2(r.x, r.y, r.w, r.h)),
+      ...npcs.map((n) => ({ x: n.x - 14, y: n.y - 12, w: 28, h: 14 })),
+    ],
+    spawn: ROOM_ENTRY[o.id],
+  };
+}
+
+const R = (x: number, y: number, w: number, h: number): Rect => ({ x, y, w, h });
+
+function gymRoom(): HubMap {
+  return interior({
+    id: 'gym',
+    sprite: 'room-gym',
+    solid: [
+      R(0, 0, 372, 118), // back wall, screen and console
+      R(0, 0, 22, 413), // left wall
+      R(350, 0, 22, 413), // right wall
+      R(0, 335, 150, 78), // front wall, left of the door
+      R(224, 335, 148, 78), // front wall, right of the door
+      R(35, 118, 30, 64), // red tank, left
+      R(308, 118, 30, 64), // red tank, right
+      R(82, 118, 30, 34), // green tank, left
+      R(262, 118, 30, 34), // green tank, right
+      R(24, 192, 50, 90), // bench and weights, left
+      R(298, 200, 52, 80), // weights, right
+      R(30, 300, 52, 40), // plant, left
+      R(290, 300, 52, 40), // plant, right
+    ],
+    door: { x: 187, y: 392 },
+    npcs: [
+      {
+        id: 'coach',
+        x: 187,
+        y: 178,
+        facing: 'left',
+        look: look({
+          skin: 'skin_4',
+          hair: 'hair_spiky',
+          hairColor: 'hc_black',
+          top: 'top_track',
+          hat: 'hat_cap',
+        }),
+      },
+    ],
+  });
+}
+
+function arenaRoom(): HubMap {
+  return interior({
+    id: 'arena',
+    sprite: 'room-arena',
+    solid: [
+      R(0, 0, 321, 100), // back wall and the big screen
+      R(0, 0, 62, 393), // stands, left
+      R(259, 0, 62, 393), // stands, right
+      R(0, 325, 130, 68), // front wall, left of the door
+      R(194, 325, 127, 68), // front wall, right of the door
+      R(60, 100, 46, 44), // machine, left
+      R(214, 100, 46, 44), // machine, right
+      R(62, 285, 42, 40), // plant, left
+      R(220, 285, 42, 40), // plant, right
+    ],
+    door: { x: 160, y: 380 },
+    npcs: [
+      {
+        id: 'host',
+        x: 160,
+        y: 140,
+        facing: 'right',
+        look: look({
+          skin: 'skin_2',
+          hair: 'hair_long',
+          hairColor: 'hc_violet',
+          top: 'top_cosmic',
+          hat: 'hat_crown',
+          accessory: 'acc_cape',
+        }),
+      },
+    ],
+  });
+}
+
+// the square first: the rooms' doors lead back to its building doors
+const plazaMap = centralPlaza();
+export const HUB_MAPS: Record<string, HubMap> = {
+  plaza: plazaMap,
+  gym: gymRoom(),
+  arena: arenaRoom(),
+};
 
 /** A body's footprint at its feet: what collides with the world. */
 export const FOOT = { w: 18, h: 8 } as const;

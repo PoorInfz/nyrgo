@@ -108,19 +108,23 @@ export class Room {
     }
   }
 
-  /** Adds a player at the entrance; an older connection of the same player is closed. */
+  /**
+   * Adds a player at the entrance (or at `at`, when they come through a door); an older
+   * connection of the same player in this room is closed.
+   */
   join(
     member: Omit<
       Member,
       'x' | 'y' | 'facing' | 'moving' | 'lastMoveAt' | 'chatAt' | 'lastChat' | 'known'
     >,
+    at?: { x: number; y: number },
   ) {
     const old = this.members.get(member.userId);
     if (old && old.socket !== member.socket) old.socket.close(4000, 'replaced');
     const m: Member = {
       ...member,
-      x: this.map.spawn.x + Math.round((Math.random() - 0.5) * 60),
-      y: this.map.spawn.y,
+      x: at ? at.x : this.map.spawn.x + Math.round((Math.random() - 0.5) * 60),
+      y: at ? at.y : this.map.spawn.y,
       facing: 'r',
       moving: false,
       lastMoveAt: this.now(),
@@ -128,7 +132,10 @@ export class Room {
       lastChat: null,
       known: new Set(),
     };
-    if (!canStand(this.map, m.x, m.y)) m.x = this.map.spawn.x;
+    if (!canStand(this.map, m.x, m.y)) {
+      m.x = this.map.spawn.x;
+      m.y = this.map.spawn.y;
+    }
     // others get this player's profile afresh: the look or companion may have changed
     for (const o of this.members.values()) o.known.delete(m.userId);
     this.members.set(m.userId, m);

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { HUB_MAPS, type Interaction } from '@nyrgo/shared';
 import type { Api } from '../api';
 import { useLook } from '../avatar/store';
+import { ArenaPanel, GymPanel } from './Activities';
 import { EMOTE_ICONS, Town, newBody } from './engine';
 import { connectHub, hubSocketUrl, type HubConnection, type HubEvent, type HubStatus } from './net';
 
@@ -19,7 +20,12 @@ type Dialog =
   | { kind: 'place'; id: string; place: Interaction['kind'] }
   | { kind: 'exit' }
   | { kind: 'report'; line: ChatLine }
+  | { kind: 'gym' }
+  | { kind: 'arena' }
   | null;
+
+/** NPCs with something to do rather than just a word. */
+const NPC_PANELS: Record<string, 'gym' | 'arena'> = { coach: 'gym', host: 'arena' };
 
 const REPORT_REASONS = ['harassment', 'spam', 'inappropriate', 'personal_info', 'other'] as const;
 
@@ -38,11 +44,11 @@ export default function HubScreen({
 }) {
   const { t } = useTranslation();
   const look = useLook(api);
-  const map = HUB_MAPS.plaza!;
   // the world is imperative (a game loop mutates it 60 times a second): it lives in a ref and
   // is only touched from effects and event handlers
   const townRef = useRef<Town | null>(null);
-  const getTown = useCallback(() => (townRef.current ??= new Town(map)), [map]);
+  const getTown = useCallback(() => (townRef.current ??= new Town(HUB_MAPS.plaza!)), []);
+  const [roomId, setRoomId] = useState('plaza');
   const canvas = useRef<HTMLCanvasElement>(null);
   const conn = useRef<HubConnection | null>(null);
   const me = useRef<{ name: string; level: number; companion: string | null } | null>(null);
@@ -69,6 +75,18 @@ export default function HubScreen({
     [t],
   );
 
+  /** What happens at the thing the player stands next to. */
+  const open = useCallback((n: Interaction | null) => {
+    if (!n) return;
+    if (n.to) conn.current?.go(n.id);
+    else if (n.kind === 'exit') setDialog({ kind: 'exit' });
+    else if (n.kind === 'npc') {
+      const id = n.id.replace('npc:', '');
+      const panel = NPC_PANELS[id];
+      setDialog(panel ? { kind: panel } : { kind: 'npc', id });
+    } else setDialog({ kind: 'place', id: n.id, place: n.kind });
+  }, []);
+
   // who I am in the town, then the live connection
   useEffect(() => {
     const town = getTown();
@@ -87,6 +105,14 @@ export default function HubScreen({
         if (!live) return;
         const now = performance.now();
         if (e.t === 'welcome') {
+          // a door (or a reconnection) can put the player in another room
+          const next = HUB_MAPS[e.room];
+          if (next && next !== town.map) {
+            town.setMap(next);
+            setDialog(null);
+            setNear(null);
+          }
+          setRoomId(e.room);
           town.meId = e.you;
           const prev = town.bodies.get(e.you);
           const info = me.current;
@@ -172,13 +198,7 @@ export default function HubScreen({
   useEffect(() => {
     const town = getTown();
     const keys = new Set<string>();
-    const act = () => {
-      const n = town.nearby();
-      if (!n) return;
-      if (n.kind === 'exit') setDialog({ kind: 'exit' });
-      else if (n.kind === 'npc') setDialog({ kind: 'npc', id: n.id.replace('npc:', '') });
-      else setDialog({ kind: 'place', id: n.id, place: n.kind });
-    };
+    const act = () => open(town.nearby());
     const sync = () => {
       town.input.x = (keys.has('right') ? 1 : 0) - (keys.has('left') ? 1 : 0);
       town.input.y = (keys.has('down') ? 1 : 0) - (keys.has('up') ? 1 : 0);
@@ -239,7 +259,7 @@ export default function HubScreen({
       window.removeEventListener('keyup', up);
       window.removeEventListener('blur', blur);
     };
-  }, [getTown]);
+  }, [getTown, open]);
 
   // the loop: move, follow, draw
   useEffect(() => {
@@ -287,13 +307,7 @@ export default function HubScreen({
     };
   }, [getTown]);
 
-  const interact = useCallback(() => {
-    const n = getTown().nearby();
-    if (!n) return;
-    if (n.kind === 'exit') setDialog({ kind: 'exit' });
-    else if (n.kind === 'npc') setDialog({ kind: 'npc', id: n.id.replace('npc:', '') });
-    else setDialog({ kind: 'place', id: n.id, place: n.kind });
-  }, [getTown]);
+  const interact = useCallback(() => open(getTown().nearby()), [getTown, open]);
 
   function send(e: FormEvent) {
     e.preventDefault();
@@ -338,7 +352,7 @@ export default function HubScreen({
 
       <header className="hub-top">
         <div>
-          <strong>{t('hub.title')}</strong>
+          <strong>{t(`hub.room.${roomId}`)}</strong>
           <span className={`hub-status ${status}`}>{statusText}</span>
         </div>
         <button
@@ -428,7 +442,9 @@ export default function HubScreen({
       <div className="hub-actions">
         {near && (
           <button type="button" className="hub-act" onClick={interact}>
-            {t(`hub.act.${near.kind}`)}
+            {near.kind === 'npc' && NPC_PANELS[near.id.replace('npc:', '')]
+              ? t(`hub.act.${NPC_PANELS[near.id.replace('npc:', '')]}Npc`)
+              : t(`hub.act.${near.kind}`)}
           </button>
         )}
         <button
@@ -452,7 +468,11 @@ export default function HubScreen({
       </div>
 
       {dialog && (
-        <div className="hub-dialog card" role="alertdialog" aria-labelledby="hub-dialog-title">
+        <div
+          className={`hub-dialog card${dialog.kind === 'gym' || dialog.kind === 'arena' ? ' wide' : ''}`}
+          role={dialog.kind === 'gym' || dialog.kind === 'arena' ? 'dialog' : 'alertdialog'}
+          aria-labelledby="hub-dialog-title"
+        >
           {dialog.kind === 'npc' && (
             <>
               <h2 id="hub-dialog-title">{t(`hub.npc.${dialog.id}.name`)}</h2>
@@ -464,6 +484,18 @@ export default function HubScreen({
               <h2 id="hub-dialog-title">{t(`hub.place.${dialog.place}.name`)}</h2>
               <p>{t(`hub.place.${dialog.place}.text`)}</p>
               <p className="muted small">{t('hub.soon')}</p>
+            </>
+          )}
+          {dialog.kind === 'gym' && (
+            <>
+              <h2 id="hub-dialog-title">{t('hub.npc.coach.name')}</h2>
+              <GymPanel api={api} />
+            </>
+          )}
+          {dialog.kind === 'arena' && (
+            <>
+              <h2 id="hub-dialog-title">{t('hub.npc.host.name')}</h2>
+              <ArenaPanel api={api} />
             </>
           )}
           {dialog.kind === 'exit' && (
