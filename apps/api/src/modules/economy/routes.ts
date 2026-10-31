@@ -43,7 +43,7 @@ const CraftBody = Type.Object(
 );
 const MissionParams = Type.Object({ id: Type.String({ maxLength: 40 }) });
 
-async function addItems(c: PoolClient, userId: string, items: Record<string, number>) {
+export async function addItems(c: PoolClient, userId: string, items: Record<string, number>) {
   const entries = Object.entries(items).filter(([, n]) => n > 0);
   if (entries.length === 0) return;
   await c.query(
@@ -55,7 +55,7 @@ async function addItems(c: PoolClient, userId: string, items: Record<string, num
 }
 
 /** Takes items out of the inventory, or throws without taking anything. */
-async function takeItems(c: PoolClient, userId: string, items: Record<string, number>) {
+export async function takeItems(c: PoolClient, userId: string, items: Record<string, number>) {
   for (const [id, n] of Object.entries(items)) {
     const res = await c.query(
       `UPDATE inventory SET qty = qty - $3 WHERE user_id = $1 AND item_id = $2 AND qty >= $3`,

@@ -80,7 +80,7 @@ export async function grantReward(
 
   const { rows: earned } = await c.query<{ sum: string }>(
     `SELECT COALESCE(sum(amount), 0) AS sum FROM gold_ledger
-      WHERE user_id = $1 AND amount > 0
+      WHERE user_id = $1 AND amount > 0 AND reason NOT LIKE 'market%'
         AND created_at >= (date_trunc('day', now() AT TIME ZONE ${PLAYER_TZ_SQL}) AT TIME ZONE ${PLAYER_TZ_SQL})`,
     [userId],
   );

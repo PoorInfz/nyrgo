@@ -1,6 +1,6 @@
 import {
   DEFAULT_CONFIG,
-  HUB_MAPS,
+  hubMap,
   TILE,
   canStand,
   walk,
@@ -65,7 +65,9 @@ export type Outgoing =
   | { t: 'pos'; x: number; y: number }
   | { t: 'emote'; id: string; e: Emote }
   | { t: 'chat'; id: string; mid: string; name: string; text: string; at: number }
-  | { t: 'error'; code: string };
+  | { t: 'error'; code: string }
+  /** A house's furniture or privacy changed: clients fetch it again. */
+  | { t: 'house' };
 
 export interface Profile {
   id: string;
@@ -87,12 +89,19 @@ export class Room {
     readonly id: string,
     opts: { now?: () => number; autoTick?: boolean } = {},
   ) {
-    this.map = HUB_MAPS[id]!;
+    const map = hubMap(id);
+    if (!map) throw new Error(`No map for room ${id}`);
+    this.map = map;
     this.now = opts.now ?? Date.now;
     if (opts.autoTick !== false) {
       this.timer = setInterval(() => this.tick(), Math.round(1000 / cfg().tickHz));
       this.timer.unref?.();
     }
+  }
+
+  /** Sends one message to everyone in the room. */
+  broadcast(msg: Outgoing) {
+    for (const m of this.members.values()) this.send(m, msg);
   }
 
   stop() {

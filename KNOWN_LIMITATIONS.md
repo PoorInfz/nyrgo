@@ -149,7 +149,10 @@ Stated openly so nobody relies on something that is not there.
 
 ## The town (hub)
 
-- The plaza, gym and arena exist; the market and houses still announce that they open soon.
+- The plaza, gym, arena, market and houses exist. Every house is the same cottage; furniture is
+  decoration only (nobody bumps into it) and is placed where the player stands, not dragged.
+- The market sells whole lots only (no partial buys, no bids) and lists the 60 cheapest offers;
+  there is no search yet. Prices are free, so expect odd ones until there are many sellers.
 - Arena battles are against another player's defender (an asynchronous ladder), not live
   between two connected players. With few players, ranked battles often find nobody in range
   ("no opponent"); practice then falls back to the host. No seasons or rating decay yet.

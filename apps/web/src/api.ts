@@ -436,6 +436,55 @@ export interface ArenaResult extends HubReward {
   rankedLeft: number;
 }
 
+export interface HubListing {
+  id: string;
+  itemId: string;
+  qty: number;
+  /** For the whole lot. */
+  price: number;
+  expiresAt: string;
+  seller?: string;
+  fee?: number;
+  status?: 'open' | 'sold' | 'cancelled' | 'expired';
+  closedAt?: string | null;
+}
+
+export interface MarketInfo {
+  listings: HubListing[];
+  mine: HubListing[];
+  items: InventoryItem[];
+  gold: number;
+  fee: number;
+  maxListings: number;
+  hours: number;
+}
+
+export interface FurnitureInfo {
+  catalog: { id: string; price: number }[];
+  owned: Record<string, number>;
+  gold: number;
+}
+
+export type HousePrivacy = 'private' | 'friends' | 'public';
+export interface HousePiece {
+  f: string;
+  x: number;
+  y: number;
+  flip: boolean;
+}
+export interface HouseView {
+  owner: string;
+  name: string;
+  mine: boolean;
+  privacy?: HousePrivacy;
+  layout: HousePiece[];
+}
+export interface HousesInfo {
+  mine: { privacy: HousePrivacy; pieces: number };
+  friends: { id: string; name: string }[];
+  open: { id: string; name: string; pieces: number }[];
+}
+
 export interface GameEvent {
   id: string;
   title: string;
@@ -617,6 +666,39 @@ export function createApi(baseUrl: string) {
       call<ArenaResult>('POST', '/v1/hub/arena/match', { creature, mode }),
     hubDefender: (creature: string | null) =>
       call<{ defenderId: string | null }>('PUT', '/v1/hub/arena/defender', { creature }),
+    hubMarket: () => call<MarketInfo>('GET', '/v1/hub/market'),
+    hubList: (item: string, qty: number, price: number) =>
+      call<{ id: string; fee: number; items: InventoryItem[] }>('POST', '/v1/hub/market/listings', {
+        item,
+        qty,
+        price,
+      }),
+    /** `key` must stay the same when retrying the same purchase. */
+    hubBuyListing: (id: string, key: string) =>
+      call<{ gold: number; items: InventoryItem[] }>(
+        'POST',
+        `/v1/hub/market/listings/${encodeURIComponent(id)}/buy`,
+        undefined,
+        { 'idempotency-key': key },
+      ),
+    hubWithdraw: (id: string) =>
+      call<{ items: InventoryItem[] }>(
+        'DELETE',
+        `/v1/hub/market/listings/${encodeURIComponent(id)}`,
+      ),
+    hubFurniture: () => call<FurnitureInfo>('GET', '/v1/hub/furniture'),
+    hubBuyFurniture: (item: string, key: string) =>
+      call<{ item: string; owned: number; gold: number }>(
+        'POST',
+        '/v1/hub/furniture/buy',
+        { item },
+        { 'idempotency-key': key },
+      ),
+    hubHouses: () => call<HousesInfo>('GET', '/v1/hub/houses'),
+    hubHouse: (owner: string) =>
+      call<HouseView>('GET', `/v1/hub/house/${encodeURIComponent(owner)}`),
+    hubSaveHouse: (body: { privacy?: HousePrivacy; layout?: HousePiece[] }) =>
+      call<{ privacy: HousePrivacy; layout: HousePiece[] }>('PUT', '/v1/hub/house', body),
     hubBlocks: () => call<{ blocked: { id: string; name: string }[] }>('GET', '/v1/hub/blocks'),
     duels: () => call<{ duels: Duel[] }>('GET', '/v1/duels'),
     challenge: (to: string, creature: string) =>

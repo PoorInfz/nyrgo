@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { HUB_MAPS, HUB_SPRITES, canStand, interactionAt, walk } from '../src/index.js';
+import {
+  FURNITURE,
+  HUB_MAPS,
+  HUB_SPRITES,
+  canStand,
+  houseOwnerOf,
+  houseRoomId,
+  hubMap,
+  interactionAt,
+  walk,
+} from '../src/index.js';
 
 const plaza = HUB_MAPS.plaza!;
 
@@ -19,11 +29,11 @@ describe('the town square map', () => {
   });
 
   it('lets every door, NPC and the exit be reached on foot, in every room', () => {
-    for (const map of Object.values(HUB_MAPS)) reachable(map);
+    for (const map of [...Object.values(HUB_MAPS), hubMap(houseRoomId('someone'))!]) reachable(map);
   });
 
   it('leads every door to a walkable spot in an existing room, and back', () => {
-    for (const map of Object.values(HUB_MAPS)) {
+    for (const map of [...Object.values(HUB_MAPS), hubMap(houseRoomId('someone'))!]) {
       for (const i of map.interactions.filter((x) => x.to)) {
         const there = HUB_MAPS[i.to!.room]!;
         expect(there, `${map.id}:${i.id}`).toBeTruthy();
@@ -66,5 +76,19 @@ describe('the town square map', () => {
     const from = { x: wall.x + 40, y: wall.y - 2 };
     const to = walk(plaza, from, { x: from.x + 10, y: from.y + 10 });
     expect(to).toEqual({ x: from.x + 10, y: from.y });
+  });
+});
+
+describe('houses', () => {
+  it('gives every player their own room with the same layout', () => {
+    const a = hubMap(houseRoomId('a'))!;
+    expect(a.id).toBe('house:a');
+    expect(houseOwnerOf(a.id)).toBe('a');
+    expect(houseOwnerOf('gym')).toBeNull();
+    expect(hubMap('nowhere')).toBeUndefined();
+    expect(a.interactions.find((i) => i.id === 'out')?.to?.room).toBe('plaza');
+  });
+  it('has art for every piece of furniture', () => {
+    for (const f of FURNITURE) expect(HUB_SPRITES[f.sprite]).toBeTruthy();
   });
 });

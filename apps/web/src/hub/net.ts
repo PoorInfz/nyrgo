@@ -20,7 +20,8 @@ export type HubEvent =
   | { t: 'pos'; x: number; y: number }
   | { t: 'emote'; id: string; e: string }
   | { t: 'chat'; id: string; mid: string; name: string; text: string; at: number }
-  | { t: 'error'; code: string };
+  | { t: 'error'; code: string }
+  | { t: 'house' };
 
 export type HubStatus = 'connecting' | 'open' | 'reconnecting' | 'closed';
 
@@ -30,6 +31,8 @@ export interface HubConnection {
   chat(text: string): void;
   /** Through a door the player is standing at. */
   go(id: string): void;
+  /** Into a player's house, from a house door on the square. */
+  visit(owner: string): void;
   close(): void;
 }
 
@@ -102,6 +105,7 @@ export function connectHub(
     emote: (e) => send({ t: 'emote', e }),
     chat: (text) => send({ t: 'chat', text }),
     go: (id) => send({ t: 'go', id }),
+    visit: (owner) => send({ t: 'visit', owner }),
     close() {
       stopped = true;
       clearInterval(flush);

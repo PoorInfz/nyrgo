@@ -3,6 +3,9 @@ import { Type, type Static } from '@sinclair/typebox';
 import {
   DEFAULT_CONFIG,
   canUseWeb3,
+  houseOwnerOf,
+  houseRoomId,
+  hubMap,
   normaliseLook,
   progressBreakdown,
   type AgeBand,
@@ -12,6 +15,8 @@ import { HttpProblem } from '../../http/problem.js';
 import { requireAuth } from '../auth/sessions.js';
 import { loadOwned } from '../creatures/owned.js';
 import { hubActivityRoutes } from './activities.js';
+import { canVisit, houseRoutes } from './houses.js';
+import { marketRoutes } from './market.js';
 import { checkChat } from './chat.js';
 import { Room, type AgeGroup, type Member, type Socket } from './room.js';
 
@@ -36,6 +41,12 @@ const ReportBody = Type.Object(
 );
 
 const MAX_FRAME = 2048;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/** Where someone shown out of a house appears on the square. */
+function PLAZA_HOUSE_DOOR() {
+  const out = hubMap(houseRoomId('x'))!.interactions.find((i) => i.id === 'out')!.to!;
+  return { x: out.x, y: out.y };
+}
 
 export interface HubDeps {
   db: Db;
@@ -47,14 +58,50 @@ export interface HubDeps {
 export async function hubRoutes(app: FastifyInstance, { db, corsOrigins, rooms: given }: HubDeps) {
   const rooms =
     given ?? new Map(['plaza', 'gym', 'arena'].map((id) => [id, new Room(id)] as const));
-  /** Each player's one live connection and the room they are in. */
-  const where = new Map<string, { socket: Socket; room: Room }>();
+  /**
+   * Each player's one live connection, the room they are in, and how to move them elsewhere
+   * (the server does it when a house closes its door).
+   */
+  const where = new Map<
+    string,
+    { socket: Socket; room: Room; enter: (next: Room, at?: { x: number; y: number }) => void }
+  >();
   app.addHook('onClose', async () => {
     for (const r of rooms.values()) r.stop();
   });
-  await hubActivityRoutes(app, {
+  const inRoom = (userId: string, id: string) => rooms.get(id)?.members.has(userId) ?? false;
+  await hubActivityRoutes(app, { db, inRoom });
+  await marketRoutes(app, { db, inRoom });
+
+  /** A house room, opened when its first visitor arrives and closed when the last one leaves. */
+  function houseRoom(owner: string): Room {
+    const id = houseRoomId(owner);
+    let r = rooms.get(id);
+    if (!r) {
+      r = new Room(id, given ? { autoTick: false } : {});
+      rooms.set(id, r);
+    }
+    return r;
+  }
+  function closeIfEmpty(r: Room) {
+    if (houseOwnerOf(r.id) && r.members.size === 0) {
+      r.stop();
+      rooms.delete(r.id);
+    }
+  }
+
+  await houseRoutes(app, {
     db,
-    inRoom: (userId, id) => rooms.get(id)?.members.has(userId) ?? false,
+    changed: async (owner) => {
+      const r = rooms.get(houseRoomId(owner));
+      if (!r) return;
+      for (const id of [...r.members.keys()]) {
+        if (await canVisit(db, id, owner)) continue;
+        // no longer welcome: back to the square, in front of the houses
+        where.get(id)?.enter(rooms.get('plaza')!, PLAZA_HOUSE_DOOR());
+      }
+      r.broadcast({ t: 'house' });
+    },
   });
 
   /** Everything the hub needs to show a player: who they are there, and the 50 % rule. */
@@ -235,6 +282,8 @@ export async function hubRoutes(app: FastifyInstance, { db, corsOrigins, rooms: 
           );
         } else if (msg.t === 'go' && typeof msg.id === 'string') {
           go(msg.id);
+        } else if (msg.t === 'visit' && typeof msg.owner === 'string' && UUID.test(msg.owner)) {
+          void visit(msg.owner);
         } else if (msg.t === 'emote' && typeof msg.e === 'string') {
           room.emote(userId, msg.e);
         } else if (msg.t === 'chat' && typeof msg.text === 'string') {
@@ -244,19 +293,17 @@ export async function hubRoutes(app: FastifyInstance, { db, corsOrigins, rooms: 
       socket.on('close', () => {
         closed = true;
         room.leave(userId, socket);
+        closeIfEmpty(room);
         if (where.get(userId)?.socket === socket) where.delete(userId);
       });
 
-      /** Through a door: only when standing at it, into the room it leads to. */
-      function go(id: string) {
-        const door = room.map.interactions.find((i) => i.id === id && i.to);
+      /** Where a player goes back to when leaving a house: the door they came in by. */
+      let houseReturn: { x: number; y: number } | null = null;
+
+      /** Moves this player to another room (their profile goes with them). */
+      function enter(next: Room, at?: { x: number; y: number }) {
         const m = room.members.get(userId);
-        if (!door?.to || !m || m.socket !== socket) return;
-        if (Math.hypot(m.x - door.x, m.y - door.y) > door.radius + 24) {
-          return room.error(userId, 'too_far');
-        }
-        const next = rooms.get(door.to.room);
-        if (!next) return;
+        if (!m || m.socket !== socket) return;
         const keep: Omit<
           Member,
           'x' | 'y' | 'facing' | 'moving' | 'lastMoveAt' | 'chatAt' | 'lastChat' | 'known'
@@ -270,10 +317,44 @@ export async function hubRoutes(app: FastifyInstance, { db, corsOrigins, rooms: 
           muted: m.muted,
           socket,
         };
-        room.leave(userId, socket);
+        const prev = room;
+        prev.leave(userId, socket);
+        closeIfEmpty(prev);
         room = next;
-        room.join(keep, { x: door.to.x, y: door.to.y });
-        where.set(userId, { socket, room });
+        room.join(keep, at);
+        where.set(userId, { socket, room, enter });
+      }
+
+      /** Through a door: only when standing at it, into the room it leads to. */
+      function go(id: string) {
+        const door = room.map.interactions.find((i) => i.id === id && i.to);
+        const m = room.members.get(userId);
+        if (!door?.to || !m || m.socket !== socket) return;
+        if (Math.hypot(m.x - door.x, m.y - door.y) > door.radius + 24) {
+          return room.error(userId, 'too_far');
+        }
+        const next = rooms.get(door.to.room);
+        if (!next) return;
+        const at =
+          houseOwnerOf(room.id) && door.to.room === 'plaza' && houseReturn
+            ? houseReturn
+            : { x: door.to.x, y: door.to.y };
+        enter(next, at);
+      }
+
+      /** Into a player's house, from one of the houses on the square, if its door is open. */
+      async function visit(owner: string) {
+        const m = room.members.get(userId);
+        if (!m || m.socket !== socket || room.id !== 'plaza') return;
+        const door = room.map.interactions.find(
+          (i) => i.kind === 'house' && Math.hypot(m.x - i.x, m.y - i.y) <= i.radius + 24,
+        );
+        if (!door) return room.error(userId, 'too_far');
+        if (!(await canVisit(db, userId, owner))) return room.error(userId, 'house_closed');
+        if (room.id !== 'plaza' || closed) return;
+        houseReturn = { x: door.x, y: door.y + 22 };
+        const next = houseRoom(owner);
+        enter(next, next.map.spawn);
       }
 
       async function chat(raw: string) {
@@ -313,9 +394,10 @@ export async function hubRoutes(app: FastifyInstance, { db, corsOrigins, rooms: 
       const old = where.get(userId);
       if (old && old.socket !== socket) {
         old.room.leave(userId, old.socket);
+        closeIfEmpty(old.room);
         old.socket.close(4000, 'replaced');
       }
-      where.set(userId, { socket, room });
+      where.set(userId, { socket, room, enter });
       const ageGroup: AgeGroup = canUseWeb3(p.age_band) ? 'adult' : 'minor';
       room.join({
         userId,

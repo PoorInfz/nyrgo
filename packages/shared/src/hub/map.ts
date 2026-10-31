@@ -269,6 +269,8 @@ function centralPlaza(): HubMap {
 
   PLAZA_DOORS.gym = { x: gym.door.x, y: gym.door.y + 22 };
   PLAZA_DOORS.arena = { x: arena.door.x, y: arena.door.y + 22 };
+  // the server sends each visitor back to the house door they used; this is the fallback
+  PLAZA_DOORS.house = { x: houseBlue.door.x, y: houseBlue.door.y + 22 };
 
   return {
     id: 'plaza',
@@ -305,9 +307,10 @@ const r2 = (x: number, y: number, w: number, h: number): Rect => ({
 });
 
 /** Where you appear inside each building (feet, world px). */
-const ROOM_ENTRY: Record<'gym' | 'arena', { x: number; y: number }> = {
+const ROOM_ENTRY: Record<'gym' | 'arena' | 'house', { x: number; y: number }> = {
   gym: { x: 187 * ROOM_SCALE, y: 352 * ROOM_SCALE },
   arena: { x: 160 * ROOM_SCALE, y: 342 * ROOM_SCALE },
+  house: { x: 155 * ROOM_SCALE, y: 300 * ROOM_SCALE },
 };
 
 /**
@@ -315,7 +318,9 @@ const ROOM_ENTRY: Record<'gym' | 'arena', { x: number; y: number }> = {
  * on the sheet), a door back to the square and the people who work there.
  */
 function interior(o: {
-  id: 'gym' | 'arena';
+  id: 'gym' | 'arena' | 'house';
+  /** The room's id when it differs from its kind (each house is its own room). */
+  roomId?: string;
   sprite: HubSprite;
   solid: Rect[];
   door: { x: number; y: number };
@@ -324,7 +329,7 @@ function interior(o: {
   const { w, h } = size(o.sprite);
   const npcs = o.npcs.map((n) => ({ ...n, x: n.x * ROOM_SCALE, y: n.y * ROOM_SCALE }));
   return {
-    id: o.id,
+    id: o.roomId ?? o.id,
     width: w * ROOM_SCALE,
     height: h * ROOM_SCALE,
     ground: null,
@@ -426,6 +431,40 @@ function arenaRoom(): HubMap {
   });
 }
 
+/**
+ * A player's house: the cottage interior from the owner's art, already furnished with its basics
+ * (bed, desks, kitchen); what the player buys stands on the open floor. One room per owner.
+ */
+function houseRoom(roomId: string): HubMap {
+  return interior({
+    id: 'house',
+    roomId,
+    sprite: 'room-house',
+    solid: [
+      R(0, 0, 322, 70), // back wall and windows
+      R(0, 0, 18, 394), // left wall
+      R(300, 0, 22, 394), // right wall
+      R(30, 60, 95, 62), // desk and chair, back left
+      R(190, 70, 95, 55), // desk and shelves, back right
+      R(30, 120, 62, 90), // bed
+      R(220, 120, 80, 75), // cupboard and fridge
+      R(30, 215, 48, 100), // desk, front left
+      R(228, 225, 72, 90), // table, chairs and plant
+      R(0, 318, 120, 76), // front wall, left of the door
+      R(190, 318, 132, 76), // front wall, right of the door
+    ],
+    door: { x: 155, y: 372 },
+    npcs: [],
+  });
+}
+
+const HOUSE_PREFIX = 'house:';
+/** The room id of a player's house. */
+export const houseRoomId = (ownerId: string) => `${HOUSE_PREFIX}${ownerId}`;
+/** The owner of a house room, or null for any other room. */
+export const houseOwnerOf = (roomId: string) =>
+  roomId.startsWith(HOUSE_PREFIX) ? roomId.slice(HOUSE_PREFIX.length) : null;
+
 // the square first: the rooms' doors lead back to its building doors
 const plazaMap = centralPlaza();
 export const HUB_MAPS: Record<string, HubMap> = {
@@ -433,6 +472,11 @@ export const HUB_MAPS: Record<string, HubMap> = {
   gym: gymRoom(),
   arena: arenaRoom(),
 };
+
+/** Any room's map: the fixed ones, or a house (all houses share one layout). */
+export function hubMap(roomId: string): HubMap | undefined {
+  return HUB_MAPS[roomId] ?? (houseOwnerOf(roomId) ? houseRoom(roomId) : undefined);
+}
 
 /** A body's footprint at its feet: what collides with the world. */
 export const FOOT = { w: 18, h: 8 } as const;

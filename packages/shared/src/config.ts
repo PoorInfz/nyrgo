@@ -200,6 +200,13 @@ export interface HubConfig {
   eloK: number;
   /** Ranked opponents are looked for within these rating gaps, widening in turn. */
   matchWindows: number[];
+  /** Town market: the share of each sale kept by the game (a Gold sink), and its limits. */
+  marketFee: number;
+  marketListingsMax: number;
+  marketListingHours: number;
+  marketPriceMax: number;
+  /** Houses: most pieces of furniture placed at once. */
+  houseItemsMax: number;
 }
 
 export interface GameConfig {
@@ -320,6 +327,11 @@ export const DEFAULT_CONFIG: GameConfig = {
     rankedLossXp: 5,
     eloK: 24,
     matchWindows: [150, 300, 600],
+    marketFee: 0.05,
+    marketListingsMax: 10,
+    marketListingHours: 72,
+    marketPriceMax: 10000,
+    houseItemsMax: 30,
   },
   tips: {
     amountMilliNear: 5,

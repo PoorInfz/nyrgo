@@ -1,5 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { DEFAULT_CONFIG, normaliseLook } from '@nyrgo/shared';
+import { randomUUID } from 'node:crypto';
+import { DEFAULT_CONFIG, normaliseLook, xpForLevel } from '@nyrgo/shared';
+import { withTx } from '../src/db.js';
+import { grantReward } from '../src/modules/progress/rewards.js';
 import { syncContent } from '../src/modules/content/sync.js';
 import { Room } from '../src/modules/hub/room.js';
 import {
@@ -107,6 +110,24 @@ describe.skipIf(!TEST_DB_URL)('the gym and the arena', () => {
     expect(info.left).toBe(0);
     expect(info.history).toHaveLength(hub.trainingsPerDay);
     expect(info.hubXpToday).toBeLessThanOrEqual(hub.xpPerDay);
+  });
+
+  it('levels a player up with town XP when outdoor XP allows it', async () => {
+    const p = await player();
+    const c = await p.creature();
+    // just short of level 5 outdoors: any town XP now counts and crosses the line
+    await withTx(t.db, (tx) =>
+      grantReward(tx, p.id, {
+        xp: xpForLevel(5) - 1,
+        gold: 0,
+        reason: 'test',
+        refId: randomUUID(),
+      }),
+    );
+    p.enter('gym');
+    const r = (await p.call('POST', '/v1/hub/training', { creature: c, tier: 0 })).json();
+    expect(r.hubXp).toBeGreaterThan(0);
+    expect(r).toMatchObject({ leveledUp: true, level: 5 });
   });
 
   it('refuses a creature that is not yours', async () => {

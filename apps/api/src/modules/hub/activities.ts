@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import type { FastifyInstance } from 'fastify';
 import type { PoolClient } from 'pg';
 import { Type, type Static } from '@sinclair/typebox';
@@ -139,7 +139,8 @@ async function settle(
           xp: hubXp,
           gold: 0,
           reason: `hub_${a.kind}`,
-          refId: `hub:${id}`,
+          // the ledger wants a uuid (level-up Gold can be paid with this reward)
+          refId: randomUUID(),
           source: 'hub',
         })
       : null;

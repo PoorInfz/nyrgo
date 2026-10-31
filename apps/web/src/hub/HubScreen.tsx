@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { HUB_MAPS, type Interaction } from '@nyrgo/shared';
+import { houseOwnerOf, hubMap, type Interaction } from '@nyrgo/shared';
+import type { HouseView } from '../api';
 import type { Api } from '../api';
 import { useLook } from '../avatar/store';
 import { ArenaPanel, GymPanel } from './Activities';
+import { DecoratePanel, HousesPanel } from './House';
+import { MarketPanel } from './Market';
 import { EMOTE_ICONS, Town, newBody } from './engine';
 import { connectHub, hubSocketUrl, type HubConnection, type HubEvent, type HubStatus } from './net';
 
@@ -22,10 +25,19 @@ type Dialog =
   | { kind: 'report'; line: ChatLine }
   | { kind: 'gym' }
   | { kind: 'arena' }
+  | { kind: 'market' }
+  | { kind: 'houses' }
+  | { kind: 'decorate' }
   | null;
 
 /** NPCs with something to do rather than just a word. */
-const NPC_PANELS: Record<string, 'gym' | 'arena'> = { coach: 'gym', host: 'arena' };
+const NPC_PANELS: Record<string, 'gym' | 'arena' | 'market'> = {
+  coach: 'gym',
+  host: 'arena',
+  merchant: 'market',
+};
+/** Dialogs that hold a whole panel (wider, scrolling). */
+const PANELS = new Set(['gym', 'arena', 'market', 'houses', 'decorate']);
 
 const REPORT_REASONS = ['harassment', 'spam', 'inappropriate', 'personal_info', 'other'] as const;
 
@@ -47,8 +59,11 @@ export default function HubScreen({
   // the world is imperative (a game loop mutates it 60 times a second): it lives in a ref and
   // is only touched from effects and event handlers
   const townRef = useRef<Town | null>(null);
-  const getTown = useCallback(() => (townRef.current ??= new Town(HUB_MAPS.plaza!)), []);
+  const getTown = useCallback(() => (townRef.current ??= new Town(hubMap('plaza')!)), []);
   const [roomId, setRoomId] = useState('plaza');
+  /** The house the player is in, if any (its furniture also goes to the town to be drawn). */
+  const [house, setHouse] = useState<HouseView | null>(null);
+  const [myId, setMyId] = useState<string | null>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const conn = useRef<HubConnection | null>(null);
   const me = useRef<{ name: string; level: number; companion: string | null } | null>(null);
@@ -80,12 +95,29 @@ export default function HubScreen({
     if (!n) return;
     if (n.to) conn.current?.go(n.id);
     else if (n.kind === 'exit') setDialog({ kind: 'exit' });
+    else if (n.kind === 'market') setDialog({ kind: 'market' });
+    else if (n.kind === 'house') setDialog({ kind: 'houses' });
     else if (n.kind === 'npc') {
       const id = n.id.replace('npc:', '');
       const panel = NPC_PANELS[id];
       setDialog(panel ? { kind: panel } : { kind: 'npc', id });
     } else setDialog({ kind: 'place', id: n.id, place: n.kind });
   }, []);
+
+  const loadHouse = useCallback(
+    async (owner: string) => {
+      try {
+        const h = await api.hubHouse(owner);
+        const town = getTown();
+        if (houseOwnerOf(town.map.id) !== owner) return;
+        town.furniture = h.layout;
+        setHouse(h);
+      } catch {
+        // the door closed meanwhile: the server shows the player out
+      }
+    },
+    [api, getTown],
+  );
 
   // who I am in the town, then the live connection
   useEffect(() => {
@@ -106,13 +138,19 @@ export default function HubScreen({
         const now = performance.now();
         if (e.t === 'welcome') {
           // a door (or a reconnection) can put the player in another room
-          const next = HUB_MAPS[e.room];
-          if (next && next !== town.map) {
-            town.setMap(next);
-            setDialog(null);
-            setNear(null);
+          if (e.room !== town.map.id) {
+            const next = hubMap(e.room);
+            if (next) {
+              town.setMap(next);
+              setDialog(null);
+              setNear(null);
+            }
           }
           setRoomId(e.room);
+          setMyId(e.you);
+          const owner = houseOwnerOf(e.room);
+          setHouse(null);
+          if (owner) void loadHouse(owner);
           town.meId = e.you;
           const prev = town.bodies.get(e.you);
           const info = me.current;
@@ -177,6 +215,9 @@ export default function HubScreen({
           );
         } else if (e.t === 'error') {
           say(`hub.err.${e.code}`);
+        } else if (e.t === 'house') {
+          const owner = houseOwnerOf(town.map.id);
+          if (owner) void loadHouse(owner);
         }
       },
     });
@@ -186,7 +227,7 @@ export default function HubScreen({
       c.close();
       conn.current = null;
     };
-  }, [api, apiUrl, getTown, say]);
+  }, [api, apiUrl, getTown, say, loadHouse]);
 
   // my look can change in the wardrobe; keep the drawn one in step
   useEffect(() => {
@@ -352,7 +393,13 @@ export default function HubScreen({
 
       <header className="hub-top">
         <div>
-          <strong>{t(`hub.room.${roomId}`)}</strong>
+          <strong>
+            {houseOwnerOf(roomId)
+              ? house
+                ? t('hub.room.house', { name: house.name })
+                : t('hub.room.houseAny')
+              : t(`hub.room.${roomId}`)}
+          </strong>
           <span className={`hub-status ${status}`}>{statusText}</span>
         </div>
         <button
@@ -447,6 +494,16 @@ export default function HubScreen({
               : t(`hub.act.${near.kind}`)}
           </button>
         )}
+        {house?.mine && (
+          <button
+            type="button"
+            className="secondary hub-round"
+            aria-label={t('house.decorate')}
+            onClick={() => setDialog({ kind: 'decorate' })}
+          >
+            🛋️
+          </button>
+        )}
         <button
           type="button"
           className="secondary hub-round"
@@ -469,8 +526,8 @@ export default function HubScreen({
 
       {dialog && (
         <div
-          className={`hub-dialog card${dialog.kind === 'gym' || dialog.kind === 'arena' ? ' wide' : ''}`}
-          role={dialog.kind === 'gym' || dialog.kind === 'arena' ? 'dialog' : 'alertdialog'}
+          className={`hub-dialog card${PANELS.has(dialog.kind) ? ' wide' : ''}`}
+          role={PANELS.has(dialog.kind) ? 'dialog' : 'alertdialog'}
           aria-labelledby="hub-dialog-title"
         >
           {dialog.kind === 'npc' && (
@@ -496,6 +553,42 @@ export default function HubScreen({
             <>
               <h2 id="hub-dialog-title">{t('hub.npc.host.name')}</h2>
               <ArenaPanel api={api} />
+            </>
+          )}
+          {dialog.kind === 'market' && (
+            <>
+              <h2 id="hub-dialog-title">{t('hub.npc.merchant.name')}</h2>
+              <MarketPanel api={api} />
+            </>
+          )}
+          {dialog.kind === 'houses' && (
+            <>
+              <h2 id="hub-dialog-title">{t('house.title')}</h2>
+              <HousesPanel
+                api={api}
+                me={myId}
+                onVisit={(owner) => {
+                  setDialog(null);
+                  conn.current?.visit(owner);
+                }}
+              />
+            </>
+          )}
+          {dialog.kind === 'decorate' && house && (
+            <>
+              <h2 id="hub-dialog-title">{t('house.decorate')}</h2>
+              <DecoratePanel
+                api={api}
+                layout={house.layout}
+                spot={() => {
+                  const b = getTown().me();
+                  return b ? { x: b.x, y: b.y } : null;
+                }}
+                onSaved={(layout) => {
+                  getTown().furniture = layout;
+                  setHouse((h) => (h ? { ...h, layout } : h));
+                }}
+              />
             </>
           )}
           {dialog.kind === 'exit' && (

@@ -1,4 +1,5 @@
 import {
+  FURNITURE_BY_ID,
   HUB_SPRITES,
   TILE,
   interactionAt,
@@ -83,6 +84,8 @@ export class Town {
   /** Input direction for the local player, -1…1 on each axis. */
   input = { x: 0, y: 0 };
   camera = { x: 0, y: 0, zoom: 1 };
+  /** In a house: the owner's furniture, each standing with its bottom centre at (x, y). */
+  furniture: { f: string; x: number; y: number; flip: boolean }[] = [];
   private groundPattern = new Map<string, CanvasPattern | null>();
   private time = 0;
 
@@ -92,6 +95,7 @@ export class Town {
   setMap(map: HubMap) {
     if (map === this.map) return;
     this.map = map;
+    this.furniture = [];
     const me = this.me();
     this.bodies.clear();
     if (me) {
@@ -193,6 +197,8 @@ export class Town {
       const s = HUB_SPRITES[bg.sprite];
       if (ready(img)) ctx.drawImage(img, 0, 0, s.w * bg.scale, s.h * bg.scale);
     }
+    // rugs lie on the floor, under everyone
+    for (const p of this.furniture) if (FURNITURE_BY_ID.get(p.f)?.rug) this.drawPiece(ctx, p);
     for (const p of this.map.patches) {
       const pat = this.pattern(ctx, p.ground);
       ctx.fillStyle = pat ?? '#e8c47a';
@@ -223,6 +229,10 @@ export class Town {
           if (ready(img)) ctx.drawImage(img, o.x, o.y);
         },
       });
+    }
+    for (const p of this.furniture) {
+      if (FURNITURE_BY_ID.get(p.f)?.rug) continue;
+      items.push({ base: p.y, draw: () => this.drawPiece(ctx, p) });
     }
     for (const n of this.map.npcs) {
       if (!inView(n.x - 30, n.y - 70, 60, 80)) continue;
@@ -259,6 +269,26 @@ export class Town {
       if (b.emote) this.emoteBubble(ctx, b.x, b.y, EMOTE_ICONS[b.emote.e] ?? '•');
       else if (b.bubble) this.speech(ctx, b.x, b.y, b.bubble.text);
     }
+  }
+
+  /** A piece of furniture, at the room's scale, standing on (x, y). */
+  private drawPiece(
+    ctx: CanvasRenderingContext2D,
+    p: { f: string; x: number; y: number; flip: boolean },
+  ) {
+    const def = FURNITURE_BY_ID.get(p.f);
+    if (!def) return;
+    const img = townSprite(def.sprite);
+    if (!ready(img)) return;
+    const k = this.map.background?.scale ?? 1;
+    const s = HUB_SPRITES[def.sprite];
+    const w = s.w * k;
+    const h = s.h * k;
+    ctx.save();
+    ctx.translate(p.x, def.rug ? p.y + h / 2 : p.y);
+    if (p.flip) ctx.scale(-1, 1);
+    ctx.drawImage(img, -w / 2, -h, w, h);
+    ctx.restore();
   }
 
   private drawExplorer(

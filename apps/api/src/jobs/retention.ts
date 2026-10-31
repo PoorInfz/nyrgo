@@ -1,5 +1,6 @@
 import { DEFAULT_CONFIG } from '@nyrgo/shared';
-import type { Db } from '../db.js';
+import { withTx, type Db } from '../db.js';
+import { expireListings } from '../modules/hub/market.js';
 
 /**
  * Data retention. Each step is one bounded statement so a large backlog is worked off over
@@ -30,6 +31,8 @@ export interface RetentionReport {
   spawnGenerationsDeleted: number;
   battlesDeleted: number;
   hubChatDeleted: number;
+  /** Market listings that lapsed: their items went back to the sellers. */
+  listingsExpired: number;
 }
 
 async function batched(db: Db, sql: string, params: unknown[]): Promise<number> {
@@ -106,6 +109,7 @@ export async function runRetention(db: Db): Promise<RetentionReport> {
          SELECT id FROM battles WHERE created_at < now() - make_interval(days => $1) LIMIT ${BATCH})`,
       [SPAWN_RETENTION_D],
     ),
+    listingsExpired: await withTx(db, (c) => expireListings(c)),
     hubChatDeleted: await batched(
       db,
       `DELETE FROM hub_chat WHERE id IN (

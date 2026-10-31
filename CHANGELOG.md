@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.33.0 — 2026-10-31 — Market and houses (social hub, phase 4)
+
+- **Town market**: Mira, on the square, runs a players' market for game items. Sellers set a
+  price for a lot; the items are held until it sells, is withdrawn or lapses (72 h, then they
+  come back). Purchases are atomic and idempotent; the game keeps a 5 % fee as a Gold sink. Up
+  to 10 open listings each, only within your age group, never with blocked players. Creatures and
+  NFTs are not sold here. Market income does not count towards the daily gameplay Gold cap.
+- **Houses**: every player has a house, entered from the houses on the square. 33 pieces of
+  furniture from the owner's art, sold by Mira; place them where you stand, turn or remove them,
+  up to 30 at once. Doors open to nobody, friends (default) or everyone, always within the age
+  group and never to blocked players; closing the door shows visitors out at once.
+- Fix: town XP that crossed a level could fail to record the level-up Gold (ledger reference).
+
 ## 0.32.0 — 2026-10-31 — The gym and the arena (social hub, phase 3)
 
 - **Buildings you walk into**: the gym and the arena now open from their doors on the square,

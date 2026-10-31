@@ -1,6 +1,6 @@
 # Social hub — Phase 1 audit and proposed architecture
 
-Status: **Phases 2 and 3 built** (town square; gym and arena) — see §6 and §7. Phases 4–5 not started. This answers Phase 1 of the hub brief (2026-10-31): what
+Status: **Phases 2–4 built** (town square; gym and arena; market and houses) — see §6–§8. Phase 5 not started. This answers Phase 1 of the hub brief (2026-10-31): what
 exists, what the hub can reuse, the smallest compatible architecture, and the conflicts that
 need a decision before Phase 2.
 
@@ -139,6 +139,27 @@ drawn with the **owner's art sheet** (`art/hub/sheet-01.png`).
   50 % rule applies on top.
 - **Not done yet**: live PvP between two connected players (battles are against a defender, like
   an asynchronous ladder), seasons and rating decay, tournaments (Phase 5).
+
+## 8. Phase 4 — market and houses (2026-10-31)
+
+- **Market** (`apps/api/src/modules/hub/market.ts`): `hub_listings` hold a lot of one game item at a
+  price for the whole lot. Listing takes the items out of the inventory (escrow); buying moves
+  Gold (`market_buy` / `market_sale` in the ledger, fee `hub.marketFee` = 5 % kept by nobody) and
+  items in one transaction with an idempotency key; withdrawing or lapsing (`hub.marketListingHours`,
+  swept on every market read and by the retention job) gives the items back. Listings are tagged
+  with the seller's age group and only shown and sold within it; blocked pairs never see each
+  other's. Only game items — creatures and NFTs keep their own market. Market income is left out
+  of the daily gameplay Gold cap (it is other players' Gold, not new Gold).
+- **Furniture**: `FURNITURE` in shared (33 pieces cut from sheet 2, 40–450 Gold), bought from the
+  merchant into `player_furniture`. Decoration only — nobody collides with furniture, so no
+  layout can block a door.
+- **Houses** (`houses.ts`): one room per owner (`house:<id>`), the cottage interior from sheet 2,
+  opened on the first visit and closed when empty. Entered over the socket (`visit`) from any
+  house door on the square, leaving by the door you came in. `hub_houses` keeps privacy
+  (`private` / `friends` default / `public`) and the layout; the server checks each piece is owned
+  and stands on open floor. Visits need the same age group and no block either way; when the owner
+  changes the layout everyone inside reloads it, and when the door closes visitors are moved back
+  to the square at once.
 
 ### What the art needs next (for the owner)
 
