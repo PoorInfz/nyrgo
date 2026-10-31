@@ -14,3 +14,5 @@ export * from './combat.js';
 export * from './economy.js';
 export * from './spawns.js';
 export * from './nft.js';
+export * from './hub/art.js';
+export * from './hub/map.js';

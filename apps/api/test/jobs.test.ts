@@ -104,6 +104,7 @@ describe.skipIf(!TEST_DB_URL)('scheduled jobs', () => {
         spawnsDeleted: 0,
         spawnGenerationsDeleted: 0,
         battlesDeleted: 0,
+        hubChatDeleted: 0,
       });
     });
   });

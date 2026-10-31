@@ -169,6 +169,23 @@ export interface SocialConfig {
   duelsPerDay: number;
 }
 
+/** The social hub (the town): how much it may count towards levels, and its limits. */
+export interface HubConfig {
+  /**
+   * The largest share of a player's counted XP that may come from the hub (0–1). The rest must
+   * come from walking, places and captures.
+   */
+  maxXpShare: number;
+  /** Chat: longest message, and messages per player per minute. */
+  chatMaxLength: number;
+  chatPerMinute: number;
+  /** Players drawn around you, and how often positions are sent (per second). */
+  viewRadius: number;
+  tickHz: number;
+  /** Fastest walking speed in the town, in tiles per second (moves faster are refused). */
+  maxSpeedTiles: number;
+}
+
 export interface GameConfig {
   version: number;
   world: WorldConfig;
@@ -178,6 +195,7 @@ export interface GameConfig {
   antiCheat: AntiCheatConfig;
   tips: TipsConfig;
   social: SocialConfig;
+  hub: HubConfig;
 }
 
 export const DEFAULT_CONFIG: GameConfig = {
@@ -267,6 +285,14 @@ export const DEFAULT_CONFIG: GameConfig = {
     tradesPerDay: 5,
     duelTtlMin: 10,
     duelsPerDay: 10,
+  },
+  hub: {
+    maxXpShare: 0.5,
+    chatMaxLength: 140,
+    chatPerMinute: 8,
+    viewRadius: 14,
+    tickHz: 10,
+    maxSpeedTiles: 6,
   },
   tips: {
     amountMilliNear: 5,

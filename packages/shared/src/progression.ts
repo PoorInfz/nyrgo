@@ -19,6 +19,68 @@ export function levelForXp(xp: number): number {
   return level;
 }
 
+/**
+ * XP comes from two places: the outdoor game (walking, places, captures, missions) and the hub
+ * (the town). Hub XP counts only up to `maxXpShare` of the total, measured in XP, so the rule
+ * holds on the real, non-linear curve: with a 50 % share, each hub XP that counts needs one XP
+ * earned outdoors. Hub XP beyond that is kept and counts later, as the player plays outside.
+ */
+export function hubXpCounted(
+  mainXp: number,
+  hubXp: number,
+  maxShare = DEFAULT_CONFIG.hub.maxXpShare,
+): number {
+  const share = Math.min(1, Math.max(0, maxShare));
+  if (share >= 1) return Math.max(0, hubXp);
+  const allowed = Math.floor((Math.max(0, mainXp) * share) / (1 - share));
+  return Math.min(Math.max(0, hubXp), allowed);
+}
+
+/** The XP that sets the level. */
+export function countedXp(
+  mainXp: number,
+  hubXp: number,
+  maxShare = DEFAULT_CONFIG.hub.maxXpShare,
+): number {
+  return Math.max(0, mainXp) + hubXpCounted(mainXp, hubXp, maxShare);
+}
+
+export interface ProgressBreakdown {
+  level: number;
+  /** Counted XP, and what the next level needs (null at the cap). */
+  xp: number;
+  nextLevelXp: number | null;
+  mainXp: number;
+  hubXp: number;
+  hubCounted: number;
+  /** Hub XP kept but not counting yet: it counts as the player earns XP outdoors. */
+  hubWaiting: number;
+  /** Share of the counted XP that comes from the hub, 0–1. */
+  hubShare: number;
+  maxHubShare: number;
+}
+
+export function progressBreakdown(
+  mainXp: number,
+  hubXp: number,
+  maxShare = DEFAULT_CONFIG.hub.maxXpShare,
+): ProgressBreakdown {
+  const counted = hubXpCounted(mainXp, hubXp, maxShare);
+  const xp = Math.max(0, mainXp) + counted;
+  const level = levelForXp(xp);
+  return {
+    level,
+    xp,
+    nextLevelXp: level >= MAX_PLAYER_LEVEL ? null : xpForLevel(level + 1),
+    mainXp: Math.max(0, mainXp),
+    hubXp: Math.max(0, hubXp),
+    hubCounted: counted,
+    hubWaiting: Math.max(0, hubXp) - counted,
+    hubShare: xp > 0 ? counted / xp : 0,
+    maxHubShare: maxShare,
+  };
+}
+
 /** Individual values: 0–15 per stat, rolled once when a creature joins a collection. */
 export type Ivs = Stats;
 export const MAX_IV = 15;

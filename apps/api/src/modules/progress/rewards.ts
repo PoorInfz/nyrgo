@@ -1,12 +1,16 @@
 import type { PoolClient } from 'pg';
 import tzLookup from '@photostructure/tz-lookup';
-import { DEFAULT_CONFIG, levelForXp } from '@nyrgo/shared';
+import { DEFAULT_CONFIG, countedXp, levelForXp } from '@nyrgo/shared';
 import type { Db } from '../../db.js';
 
 /**
  * Grants XP and Gold for gameplay. Gold goes through the append-only ledger and respects the
  * daily gameplay cap (counted per calendar day in the player's local time zone).
  * Levelling up pays `levelUpGoldPerLevel × new level`, also within the cap.
+ *
+ * XP is kept by source: `main` (the outdoor game, the default) and `hub` (the town). The level
+ * follows the counted XP, where hub XP counts only up to its configured share (see
+ * `countedXp`), so the town can never carry a player more than half way.
  */
 export interface RewardResult {
   xp: number;
@@ -52,15 +56,24 @@ export async function updateTimeZone(
 export async function grantReward(
   c: PoolClient,
   userId: string,
-  reward: { xp: number; gold: number; reason: string; refId: string },
+  reward: {
+    xp: number;
+    gold: number;
+    reason: string;
+    refId: string;
+    source?: 'main' | 'hub';
+  },
 ): Promise<RewardResult> {
   const eco = DEFAULT_CONFIG.economy;
-  const { rows } = await c.query<{ xp: string; level: number }>(
-    `SELECT xp, level FROM players WHERE user_id = $1 FOR UPDATE`,
+  const { rows } = await c.query<{ main_xp: string; hub_xp: string; level: number }>(
+    `SELECT main_xp, hub_xp, level FROM players WHERE user_id = $1 FOR UPDATE`,
     [userId],
   );
   const before = rows[0]!;
-  const xp = Number(before.xp) + reward.xp;
+  const gain = Math.max(0, Math.floor(reward.xp));
+  const mainXp = Number(before.main_xp) + (reward.source === 'hub' ? 0 : gain);
+  const hubXp = Number(before.hub_xp) + (reward.source === 'hub' ? gain : 0);
+  const xp = countedXp(mainXp, hubXp, DEFAULT_CONFIG.hub.maxXpShare);
   const level = Math.max(before.level, levelForXp(xp));
   let levelGold = 0;
   for (let l = before.level + 1; l <= level; l++) levelGold += eco.rewards.levelUpGoldPerLevel * l;
@@ -89,9 +102,10 @@ export async function grantReward(
     paid += amount;
   }
   await c.query(
-    `UPDATE players SET xp = $2, level = $3, gold = gold + $4, version = version + 1, updated_at = now()
+    `UPDATE players SET xp = $2, level = $3, gold = gold + $4, main_xp = $5, hub_xp = $6,
+            version = version + 1, updated_at = now()
       WHERE user_id = $1`,
-    [userId, xp, level, paid],
+    [userId, xp, level, paid, mainXp, hubXp],
   );
   return {
     xp: reward.xp,

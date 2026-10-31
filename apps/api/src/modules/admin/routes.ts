@@ -51,6 +51,16 @@ const PoiSearch = Type.Object(
   },
   { additionalProperties: false },
 );
+const ReportCloseBody = Type.Object(
+  {
+    decision: Type.Union(['dismiss', 'hide', 'mute'].map((d) => Type.Literal(d))),
+    /** For `mute`: how long the player cannot chat. */
+    minutes: Type.Optional(Type.Integer({ minimum: 10, maximum: 60 * 24 * 30 })),
+    reason: Reason,
+  },
+  { additionalProperties: false },
+);
+const NumIdParams = Type.Object({ id: Type.Integer({ minimum: 1 }) });
 const ListQuery = Type.Object(
   {
     status: Type.Optional(Type.Union([Type.Literal('open'), Type.Literal('closed')])),
@@ -320,6 +330,60 @@ export async function adminRoutes(
         await cancelEvent(c, req.params.id);
         await audit(c, admin, 'event.cancel', { id: req.params.id }, null, req.body.reason);
         return { cancelled: true };
+      });
+    },
+  );
+
+  // ------------------------------------------------------------------ hub chat moderation
+
+  /** Open chat reports with the reported message and the reported player's recent history. */
+  app.get('/admin/v1/hub/reports', async () => {
+    const { rows } = await db.query(
+      `SELECT r.id, r.reason, r.body, r.created_at, r.message_id, r.reported_id,
+              p.display_name AS reported_name, p.chat_muted_until,
+              (SELECT count(*)::int FROM hub_reports x WHERE x.reported_id = r.reported_id) AS reports_total
+         FROM hub_reports r JOIN players p ON p.user_id = r.reported_id
+        WHERE r.status = 'open' ORDER BY r.created_at LIMIT 100`,
+    );
+    return { reports: rows };
+  });
+
+  /**
+   * Closes a report: dismissed, the message hidden, or the player muted (which also hides the
+   * message). Reviewer role may dismiss and hide; muting needs the admin role.
+   */
+  app.post<{ Params: Static<typeof NumIdParams>; Body: Static<typeof ReportCloseBody> }>(
+    '/admin/v1/hub/reports/:id/close',
+    { schema: { params: NumIdParams, body: ReportCloseBody } },
+    async (req) => {
+      const admin = req.admin!;
+      if (req.body.decision === 'mute') requireRole(admin, 'admin');
+      return withTx(db, async (c) => {
+        const { rows } = await c.query(
+          `SELECT id, reported_id, message_id, status FROM hub_reports WHERE id = $1 FOR UPDATE`,
+          [req.params.id],
+        );
+        const before = rows[0];
+        if (!before) throw new HttpProblem('not_found', 'Unknown report');
+        if (before.status !== 'open') throw new HttpProblem('conflict', 'Report already closed');
+        if (req.body.decision !== 'dismiss' && before.message_id) {
+          await c.query(`UPDATE hub_chat SET hidden_at = now() WHERE id = $1`, [before.message_id]);
+        }
+        if (req.body.decision === 'mute') {
+          await c.query(
+            `UPDATE players SET chat_muted_until = now() + make_interval(mins => $2) WHERE user_id = $1`,
+            [before.reported_id, req.body.minutes ?? 60 * 24],
+          );
+        }
+        // every open report of the same message closes with it
+        await c.query(
+          `UPDATE hub_reports SET status = 'closed'
+            WHERE id = $1 OR (message_id IS NOT NULL AND message_id = $2 AND status = 'open')`,
+          [req.params.id, before.message_id],
+        );
+        const after = { decision: req.body.decision, minutes: req.body.minutes ?? null };
+        await audit(c, admin, `hub_report.${req.body.decision}`, before, after, req.body.reason);
+        return { closed: true };
       });
     },
   );

@@ -1,3 +1,4 @@
+import type { Room } from '../src/modules/hub/room.js';
 import { randomBytes } from 'node:crypto';
 import type { FastifyInstance, InjectOptions, LightMyRequestResponse } from 'fastify';
 import { buildApp } from '../src/app.js';
@@ -24,6 +25,7 @@ export async function makeTestApp(
     nftChain?: NftChain;
     tipChain?: TipChain;
     integrityDecoder?: IntegrityDecoder;
+    hubRooms?: Map<string, Room>;
     env?: Record<string, string>;
   } = {},
 ): Promise<TestApp> {
@@ -43,6 +45,7 @@ export async function makeTestApp(
     ...(opts.nftChain ? { nftChain: opts.nftChain } : {}),
     ...(opts.tipChain ? { tipChain: opts.tipChain } : {}),
     ...(opts.integrityDecoder ? { integrityDecoder: opts.integrityDecoder } : {}),
+    ...(opts.hubRooms ? { hubRooms: opts.hubRooms } : {}),
   });
   return {
     app,

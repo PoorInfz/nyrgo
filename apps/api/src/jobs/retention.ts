@@ -14,6 +14,8 @@ export const SPAWN_RETENTION_D = 90;
 export const SPAWN_GENERATION_RETENTION_H = 24;
 /** Expired or revoked sessions and used links are kept a little while for support questions. */
 export const AUTH_GRACE_D = 7;
+/** Hub chat is kept for moderation only; reports keep their own copy of the message. */
+export const HUB_CHAT_RETENTION_D = 30;
 const BATCH = 10_000;
 
 export interface RetentionReport {
@@ -27,6 +29,7 @@ export interface RetentionReport {
   spawnsDeleted: number;
   spawnGenerationsDeleted: number;
   battlesDeleted: number;
+  hubChatDeleted: number;
 }
 
 async function batched(db: Db, sql: string, params: unknown[]): Promise<number> {
@@ -102,6 +105,12 @@ export async function runRetention(db: Db): Promise<RetentionReport> {
       `DELETE FROM battles WHERE id IN (
          SELECT id FROM battles WHERE created_at < now() - make_interval(days => $1) LIMIT ${BATCH})`,
       [SPAWN_RETENTION_D],
+    ),
+    hubChatDeleted: await batched(
+      db,
+      `DELETE FROM hub_chat WHERE id IN (
+         SELECT id FROM hub_chat WHERE created_at < now() - make_interval(days => $1) LIMIT ${BATCH})`,
+      [HUB_CHAT_RETENTION_D],
     ),
     spawnGenerationsDeleted: await batched(
       db,

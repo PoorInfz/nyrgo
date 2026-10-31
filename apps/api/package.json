@@ -25,6 +25,7 @@
     "@fastify/cors": "^11.3.1",
     "@fastify/helmet": "^13.2.0",
     "@fastify/rate-limit": "^11.2.1",
+    "@fastify/websocket": "^11.3.4",
     "@nyrgo/shared": "workspace:*",
     "@photostructure/tz-lookup": "^11.7.0",
     "@sinclair/typebox": "^0.34.52",
@@ -39,8 +40,10 @@
     "@types/geojson": "^7946.0.16",
     "@types/node": "^24.19.2",
     "@types/pg": "^8.23.1",
+    "@types/ws": "^8.18.2",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
-    "vitest": "^5.0.5"
+    "vitest": "^5.0.5",
+    "ws": "^8.22.0"
   }
 }

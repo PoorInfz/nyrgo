@@ -28,6 +28,9 @@ import { tipsRoutes } from './modules/tips/routes.js';
 import { socialRoutes } from './modules/social/routes.js';
 import { duelRoutes } from './modules/social/duels.js';
 import { avatarRoutes } from './modules/avatar/routes.js';
+import { hubRoutes } from './modules/hub/routes.js';
+import type { Room } from './modules/hub/room.js';
+import websocket from '@fastify/websocket';
 import { attestRoutes } from './modules/attest/routes.js';
 import { googleDecoder, type IntegrityDecoder } from './modules/attest/google.js';
 
@@ -44,6 +47,8 @@ export interface AppDeps {
   tipChain?: TipChain;
   /** Overrides Google's Play Integrity decoder (tests pass a fake). */
   integrityDecoder?: IntegrityDecoder;
+  /** Overrides the hub's live rooms (tests pass rooms without a timer). */
+  hubRooms?: Map<string, Room>;
 }
 
 const STATE_CHANGING = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
@@ -56,6 +61,7 @@ export async function buildApp({
   nftChain,
   tipChain,
   integrityDecoder,
+  hubRooms,
 }: AppDeps): Promise<FastifyInstance> {
   const app = Fastify({
     logger:
@@ -95,7 +101,12 @@ export async function buildApp({
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   });
   await app.register(cookie);
-  await app.register(rateLimit, { max: 120, timeWindow: '1 minute' });
+  await app.register(rateLimit, {
+    max: 120,
+    timeWindow: '1 minute',
+    // injected WebSocket upgrades (tests) carry no socket address
+    keyGenerator: (req) => req.ip ?? 'unknown',
+  });
 
   // CSRF defence in depth on top of SameSite=Lax cookies: a browser always sends Origin on
   // cross-site state-changing requests, so refuse any origin that is not ours.
@@ -188,6 +199,12 @@ export async function buildApp({
   await app.register(socialRoutes, { db });
   await app.register(duelRoutes, { db });
   await app.register(avatarRoutes, { db });
+  await app.register(websocket, { options: { maxPayload: 4096 } });
+  await app.register(hubRoutes, {
+    db,
+    corsOrigins: config.corsOrigins,
+    ...(hubRooms ? { rooms: hubRooms } : {}),
+  });
   await app.register(economyRoutes, { db });
   await app.register(contentRoutes);
   // Own plugin scope: the token hook only applies to /admin/v1/*.
