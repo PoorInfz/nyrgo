@@ -888,5 +888,19 @@
     "boost": "+{{pct}} % de NEAR par pourboire",
     "outfits": "tenues de holder",
     "note": "Le bonus en NEAR vient de la même cagnotte quotidienne (au plus un quart) ; quand cette part est épuisée, les pourboires sont versés sans bonus. Testnet uniquement : rien ici n'a de valeur."
+  },
+  "sheet": {
+    "close": "Fermer",
+    "new": "Nouveau dans ton Dex !",
+    "caught": "Capturé {{n}} fois",
+    "chance": "Chance de le garder",
+    "chanceNote": "D'un lancer simple à un lancer parfait, la créature indemne. L'affaiblir d'abord en combat augmente la chance jusqu'au double.",
+    "flee": "Après un lancer raté, il s'enfuit {{pct}} du temps.",
+    "matchups": "Affinités",
+    "strong": "Fort contre",
+    "weak": "Faible contre",
+    "stats": "Stats de base",
+    "inRange": "Assez près pour essayer",
+    "leaves": "part dans {{min}} min"
   }
 }

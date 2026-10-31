@@ -888,5 +888,19 @@
     "boost": "+{{pct}} % NEAR por gorjeta",
     "outfits": "roupas de holder",
     "note": "O bônus em NEAR sai do mesmo pote diário de recompensas (no máximo um quarto dele); quando essa parte acaba, as gorjetas são pagas sem bônus. Só testnet: nada aqui tem valor."
+  },
+  "sheet": {
+    "close": "Fechar",
+    "new": "Novo na sua Dex!",
+    "caught": "Capturado {{n}} vezes",
+    "chance": "Chance de guardá-lo",
+    "chanceNote": "De um lançamento comum a um perfeito, com a criatura sem dano. Enfraquecê-la antes em batalha aumenta a chance até o dobro.",
+    "flee": "Depois de um lançamento errado, foge {{pct}} das vezes.",
+    "matchups": "Afinidades",
+    "strong": "Forte contra",
+    "weak": "Fraco contra",
+    "stats": "Atributos base",
+    "inRange": "Perto o bastante para tentar",
+    "leaves": "vai embora em {{min}} min"
   }
 }

@@ -888,5 +888,19 @@
     "boost": "+{{pct}} % NEAR pro Trinkgeld",
     "outfits": "Holder-Outfits",
     "note": "Der NEAR-Bonus kommt aus demselben täglichen Belohnungstopf (höchstens ein Viertel davon); ist dieser Anteil aufgebraucht, gibt es Trinkgeld ohne Bonus. Nur Testnet: nichts hier hat Wert."
+  },
+  "sheet": {
+    "close": "Schließen",
+    "new": "Neu in deinem Dex!",
+    "caught": "{{n}}-mal gefangen",
+    "chance": "Chance, es zu sichern",
+    "chanceNote": "Von einem normalen bis zu einem perfekten Wurf, das Wesen unverletzt. Schwächst du es vorher im Kampf, steigt die Chance bis aufs Doppelte.",
+    "flee": "Nach einem Fehlwurf flieht es in {{pct}} der Fälle.",
+    "matchups": "Typen",
+    "strong": "Stark gegen",
+    "weak": "Schwach gegen",
+    "stats": "Basiswerte",
+    "inRange": "Nah genug für einen Versuch",
+    "leaves": "verschwindet in {{min}} Min."
   }
 }

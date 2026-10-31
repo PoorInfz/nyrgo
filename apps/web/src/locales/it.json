@@ -888,5 +888,19 @@
     "boost": "+{{pct}} % di NEAR per mancia",
     "outfits": "outfit da holder",
     "note": "Il bonus in NEAR esce dallo stesso fondo giornaliero di ricompense (al massimo un quarto); quando quella parte finisce, le mance si pagano senza bonus. Solo testnet: qui niente ha valore."
+  },
+  "sheet": {
+    "close": "Chiudi",
+    "new": "Nuovo nel tuo Dex!",
+    "caught": "Catturato {{n}} volte",
+    "chance": "Probabilità di custodirlo",
+    "chanceNote": "Da un lancio normale a uno perfetto, con la creatura illesa. Indebolirla prima in battaglia aumenta la probabilità fino al doppio.",
+    "flee": "Dopo un lancio fallito scappa il {{pct}} delle volte.",
+    "matchups": "Affinità",
+    "strong": "Forte contro",
+    "weak": "Debole contro",
+    "stats": "Statistiche base",
+    "inRange": "Abbastanza vicino per provarci",
+    "leaves": "se ne va tra {{min}} min"
   }
 }

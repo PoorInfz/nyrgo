@@ -888,5 +888,19 @@
     "boost": "+{{pct}} % NEAR per tip",
     "outfits": "kostum holder",
     "note": "Bonus NEAR diambil dari pot hadiah harian yang sama (paling banyak seperempatnya); jika bagian itu habis, tip dibayar tanpa bonus. Hanya testnet: tidak ada yang bernilai di sini."
+  },
+  "sheet": {
+    "close": "Tutup",
+    "new": "Baru di Dex-mu!",
+    "caught": "Ditangkap {{n}} kali",
+    "chance": "Peluang menyimpannya",
+    "chanceNote": "Dari lemparan biasa sampai sempurna, dengan makhluk tanpa luka. Melemahkannya dulu dalam pertarungan menaikkan peluang hingga dua kali.",
+    "flee": "Setelah lemparan meleset, ia kabur {{pct}} dari waktu.",
+    "matchups": "Keunggulan",
+    "strong": "Kuat melawan",
+    "weak": "Lemah melawan",
+    "stats": "Statistik dasar",
+    "inRange": "Cukup dekat untuk mencoba",
+    "leaves": "pergi dalam {{min}} menit"
   }
 }

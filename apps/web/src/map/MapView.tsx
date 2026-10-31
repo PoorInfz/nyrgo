@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import type { Map as MlMap, GeoJSONSource, Marker } from 'maplibre-gl';
-import { DEFAULT_AVATAR, type AvatarLook } from '@nyrgo/shared';
+import { DEFAULT_AVATAR, type AvatarLook, type Rarity } from '@nyrgo/shared';
+import { RARITY_FX } from '../starter/rarity';
 import { Avatar } from '../avatar/Avatar';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { LocationFix } from '../geo/location';
@@ -23,6 +24,8 @@ const metresBetween = (a: { lat: number; lng: number }, b: { lat: number; lng: n
 export interface MapCreature {
   id: string;
   creatureId: string;
+  /** Sets the colour of the aura around the figure. */
+  rarity?: Rarity | undefined;
   lat: number;
   lng: number;
   inRange: boolean;
@@ -158,7 +161,7 @@ export default function MapView({
     };
   }, [lang]);
 
-  // Creatures are HTML markers showing their portrait; the list below the map is the
+  // Creatures are HTML markers showing the creature itself; the list below the map is the
   // accessible way to reach them, so markers stay out of the tab order.
   useEffect(() => {
     const m = map.current;
@@ -174,19 +177,41 @@ export default function MapView({
     for (const c of creatures) {
       let marker = markers.current.get(c.id);
       if (!marker) {
+        // the creature itself, wandering on the spot in its idle animation, over an aura in its
+        // rarity's colours
         const el = document.createElement('button');
         el.type = 'button';
         el.tabIndex = -1;
         el.setAttribute('aria-hidden', 'true');
         el.className = 'creature-marker';
-        const img = document.createElement('img');
-        img.src = `/creatures/${c.creatureId}-thumb.webp`;
-        img.alt = '';
-        el.append(img);
+        // each one wanders out of step with the others
+        el.style.setProperty('--delay', `-${(Math.random() * 6).toFixed(2)}s`);
+        const aura = document.createElement('span');
+        aura.className = 'cm-aura';
+        const shadow = document.createElement('span');
+        shadow.className = 'cm-shadow';
+        const walk = document.createElement('span');
+        walk.className = 'cm-walk';
+        const sprite = document.createElement('span');
+        sprite.className = 'cm-sprite';
+        sprite.style.backgroundImage = `url(/sprites/${c.creatureId}-idle.webp)`;
+        walk.append(sprite);
+        el.append(aura, shadow, walk);
         el.addEventListener('click', () => tap.current?.(c.id));
-        marker = new ml.Marker({ element: el }).setLngLat([c.lng, c.lat]).addTo(m);
+        marker = new ml.Marker({ element: el, anchor: 'bottom' })
+          .setLngLat([c.lng, c.lat])
+          .addTo(m);
         markers.current.set(c.id, marker);
       }
+      const el = marker.getElement();
+      // the rarity may arrive after the marker (the Dex loads once)
+      const rarity = c.rarity ?? 'common';
+      const fx = RARITY_FX[rarity];
+      // classList, not className: MapLibre keeps its own classes on the element
+      for (const k of [...el.classList]) if (k.startsWith('rar-')) el.classList.remove(k);
+      el.classList.add(`rar-${rarity}`);
+      el.style.setProperty('--aura', fx.colors[0]!);
+      el.style.setProperty('--aura2', fx.colors[1] ?? fx.colors[0]!);
       marker.getElement().dataset.inRange = String(c.inRange);
       marker.getElement().dataset.event = String(Boolean(c.eventId));
     }

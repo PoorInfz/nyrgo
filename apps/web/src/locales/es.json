@@ -888,5 +888,19 @@
     "boost": "+{{pct}} % NEAR por propina",
     "outfits": "trajes de holder",
     "note": "El aumento en NEAR sale del mismo bote diario de recompensas (como mucho una cuarta parte); cuando esa parte se agota, las propinas se pagan sin aumento. Solo testnet: aquí nada tiene valor."
+  },
+  "sheet": {
+    "close": "Cerrar",
+    "new": "¡Nuevo en tu Dex!",
+    "caught": "Capturado {{n}} veces",
+    "chance": "Probabilidad de guardarlo",
+    "chanceNote": "De un lanzamiento normal a uno perfecto, con la criatura sin daño. Si antes la debilitas en un combate, la probabilidad sube hasta el doble.",
+    "flee": "Tras un lanzamiento fallido huye el {{pct}} de las veces.",
+    "matchups": "Afinidades",
+    "strong": "Fuerte contra",
+    "weak": "Débil contra",
+    "stats": "Estadísticas base",
+    "inRange": "Lo bastante cerca para intentarlo",
+    "leaves": "se va en {{min}} min"
   }
 }

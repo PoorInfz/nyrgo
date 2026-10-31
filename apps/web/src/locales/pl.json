@@ -888,5 +888,19 @@
     "boost": "+{{pct}} % NEAR za napiwek",
     "outfits": "stroje holdera",
     "note": "Bonus w NEAR pochodzi z tej samej dziennej puli nagród (najwyżej jej ćwierć); gdy ta część się wyczerpie, napiwki są wypłacane bez bonusu. Tylko testnet: nic tu nie ma wartości."
+  },
+  "sheet": {
+    "close": "Zamknij",
+    "new": "Nowy w twoim Dexie!",
+    "caught": "Złapany {{n}} razy",
+    "chance": "Szansa na zamknięcie",
+    "chanceNote": "Od zwykłego do idealnego rzutu, przy nietkniętym stworzeniu. Osłabienie go najpierw w walce zwiększa szansę nawet dwukrotnie.",
+    "flee": "Po nieudanym rzucie ucieka w {{pct}} przypadków.",
+    "matchups": "Typy",
+    "strong": "Silny przeciw",
+    "weak": "Słaby przeciw",
+    "stats": "Statystyki bazowe",
+    "inRange": "Wystarczająco blisko, by spróbować",
+    "leaves": "znika za {{min}} min"
   }
 }

@@ -515,39 +515,234 @@ button.small {
   background: var(--sky-1);
 }
 
+/* A creature on the map: its own figure, wandering on the spot, over an aura in its rarity's
+   colours (stronger for rarer ones). Its feet stand on the spawn point. */
 .creature-marker {
-  width: 46px;
-  height: 46px;
+  position: relative;
+  width: 64px;
+  height: 72px;
   min-height: 0;
   padding: 0;
-  overflow: hidden;
-  border-radius: 50%;
-  background: var(--sky-2);
-  border: 1px solid var(--edge);
-  box-shadow: 0 10px 24px -12px rgb(0 0 0 / 70%);
+  border: 0;
+  background: none;
+  box-shadow: none;
+  overflow: visible;
+  cursor: pointer;
+  --aura: #6ee7a8;
+  --aura2: #d1fae5;
+  --delay: 0s;
 }
 
-.creature-marker[data-event='true'] {
+.creature-marker:hover,
+.creature-marker:active {
+  filter: none;
+  transform: none;
+  box-shadow: none;
+}
+
+.cm-aura {
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
   width: 58px;
+  height: 22px;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--aura) 85%, transparent),
+    color-mix(in srgb, var(--aura2) 30%, transparent) 60%,
+    transparent
+  );
+  animation: cm-pulse 2.2s ease-in-out infinite;
+  animation-delay: var(--delay);
+}
+
+/* a column of light behind rarer creatures */
+.cm-aura::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 40%;
+  width: 46px;
+  height: 0;
+  translate: -50% 0;
+  border-radius: 50% 50% 40% 40%;
+  background: linear-gradient(0deg, color-mix(in srgb, var(--aura) 55%, transparent), transparent);
+  filter: blur(4px);
+}
+
+.rar-rare .cm-aura::before,
+.rar-epic .cm-aura::before {
   height: 58px;
-  box-shadow:
-    0 0 0 4px var(--sun),
-    0 10px 24px -12px rgb(0 0 0 / 70%);
 }
 
-.creature-marker[data-in-range='true'] {
-  border-color: var(--sun);
-  outline: 3px solid var(--ink);
+.rar-legendary .cm-aura::before,
+.rar-mythic .cm-aura::before {
+  height: 74px;
   width: 54px;
-  height: 54px;
 }
 
-.creature-marker img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 50% 30%;
+/* a turning ring of light under epic and better */
+.rar-epic .cm-aura::after,
+.rar-legendary .cm-aura::after,
+.rar-mythic .cm-aura::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 66px;
+  height: 66px;
+  margin: -33px 0 0 -33px;
+  border-radius: 50%;
+  border: 2px dashed var(--aura2);
+  opacity: 0.85;
+  /* a circle turning flat on the ground: rotated first, then squashed */
+  transform: scaleY(0.36) rotate(0deg);
+  animation: cm-ring 6s linear infinite;
+}
+
+.rar-mythic .cm-aura {
+  background: conic-gradient(#f87171, #fbbf24, #4ade80, #38bdf8, #a78bfa, #f472b6, #f87171);
+  mask: radial-gradient(closest-side, #000 30%, transparent);
+  animation:
+    cm-pulse 2.2s ease-in-out infinite,
+    cm-hue 4s linear infinite;
+}
+
+.cm-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 34px;
+  height: 8px;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 35%);
+}
+
+/* wanders a few pixels left and right, turning at each end */
+.cm-walk {
+  position: absolute;
+  left: 4px;
+  bottom: 2px;
+  width: 56px;
+  height: 64px;
+  animation: cm-wander 6s ease-in-out infinite;
+  animation-delay: var(--delay);
+}
+
+/* the 6-frame idle sheet (each frame 224×256), with a little hop */
+.cm-sprite {
   display: block;
+  width: 56px;
+  height: 64px;
+  background-size: 336px 64px;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 0 3px var(--aura)) drop-shadow(0 2px 0 rgb(0 0 0 / 35%));
+  animation:
+    cm-frames 0.9s steps(6) infinite,
+    cm-hop 0.45s ease-in-out infinite alternate;
+  animation-delay: 0s, var(--delay);
+}
+
+.creature-marker[data-in-range='true'] .cm-walk {
+  scale: 1.18;
+  transform-origin: 50% 100%;
+}
+
+.creature-marker[data-in-range='true']::after {
+  content: '!';
+  position: absolute;
+  left: 50%;
+  top: -18px;
+  translate: -50% 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--sun);
+  color: var(--ink);
+  font:
+    800 15px/22px 'Fredoka Variable',
+    system-ui,
+    sans-serif;
+  text-align: center;
+  box-shadow: 0 2px 0 var(--ink);
+  animation: cm-bounce 0.8s ease-in-out infinite alternate;
+}
+
+.creature-marker[data-event='true'] .cm-shadow {
+  box-shadow: 0 0 0 3px var(--sun);
+}
+
+@keyframes cm-frames {
+  to {
+    background-position: -336px 0;
+  }
+}
+
+@keyframes cm-hop {
+  from {
+    translate: 0 0;
+  }
+  to {
+    translate: 0 -3px;
+  }
+}
+
+@keyframes cm-wander {
+  0% {
+    transform: translateX(-7px) scaleX(1);
+  }
+  45% {
+    transform: translateX(7px) scaleX(1);
+  }
+  50% {
+    transform: translateX(7px) scaleX(-1);
+  }
+  95% {
+    transform: translateX(-7px) scaleX(-1);
+  }
+  100% {
+    transform: translateX(-7px) scaleX(1);
+  }
+}
+
+@keyframes cm-pulse {
+  50% {
+    opacity: 0.65;
+    scale: 1.12;
+  }
+}
+
+@keyframes cm-ring {
+  to {
+    transform: scaleY(0.36) rotate(360deg);
+  }
+}
+
+@keyframes cm-hue {
+  to {
+    filter: hue-rotate(360deg);
+  }
+}
+
+@keyframes cm-bounce {
+  to {
+    translate: -50% -4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cm-walk,
+  .cm-aura,
+  .cm-aura::after,
+  .creature-marker[data-in-range='true']::after {
+    animation: none;
+  }
+  .cm-sprite {
+    animation: none;
+  }
 }
 
 /* ---------------------------------------------------------------- dev tools */
@@ -2067,11 +2262,6 @@ button.link {
   box-shadow: var(--frame);
 }
 
-.creature-marker {
-  border: 3px solid var(--ink);
-  box-shadow: 0 3px 0 var(--ink);
-}
-
 /* collection and dex cards */
 .dex-card {
   background: linear-gradient(180deg, #141c42, #0e1534);
@@ -2800,4 +2990,211 @@ button.hub-round {
 .wardrobe-item .avatar.outfit image,
 .avatar.outfit image {
   image-rendering: pixelated;
+}
+
+/* ================================================================ creature details (map) */
+
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgb(4 6 18 / 60%);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: cs-fade 0.2s ease-out;
+}
+
+.creature-sheet {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: min(88vh, 900px);
+  overflow-y: auto;
+  padding: 18px 18px max(18px, env(safe-area-inset-bottom));
+  border-radius: 22px 22px 0 0;
+  background:
+    radial-gradient(
+      120% 40% at 50% 0%,
+      color-mix(in srgb, var(--aura) 28%, transparent),
+      transparent 70%
+    ),
+    linear-gradient(180deg, #141c42, #0b1029);
+  border: 1px solid var(--edge);
+  border-bottom: 0;
+  box-shadow: 0 -18px 40px -10px rgb(0 0 0 / 60%);
+  color: var(--text);
+  animation: cs-up 0.28s cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+.creature-sheet h3 {
+  margin: 16px 0 8px;
+  font-size: 15px;
+  color: var(--muted, #a6b0cf);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.cs-close {
+  position: absolute;
+  top: 10px;
+  inset-inline-end: 10px;
+  min-height: 36px;
+  width: 36px;
+  padding: 0;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 10%);
+  box-shadow: none;
+}
+
+.cs-head {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 14px;
+  align-items: center;
+}
+
+.cs-head h2 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.cs-pic {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid var(--aura);
+  box-shadow:
+    0 0 24px -4px var(--aura),
+    inset 0 0 30px -10px var(--el);
+}
+
+.cs-pic img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.cs-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0;
+}
+
+.cs-rar {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--aura);
+  text-shadow: 0 0 10px var(--aura);
+}
+
+.cs-dex {
+  margin: 0;
+  font-weight: 700;
+  color: var(--sun);
+}
+
+.cs-chances {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.cs-chances li {
+  display: grid;
+  grid-template-columns: minmax(0, 9em) 1fr auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.cs-chances li.none {
+  opacity: 0.55;
+}
+
+.cs-bar {
+  position: relative;
+  height: 10px;
+  border-radius: 99px;
+  background: rgb(255 255 255 / 10%);
+  overflow: hidden;
+}
+
+.cs-bar span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 99px;
+}
+
+.cs-bar .hi {
+  background: color-mix(in srgb, var(--mint) 45%, transparent);
+}
+
+.cs-bar .lo {
+  background: linear-gradient(90deg, var(--mint), var(--cyan, #3fd0ee));
+}
+
+.cs-pct {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.cs-stats {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.cs-stats div {
+  display: grid;
+  grid-template-columns: 6.5em 1fr 2.5em;
+  align-items: center;
+  gap: 10px;
+}
+
+.cs-stats dt {
+  font-size: 14px;
+}
+
+.cs-stats dd {
+  margin: 0;
+  height: 8px;
+  border-radius: 99px;
+  background: rgb(255 255 255 / 10%);
+}
+
+.cs-stats dd span {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: var(--el, var(--mint));
+}
+
+.cs-where {
+  margin: 16px 0 10px;
+  font-weight: 600;
+}
+
+.creature-sheet > button:last-child {
+  width: 100%;
+}
+
+@keyframes cs-up {
+  from {
+    translate: 0 40px;
+    opacity: 0;
+  }
+}
+
+@keyframes cs-fade {
+  from {
+    opacity: 0;
+  }
 }

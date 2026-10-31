@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ApiError, type Api, type GameEvent, type Nearby, type NearbyCreature } from '../api';
 import { thumbUrl, useContent } from '../content';
 import { Encounter } from './Encounter';
+import { CreatureSheet } from './CreatureSheet';
 import { Missions } from './Missions';
 import { FirstSteps } from './FirstSteps';
 import {
@@ -64,11 +65,14 @@ export function Play({
   const last = useRef<{ fix: LocationFix; at: number } | null>(null);
   const [active, setActive] = useState(false);
   const [facing, setFacing] = useState<NearbyCreature | null>(null);
+  /** The creature whose details are open (tapped on the map or in the list). */
+  const [info, setInfo] = useState<NearbyCreature | null>(null);
   /** Spawns caught or scared away here; the next nearby answer leaves them out anyway. */
   const [gone, setGone] = useState<ReadonlySet<string>>(new Set());
   // Names for the creature list; only fetched once the player starts playing.
   const { dex } = useContent(api, active);
   const names = useMemo(() => new Map(dex?.creatures.map((c) => [c.id, c.name])), [dex]);
+  const rarities = useMemo(() => new Map(dex?.creatures.map((c) => [c.id, c.rarity])), [dex]);
   /** Bumped after anything that may move a mission, so the missions card refreshes. */
   const [progressTick, setProgressTick] = useState(0);
   const [visit, setVisit] = useState<{ ok: boolean; text: string } | null>(null);
@@ -193,6 +197,8 @@ export function Play({
   }
 
   const creatures = (nearby?.creatures ?? []).filter((c) => !gone.has(c.id));
+  // the open sheet follows the latest nearby answer (distance, range) while it is still there
+  const open = info ? (creatures.find((c) => c.id === info.id) ?? null) : null;
 
   // Either the device says it is moving fast or the server measured it between fixes.
   const driving = (fix ? looksLikeDriving(fix) : false) || nearby?.movement.reason === 'speed';
@@ -225,15 +231,28 @@ export function Play({
         <p role="status">{t('weakSignal', { m: Math.round(status.accuracy) })}</p>
       )}
 
+      {open && dex && (
+        <CreatureSheet
+          api={api}
+          dex={dex}
+          spawn={open}
+          onClose={() => setInfo(null)}
+          onCatch={() => {
+            setInfo(null);
+            setFacing(open);
+          }}
+        />
+      )}
+
       {showMap && (
         <Suspense fallback={<div className="map" />}>
           <MapView
             fix={fix}
             pois={nearby?.pois ?? []}
-            creatures={creatures}
+            creatures={creatures.map((c) => ({ ...c, rarity: rarities.get(c.creatureId) }))}
             onCreature={(id) => {
               const c = creatures.find((x) => x.id === id);
-              if (c?.inRange) setFacing(c);
+              if (c) setInfo(c);
             }}
             lang={i18n.language}
             label={t('mapLabel')}
@@ -303,10 +322,10 @@ export function Play({
             return (
               <li key={c.id} data-in-range={c.inRange}>
                 <img src={thumbUrl(c.creatureId)} alt="" width={48} height={70} />
-                <span className="poi-name">
+                <button type="button" className="link poi-name" onClick={() => setInfo(c)}>
                   {name} <span className="muted">{t('levelShort', { level: c.level })}</span>
                   {c.eventId && <span className="badge event">{t('events.badge')}</span>}
-                </span>
+                </button>
                 {c.inRange ? (
                   <button type="button" className="small" onClick={() => setFacing(c)}>
                     {t('catchIt')}

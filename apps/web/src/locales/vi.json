@@ -888,5 +888,19 @@
     "boost": "+{{pct}} % NEAR mỗi lần thưởng",
     "outfits": "trang phục holder",
     "note": "Phần thưởng thêm NEAR lấy từ cùng quỹ thưởng hằng ngày (tối đa một phần tư); khi phần đó hết, tiền thưởng được trả không kèm phần thêm. Chỉ testnet: không gì ở đây có giá trị."
+  },
+  "sheet": {
+    "close": "Đóng",
+    "new": "Mới trong Dex của bạn!",
+    "caught": "Đã bắt {{n}} lần",
+    "chance": "Cơ hội cất giữ",
+    "chanceNote": "Từ cú ném thường đến cú ném hoàn hảo, khi sinh vật chưa bị thương. Làm nó yếu đi trong trận đấu trước sẽ tăng cơ hội lên tới gấp đôi.",
+    "flee": "Sau một cú ném trượt, nó bỏ chạy {{pct}} số lần.",
+    "matchups": "Tương khắc",
+    "strong": "Mạnh hơn",
+    "weak": "Yếu hơn",
+    "stats": "Chỉ số gốc",
+    "inRange": "Đủ gần để thử",
+    "leaves": "rời đi sau {{min}} phút"
   }
 }

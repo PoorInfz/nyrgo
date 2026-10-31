@@ -888,5 +888,19 @@
     "boost": "+{{pct}} % NEAR per fooi",
     "outfits": "holder-outfits",
     "note": "De NEAR-bonus komt uit dezelfde dagelijkse beloningspot (hoogstens een kwart); is dat deel op, dan worden fooien zonder bonus betaald. Alleen testnet: niets hier heeft waarde."
+  },
+  "sheet": {
+    "close": "Sluiten",
+    "new": "Nieuw in je Dex!",
+    "caught": "{{n}} keer gevangen",
+    "chance": "Kans om hem te bewaren",
+    "chanceNote": "Van een gewone tot een perfecte worp, met het wezen ongedeerd. Verzwak je hem eerst in een gevecht, dan wordt de kans tot twee keer zo groot.",
+    "flee": "Na een misworp vlucht hij {{pct}} van de keren.",
+    "matchups": "Sterktes",
+    "strong": "Sterk tegen",
+    "weak": "Zwak tegen",
+    "stats": "Basiswaarden",
+    "inRange": "Dichtbij genoeg om te proberen",
+    "leaves": "vertrekt over {{min}} min"
   }
 }

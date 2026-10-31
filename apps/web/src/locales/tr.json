@@ -888,5 +888,19 @@
     "boost": "Bahşiş başına +%{{pct}} NEAR",
     "outfits": "holder kıyafetleri",
     "note": "NEAR bonusu aynı günlük ödül havuzundan gelir (en fazla dörtte biri); bu pay bitince bahşişler bonussuz ödenir. Yalnızca testnet: buradaki hiçbir şeyin değeri yok."
+  },
+  "sheet": {
+    "close": "Kapat",
+    "new": "Dex'inde yeni!",
+    "caught": "{{n}} kez yakalandı",
+    "chance": "Saklama şansı",
+    "chanceNote": "Sıradan bir atıştan kusursuz bir atışa, yaratık hasarsızken. Önce savaşta zayıflatırsan şans iki katına kadar çıkar.",
+    "flee": "Kaçan bir atıştan sonra zamanın {{pct}} kadarında kaçar.",
+    "matchups": "Eşleşmeler",
+    "strong": "Şunlara karşı güçlü",
+    "weak": "Şunlara karşı zayıf",
+    "stats": "Temel değerler",
+    "inRange": "Denemek için yeterince yakın",
+    "leaves": "{{min}} dk içinde gider"
   }
 }

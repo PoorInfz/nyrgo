@@ -888,5 +888,19 @@
     "boost": "+{{pct}} % NEAR per tip",
     "outfits": "holder outfits",
     "note": "The NEAR boost comes out of the same daily reward pot (at most a quarter of it); when that share is used up, tips are paid without the boost. Testnet only: nothing here has value."
+  },
+  "sheet": {
+    "close": "Close",
+    "new": "New to your Dex!",
+    "caught": "Caught {{n}} times",
+    "chance": "Chance to store it",
+    "chanceNote": "From a plain throw to a perfect one, with the creature unhurt. Weakening it in a battle first raises the chance up to twice as much.",
+    "flee": "After a missed throw it runs away {{pct}} of the time.",
+    "matchups": "Matchups",
+    "strong": "Strong against",
+    "weak": "Weak against",
+    "stats": "Base stats",
+    "inRange": "Close enough to try",
+    "leaves": "leaves in {{min}} min"
   }
 }

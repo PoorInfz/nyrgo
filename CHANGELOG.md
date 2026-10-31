@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.42.0 — 2026-10-31 — Creatures walk on the map
+
+- Creatures on the map are now their own figure instead of a round portrait: their 6-frame idle
+  animation, a little hop, and a slow wander left and right (turning at each end). Under each
+  one is an aura in its rarity's colours (green common, blue uncommon, violet rare, pink epic,
+  gold legendary, rainbow mythic). Rare and better get a column of light, and epic and better a
+  turning ring on the ground. A creature within reach grows and shows a bouncing "!".
+- Tapping a creature on the map (or its name in the list) opens its details:
+  - number, name, element, rarity and level, and whether it is new to your Dex or how many you
+    have caught;
+  - the chance each vault has of storing it, from a plain throw to a perfect one, worked out
+    with the same formula the server uses, and how many of each vault you carry;
+  - how often it runs after a missed throw;
+  - what it is strong and weak against, its base stats and its lore;
+  - how far it is and when it leaves, with "Go for it!" when it is within reach.
+- Texts in all 19 languages.
+
 ## 0.41.1 — 2026-10-31 — Ranks count after 24 hours
 
 - A holder rank now counts the smallest token balance of the last **24 hours** (was 7 days), so
