@@ -478,15 +478,15 @@ export async function captureRoutes(
 }
 
 /**
- * Notes a catch for the website's world globe: only the half-degree cell (about 50 km), and only
- * for adults.
+ * Notes a catch for the website's world globe: only the half-degree cell (about 50 km), only for
+ * adults, and only if they have not turned it off.
  */
 async function markCapture(c: PoolClient, userId: string, spawnId: string, definitionId: string) {
   await c.query(
     `INSERT INTO capture_marks (user_id, definition_id, cell_lat, cell_lng)
      SELECT $1, $3, floor(ST_Y(s.geom::geometry) * 2) / 2 + 0.25, floor(ST_X(s.geom::geometry) * 2) / 2 + 0.25
-       FROM spawns s JOIN users u ON u.id = $1
-      WHERE s.id = $2 AND u.age_band = '18+'`,
+       FROM spawns s JOIN users u ON u.id = $1 JOIN players p ON p.user_id = $1
+      WHERE s.id = $2 AND u.age_band = '18+' AND p.show_on_globe`,
     [userId, spawnId, definitionId],
   );
 }

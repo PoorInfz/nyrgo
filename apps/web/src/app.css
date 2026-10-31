@@ -2709,3 +2709,22 @@ button.hub-round {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
+
+/* a checkbox with a title and an explanation */
+.toggle-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: start;
+  cursor: pointer;
+}
+.toggle-row input {
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  accent-color: var(--mint);
+}
+.toggle-row > span {
+  display: grid;
+  gap: 4px;
+}

@@ -16,8 +16,15 @@ export function maskName(name: string): string {
   return chars[0] + '*'.repeat(Math.min(6, Math.max(2, chars.length - 1)));
 }
 
+let cache: { at: number; body: unknown } | null = null;
+
+/** Drops the cached catches, so a player who opts out disappears at once. */
+export function forgetPublicCaptures() {
+  cache = null;
+}
+
 export async function publicRoutes(app: FastifyInstance, { db }: { db: Db }) {
-  let cache: { at: number; body: unknown } | null = null;
+  cache = null;
 
   app.get(
     '/v1/public/captures',
@@ -39,7 +46,7 @@ export async function publicRoutes(app: FastifyInstance, { db }: { db: Db }) {
              FROM capture_marks m
              JOIN players p ON p.user_id = m.user_id
              JOIN users u ON u.id = m.user_id
-            WHERE u.status = 'active' AND u.age_band = '18+'
+            WHERE u.status = 'active' AND u.age_band = '18+' AND p.show_on_globe
               AND m.created_at > now() - interval '30 days'
               AND m.created_at < now() - interval '1 hour'
             ORDER BY m.cell_lat, m.cell_lng, m.created_at DESC

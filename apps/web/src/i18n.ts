@@ -504,6 +504,13 @@ export const resources = {
         outside: 'Tú: #{{rank}}',
         empty: 'Aún no hay nadie.',
       },
+      globe: {
+        label: 'Mostrar mis capturas en el mapa del mundo de nyrgo.fun',
+        why: 'Solo la zona aproximada (unos 50 km), una hora después y con tu nombre oculto (A****). Si lo desactivas, se borran también las marcas que ya se veían.',
+        savedOn: 'Tus próximas capturas aparecerán en el mapa del mundo.',
+        savedOff:
+          'Hecho: tus capturas ya no salen en el mapa del mundo y se han borrado las marcas que había.',
+      },
       duel: {
         title: 'Duelos amistosos',
         why: 'Reta a un amigo con una de tus criaturas. Él responde con una de las suyas cuando estéis a menos de 100 m, y el juego decide el combate. Luchan con toda su vida y nadie pierde nada. Hasta 10 al día.',
@@ -1287,6 +1294,13 @@ export const resources = {
         notYet: 'You are not on this board yet.',
         outside: 'You: #{{rank}}',
         empty: 'Nobody here yet.',
+      },
+      globe: {
+        label: 'Show my catches on the world map at nyrgo.fun',
+        why: 'Only the rough area (about 50 km), an hour later, with your name hidden (A****). Turning it off removes the marks already shown.',
+        savedOn: 'Your next catches will appear on the world map.',
+        savedOff:
+          'Done: your catches are off the world map, and the marks already shown were deleted.',
       },
       duel: {
         title: 'Friendly duels',

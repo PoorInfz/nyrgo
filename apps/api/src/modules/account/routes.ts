@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { Type, type Static } from '@sinclair/typebox';
+import { forgetPublicCaptures } from '../public/routes.js';
 import type { AppConfig } from '../../config.js';
 import { withTx, type Db } from '../../db.js';
 import { HttpProblem } from '../../http/problem.js';
@@ -15,6 +16,8 @@ const DeleteMeBody = Type.Object(
   { confirm: Type.Literal('DELETE') },
   { additionalProperties: false },
 );
+
+const PrivacyBody = Type.Object({ showOnGlobe: Type.Boolean() }, { additionalProperties: false });
 
 export async function accountRoutes(
   app: FastifyInstance,
@@ -37,6 +40,36 @@ export async function accountRoutes(
         [auth.userId, req.body.displayName],
       );
       return loadProfile(db, auth.userId);
+    },
+  );
+
+  /** Privacy choices: whether this player's catches appear on the website's world globe. */
+  app.get('/v1/me/privacy', async (req) => {
+    const auth = requireAuth(req);
+    const { rows } = await db.query<{ show: boolean; adult: boolean }>(
+      `SELECT p.show_on_globe AS show, u.age_band = '18+' AS adult
+         FROM players p JOIN users u ON u.id = p.user_id WHERE p.user_id = $1`,
+      [auth.userId],
+    );
+    if (!rows[0]) throw new HttpProblem('unauthenticated', 'Sign in required');
+    // under-18s never appear, whatever the setting says
+    return { showOnGlobe: rows[0].adult && rows[0].show, globeAvailable: rows[0].adult };
+  });
+
+  app.put<{ Body: Static<typeof PrivacyBody> }>(
+    '/v1/me/privacy',
+    { schema: { body: PrivacyBody } },
+    async (req) => {
+      const auth = requireAuth(req);
+      await db.query(`UPDATE players SET show_on_globe = $2 WHERE user_id = $1`, [
+        auth.userId,
+        req.body.showOnGlobe,
+      ]);
+      // off means gone: the marks already kept are deleted too
+      if (!req.body.showOnGlobe)
+        await db.query(`DELETE FROM capture_marks WHERE user_id = $1`, [auth.userId]);
+      forgetPublicCaptures();
+      return { showOnGlobe: req.body.showOnGlobe };
     },
   );
 
@@ -78,6 +111,9 @@ export async function accountRoutes(
           `SELECT amount, reason, ref_id, created_at FROM gold_ledger WHERE user_id = $1 ORDER BY id`,
         ),
         missions: await q(`SELECT * FROM mission_progress WHERE user_id = $1`),
+        globeMarks: await q(
+          `SELECT definition_id, cell_lat, cell_lng, created_at FROM capture_marks WHERE user_id = $1 ORDER BY id`,
+        ),
         placeVisits: await q(
           `SELECT poi_id, last_visit_at, visits FROM poi_visits WHERE user_id = $1`,
         ),

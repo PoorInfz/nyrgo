@@ -52,7 +52,8 @@ export const TEXT = {
     globeAgo: '{n} days ago',
     globeAgo1: 'yesterday',
     globeHere: '{n} caught around here',
-    globeNote: 'Approximate places (about 50 km), adults only, shown an hour later; names hidden.',
+    globeNote:
+      'Approximate places (about 50 km), adults only, shown an hour later; names hidden. Players can turn it off in their profile.',
     title: 'nyrGo! · Get outside and catch creatures',
     description:
       'nyrGo! is a real-world exploration game: walk anywhere in the world, discover {{COUNT}} original creatures, battle and collect them. Free to play.',

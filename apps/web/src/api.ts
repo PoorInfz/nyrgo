@@ -775,6 +775,9 @@ export function createApi(baseUrl: string) {
       call<{ joined: true }>('POST', '/v1/hub/tournament/join', { creature }),
     hubLeaveTournament: () => call<void>('DELETE', '/v1/hub/tournament/join'),
     hubSeasons: () => call<SeasonsInfo>('GET', '/v1/hub/seasons'),
+    privacy: () => call<{ showOnGlobe: boolean; globeAvailable: boolean }>('GET', '/v1/me/privacy'),
+    setPrivacy: (showOnGlobe: boolean) =>
+      call<{ showOnGlobe: boolean }>('PUT', '/v1/me/privacy', { showOnGlobe }),
     leaderboard: (by: LeaderboardBoard) => call<Leaderboard>('GET', `/v1/leaderboards?by=${by}`),
     hubBlocks: () => call<{ blocked: { id: string; name: string }[] }>('GET', '/v1/hub/blocks'),
     duels: () => call<{ duels: Duel[] }>('GET', '/v1/duels'),

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.38.1 — 2026-10-31 — Leave the globe
+
+- Profile → Your data: "Show my catches on the world map at nyrgo.fun" (adults; on by default).
+  Turning it off deletes the marks already kept and they leave the website at once; no new marks
+  are kept while it is off. The data export includes the marks.
+
 ## 0.38.0 — 2026-10-31 — The website shows the game
 
 - **World globe** at the top of nyrgo.fun: a small pixel-art Earth (Natural Earth land, drawn

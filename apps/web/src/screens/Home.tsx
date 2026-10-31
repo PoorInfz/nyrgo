@@ -7,6 +7,7 @@ import { NearWallet } from './NearWallet';
 import { Wardrobe } from './Wardrobe';
 import { ProgressCard } from './ProgressCard';
 import { Leaderboards } from './Leaderboards';
+import { GlobeToggle } from './GlobeToggle';
 
 export function Home({
   api,
@@ -123,6 +124,7 @@ export function Home({
 
       <section className="card stack" aria-labelledby="privacy-title">
         <h2 id="privacy-title">{t('privacy')}</h2>
+        <GlobeToggle api={api} />
         <button type="button" onClick={exportData}>
           {t('exportData')}
         </button>
