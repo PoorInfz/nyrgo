@@ -165,8 +165,8 @@ Stated openly so nobody relies on something that is not there.
   shared bus (Phase 5). A server restart drops connections; clients reconnect on their own.
 - The chat filter is a first line (word list, link and contact patterns); real safety relies on
   age-group rooms, blocks, reports and moderators. It has not been tried by real players yet.
-- The town's art comes from two owner-supplied sheets that were not drawn for slicing: some
-  edges show against the ground, and interiors are drawn at 2× from small pictures, so they look
+- The town's art comes from two owner-supplied sheets that were not drawn for slicing: the plaza
+  and portal are faded into the ground to hide their edges, and interiors are drawn at 2× from small pictures, so they look
   soft on large screens.
 
 ## Data

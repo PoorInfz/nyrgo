@@ -110,14 +110,20 @@ PIECES_2 = {
 
 # parts of a crop that belong to a neighbouring piece: (x0, y0, x1, y1) in crop coordinates
 ERASE = {
-    "plaza": [(419, 0, 484, 130), (452, 380, 484, 454), (0, 28, 14, 84)],
+    "plaza": [(419, 0, 484, 130), (452, 380, 484, 454), (0, 28, 14, 84), (446, 0, 484, 454)],
+    "well": [(46, 70, 64, 89)],
+    "tree-round": [(0, 0, 104, 3), (0, 86, 34, 110), (62, 82, 104, 110)],
+    "tree-pine": [(0, 95, 9, 138)],
     "house-purple": [(140, 0, 172, 30)],
     "room-gym": [(0, 378, 26, 417)],
 }
 
+# pieces whose edges fade into the ground (their art has its own grass around it)
+FEATHER = {"plaza": 10, "portal": 8}
+
 # Ground textures are cut from the sheet's lighter tiles; each is scaled per channel to this
 # mean colour so it matches the grass painted inside the plaza piece.
-GROUND_TINT = {"grass": (69, 173, 77)}
+GROUND_TINT = {"grass": (76, 173, 80)}
 
 # name: (sheet, (x0, y0, x1, y1)) inside a plain tile, well clear of its edges, mirrored into a
 # seamless texture
@@ -154,8 +160,38 @@ def cut(img: Image.Image, bg) -> Image.Image:
             continue
         px[x, y] = (0, 0, 0, 0)
         q.extend(((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)))
+    img = despeckle(img)
     box = img.getbbox()
     return img.crop(box) if box else img
+
+
+def despeckle(img: Image.Image, keep: float = 0.03) -> Image.Image:
+    """Drops loose bits of neighbouring pieces: opaque islands under `keep` of the largest."""
+    import numpy as np
+    from scipy import ndimage
+
+    a = np.array(img)
+    mask = a[..., 3] > 0
+    lab, n = ndimage.label(mask, structure=np.ones((3, 3)))
+    if n <= 1:
+        return img
+    sizes = ndimage.sum(mask, lab, range(1, n + 1))
+    small = [i + 1 for i, v in enumerate(sizes) if v < keep * sizes.max()]
+    a[np.isin(lab, small)] = 0
+    return Image.fromarray(a)
+
+
+def feather(img: Image.Image, px: int) -> Image.Image:
+    """Fades the outer `px` pixels so a piece's own grass melts into the ground texture."""
+    import numpy as np
+
+    a = np.array(img).astype(float)
+    h, w = a.shape[:2]
+    y = np.minimum(np.arange(h), np.arange(h)[::-1])[:, None]
+    x = np.minimum(np.arange(w), np.arange(w)[::-1])[None, :]
+    ramp = np.clip(np.minimum(x, y) / px, 0, 1)
+    a[..., 3] *= ramp
+    return Image.fromarray(a.astype("uint8"))
 
 
 def mirror_tile(img: Image.Image) -> Image.Image:
@@ -189,6 +225,8 @@ def main():
             for e in ERASE.get(name, []):
                 crop.paste(BGS[n], e)
             piece = cut(crop, BGS[n])
+            if name in FEATHER:
+                piece = feather(piece, FEATHER[name])
             piece.save(OUT / f"{name}.webp", "WEBP", lossless=True, method=6)
             sizes[name] = piece.size
     grounds = {}

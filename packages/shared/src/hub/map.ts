@@ -138,74 +138,107 @@ function look(over: Partial<AvatarLook>): AvatarLook {
 }
 
 function centralPlaza(): HubMap {
-  const width = 1560;
-  const height = 1090;
-  const top = 36;
-  const gym = building('gym', 96, top);
-  const arena = building('arena', 352, top);
-  const market = building('market', 630, top);
-  const houseRed = building('house-red', 900, top);
-  const houseBlue = building('house-blue', 1100, top);
-  const housePurple = building('house-purple', 1290, top);
-  const px = Math.round((width - size('plaza').w) / 2);
-  const py = 318;
-  const portalX = Math.round(width / 2 - size('portal').w / 2);
-  const portalY = py + size('plaza').h + 70;
+  // A compact square: the town's three big buildings along the north street, two houses on
+  // each side along their own lanes, the plaza in the middle and the portal to the south.
+  const width = 1400;
+  const height = 1080;
+  const top = 30;
+  const px = 450;
+  const py = 360;
+  const plazaArt = size('plaza');
+  // the plaza art's north gate and south exit, in world pixels
+  const gateX = px + 250;
+  const exitX = px + 242;
+  const gym = building('gym', gateX - 117 - 30 - 217, top);
+  const arena = building('arena', gateX - 117, top);
+  const market = building('market', gateX + 118 + 30, top);
+  const houseW1 = building('house-red', 36, 330);
+  const houseW2 = building('house-purple', 40, 610);
+  const houseE1 = building('house-blue', width - 36 - size('house-blue').w, 330);
+  const houseE2 = building('house-red', width - 36 - size('house-red').w, 610);
+  const streetY = top + 220;
+  const laneW = { x: 236, w: 70 };
+  const laneE = { x: width - 236 - 70, w: 70 };
+  const portalX = exitX - Math.round(size('portal').w / 2);
+  const portalY = py + plazaArt.h + 62;
   const portal: Placed = {
     sprite: 'portal',
     x: portalX,
     y: portalY,
     solid: [{ x: portalX + 10, y: portalY + 40, w: size('portal').w - 20, h: 70 }],
   };
+  // an arch over a lane: only its two posts are in the way
+  const arch = (x: number, y: number): Placed => {
+    const { w, h } = size('arch');
+    return {
+      sprite: 'arch',
+      x,
+      y,
+      solid: [
+        { x: x + 2, y: y + h - 16, w: 22, h: 14 },
+        { x: x + w - 24, y: y + h - 16, w: 22, h: 14 },
+      ],
+    };
+  };
 
   const objects: Placed[] = [
     gym.placed,
     arena.placed,
     market.placed,
-    houseRed.placed,
-    houseBlue.placed,
-    housePurple.placed,
+    houseW1.placed,
+    houseW2.placed,
+    houseE1.placed,
+    houseE2.placed,
     plaza(px, py),
     portal,
-    // west side
-    tree('tree-pine', 20, 300),
-    tree('tree-round', 120, 420),
-    tree('tree-pine', 10, 560),
-    tree('tree-cherry', 160, 640),
-    prop('well', 330, 560, 26),
-    prop('bench-long', 300, 420, 22),
-    prop('pond', 30, 900, 60),
-    tree('tree-round', 220, 880),
-    prop('flower-box', 300, 1000, 30),
-    // east side
-    prop('statue', 1110, 520, 40),
-    prop('bench', 1250, 430, 18),
-    prop('umbrella', 1350, 410, 20),
-    tree('tree-pine', 1460, 300),
-    tree('tree-round', 1420, 560),
-    tree('tree-cherry', 1300, 700),
-    tree('tree-pine', 1450, 840),
-    prop('flowers', 1180, 920, 22),
-    prop('fence', 1200, 1020, 20),
+    // the north street: lamps on its south edge, the market's corner, a first-aid post
+    prop('lamp-tall', 330, streetY - 52, 14),
+    prop('lamp-tall', gateX - 120, streetY - 52, 14),
+    prop('lamp-tall', gateX + 84, streetY - 52, 14),
+    prop('lamp-tall', width - 366, streetY - 52, 14),
+    prop('vending', market.placed.x + size('market').w + 6, top + 128, 18),
+    prop('first-aid', gym.placed.x - 62, top + 128, 18),
+    prop('board', 196, top + 150, 16),
+    // the north corners
+    tree('tree-pine', 10, 0),
+    tree('tree-round', 110, 40),
+    tree('tree-pine', width - 105, 0),
+    tree('tree-round', width - 215, 40),
+    // arches where the lanes leave the street
+    arch(laneW.x - 18, streetY + 34),
+    arch(laneE.x - 18, streetY + 34),
+    // between the west lane and the plaza
+    prop('bench-wood', 324, 430, 18),
+    prop('flower-pot', 400, 520, 14),
+    prop('well', 340, 600, 24),
+    prop('bush', 380, 730, 20),
+    prop('flowers', 320, 790, 20),
+    prop('banner-blue', 330, 330, 14),
+    prop('planter', 400, 330, 18),
+    // between the plaza and the east lane
+    prop('statue', px + plazaArt.w + 40, 410, 40),
+    prop('umbrella', px + plazaArt.w + 40, 620, 20),
+    prop('bench', px + plazaArt.w + 30, 720, 18),
+    prop('trophy', px + plazaArt.w + 110, 560, 16),
+    prop('banner-blue', width - 440, 330, 14),
+    prop('flower-pot', px + plazaArt.w + 130, 790, 14),
+    // the south-west garden
+    prop('pond', 50, 900, 60),
+    tree('tree-cherry', 240, 880),
+    prop('flower-box', 60, 1020, 30),
+    tree('tree-round', 380, 900),
+    // the south-east garden
+    prop('statue-knight', 1000, 880, 40),
+    tree('tree-cherry', 1120, 870),
+    tree('tree-pine', width - 110, 880),
+    prop('flower-bed', 1150, 1010, 30),
     // around the portal
-    prop('signpost', portalX - 60, portalY + 30, 18),
-    prop('lamp', portalX + size('portal').w + 20, portalY + 4, 16),
-    prop('lamp', portalX - 120, portalY + 4, 16),
-    prop('flower-pot', portalX - 160, portalY + 70, 14),
-    prop('trophy', 1040, 300, 16),
-    prop('banner-blue', 1180, 290, 14),
-    prop('board', 480, 290, 16),
-    // from the second sheet
-    prop('vending', market.placed.x + size('market').w + 6, top + 140, 18),
-    prop('first-aid', gym.placed.x - 70, top + 150, 18),
-    prop('statue-knight', 1000, 700, 40),
-    prop('lamp-tall', 70, 330, 14),
-    prop('lamp-tall', width - 110, 330, 14),
-    prop('hedge', 470, 1040, 40),
-    prop('hedge', 920, 1040, 40),
-    prop('flower-bed', 700, 286, 30),
-    prop('planter', 1240, 820, 20),
-    prop('bench-wood', 1240, 600, 18),
+    prop('lamp', portalX - 70, portalY + 4, 16),
+    prop('lamp', portalX + size('portal').w + 16, portalY + 4, 16),
+    prop('signpost', portalX - 120, portalY + 46, 18),
+    prop('flower-pot', portalX + size('portal').w + 80, portalY + 70, 14),
+    prop('hedge', portalX - 210, height - 46, 40),
+    prop('hedge', portalX + size('portal').w + 44, height - 46, 40),
   ];
 
   const npcs: Npc[] = [
@@ -224,8 +257,8 @@ function centralPlaza(): HubMap {
     },
     {
       id: 'merchant',
-      x: market.door.x + 80,
-      y: market.door.y + 36,
+      x: market.door.x + 76,
+      y: market.door.y + 40,
       facing: 'left',
       look: look({
         skin: 'skin_1',
@@ -263,36 +296,56 @@ function centralPlaza(): HubMap {
       to: { room: 'arena', ...ROOM_ENTRY.arena },
     },
     { id: 'market', kind: 'market', x: market.door.x, y: market.door.y, radius: 56 },
-    { id: 'house-red', kind: 'house', x: houseRed.door.x, y: houseRed.door.y, radius: 50 },
-    { id: 'house-blue', kind: 'house', x: houseBlue.door.x, y: houseBlue.door.y, radius: 50 },
-    { id: 'house-purple', kind: 'house', x: housePurple.door.x, y: housePurple.door.y, radius: 50 },
+    { id: 'house-red', kind: 'house', x: houseW1.door.x, y: houseW1.door.y, radius: 50 },
+    { id: 'house-purple', kind: 'house', x: houseW2.door.x, y: houseW2.door.y, radius: 50 },
+    { id: 'house-blue', kind: 'house', x: houseE1.door.x, y: houseE1.door.y, radius: 50 },
+    { id: 'house-red-2', kind: 'house', x: houseE2.door.x, y: houseE2.door.y, radius: 50 },
     ...npcs.map((n) => ({ id: `npc:${n.id}`, kind: 'npc' as const, x: n.x, y: n.y, radius: 60 })),
   ];
 
   PLAZA_DOORS.gym = { x: gym.door.x, y: gym.door.y + 22 };
   PLAZA_DOORS.arena = { x: arena.door.x, y: arena.door.y + 22 };
   // the server sends each visitor back to the house door they used; this is the fallback
-  PLAZA_DOORS.house = { x: houseBlue.door.x, y: houseBlue.door.y + 22 };
+  PLAZA_DOORS.house = { x: houseE1.door.x, y: houseE1.door.y + 22 };
 
+  const path = (x: number, y: number, w: number, h: number) => ({
+    ground: 'path' as const,
+    rect: { x, y, w, h },
+  });
+  const stub = (door: { x: number; y: number }, toX: number) => {
+    const x0 = Math.min(door.x - 36, toX);
+    const x1 = Math.max(door.x + 36, toX);
+    return path(x0, door.y - 10, x1 - x0, 62);
+  };
   return {
     id: 'plaza',
     width,
     height,
     ground: 'grass',
     patches: [
-      // the street in front of the buildings, and the way down to the portal
-      { ground: 'path', rect: { x: 60, y: top + 200, w: width - 120, h: 84 } },
-      {
-        ground: 'path',
-        rect: { x: Math.round(width / 2) - 50, y: py + size('plaza').h - 20, w: 100, h: 110 },
-      },
+      // the north street in front of the big buildings
+      path(170, streetY, width - 340, 76),
+      // a lane down each side, past the houses
+      path(laneW.x, streetY, laneW.w, 640),
+      path(laneE.x, streetY, laneE.w, 640),
+      stub(houseW1.door, laneW.x + laneW.w),
+      stub(houseW2.door, laneW.x + laneW.w),
+      stub(houseE1.door, laneE.x),
+      stub(houseE2.door, laneE.x),
+      // from the plaza's west and east sides to the lanes
+      path(laneW.x, py + 230, px - laneW.x + 20, 56),
+      path(px + plazaArt.w - 20, py + 230, laneE.x - px - plazaArt.w + 20, 56),
+      // up from the plaza's north gate to the street
+      path(gateX - 44, streetY + 60, 88, py - streetY - 30),
+      // down from the plaza to the portal
+      path(exitX - 50, py + plazaArt.h - 24, 100, 96),
     ],
     objects,
     interactions,
     npcs,
     blocked: npcs.map((n) => ({ x: n.x - 12, y: n.y - 10, w: 24, h: 12 })),
     // just out of the portal, on the path up to the square
-    spawn: { x: Math.round(width / 2), y: portalY - 14 },
+    spawn: { x: exitX, y: portalY - 14 },
     actorScale: 1.4,
   };
 }

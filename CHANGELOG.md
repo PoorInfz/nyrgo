@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.37.0 — 2026-10-31 — A rebuilt town square
+
+- The square is rebuilt, smaller and fuller: gym, arena and market along the north street; two
+  houses on each side along their own lanes, with arches where the lanes leave the street;
+  paths from the plaza to the lanes, up to the street and down to the portal; gardens with a
+  pond, cherry trees, statues, benches and hedges where there used to be bare grass.
+- The planter that blocked the plaza's north gate is gone; the gate now has a path to the street.
+- Art fixes: stray bits of neighbouring pieces removed from the sprites (trees, the well and
+  others); the plaza and the portal fade into the ground instead of showing a hard edge; the
+  plaza's crop no longer includes a strip of the next piece; the grass matches the plaza's.
+
 ## 0.36.0 — 2026-10-31 — Leaderboards, bigger explorers
 
 - **Leaderboards** on the profile: level, creatures caught, species caught and the arena's current
