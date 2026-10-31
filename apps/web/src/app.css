@@ -2538,6 +2538,65 @@ button.hub-round {
   image-rendering: pixelated;
 }
 
+.hub-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.hub-tabs button {
+  width: auto;
+  flex: 1 1 auto;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+}
+
+.stack-tight {
+  display: grid;
+  gap: 2px;
+}
+
+.hub-achievements {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.hub-achievements li {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 4%);
+  opacity: 0.6;
+}
+
+.hub-achievements li.done {
+  opacity: 1;
+  outline: 1px solid var(--sun);
+}
+
+.hub-bracket {
+  margin: 8px 0 0;
+  padding-left: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.hub-bracket ul {
+  margin: 4px 0 0;
+  padding-left: 16px;
+}
+
+.hub-bracket .won {
+  color: var(--mint);
+  font-weight: 700;
+}
+
 .hub-history .link {
   justify-self: start;
   text-align: left;

@@ -15,6 +15,7 @@ import { HttpProblem } from '../../http/problem.js';
 import { requireAuth } from '../auth/sessions.js';
 import { loadOwned } from '../creatures/owned.js';
 import { hubActivityRoutes } from './activities.js';
+import { boardRoutes, bumpHubQuest } from './board.js';
 import { canVisit, houseRoutes } from './houses.js';
 import { marketRoutes } from './market.js';
 import { checkChat } from './chat.js';
@@ -48,14 +49,23 @@ function PLAZA_HOUSE_DOOR() {
   return { x: out.x, y: out.y };
 }
 
+/** A live view of the town for the admin's monitoring (who is where right now). */
+export interface HubLive {
+  snapshot: () => { online: number; rooms: Record<string, number>; houses: number };
+}
+
 export interface HubDeps {
   db: Db;
   corsOrigins: string[];
   /** Tests pass their own rooms (manual ticks, fixed clock). */
   rooms?: Map<string, Room>;
+  live?: HubLive;
 }
 
-export async function hubRoutes(app: FastifyInstance, { db, corsOrigins, rooms: given }: HubDeps) {
+export async function hubRoutes(
+  app: FastifyInstance,
+  { db, corsOrigins, rooms: given, live }: HubDeps,
+) {
   const rooms =
     given ?? new Map(['plaza', 'gym', 'arena'].map((id) => [id, new Room(id)] as const));
   /**
@@ -69,9 +79,26 @@ export async function hubRoutes(app: FastifyInstance, { db, corsOrigins, rooms: 
   app.addHook('onClose', async () => {
     for (const r of rooms.values()) r.stop();
   });
+  if (live) {
+    live.snapshot = () => {
+      const counts: Record<string, number> = {};
+      let houses = 0;
+      let online = 0;
+      for (const r of rooms.values()) {
+        online += r.members.size;
+        if (houseOwnerOf(r.id)) houses += 1;
+        else counts[r.id] = r.members.size;
+      }
+      counts.houses = [...rooms.values()]
+        .filter((r) => houseOwnerOf(r.id))
+        .reduce((n, r) => n + r.members.size, 0);
+      return { online, rooms: counts, houses };
+    };
+  }
   const inRoom = (userId: string, id: string) => rooms.get(id)?.members.has(userId) ?? false;
   await hubActivityRoutes(app, { db, inRoom });
   await marketRoutes(app, { db, inRoom });
+  await boardRoutes(app, { db, inRoom });
 
   /** A house room, opened when its first visitor arrives and closed when the last one leaves. */
   function houseRoom(owner: string): Room {
@@ -286,6 +313,12 @@ export async function hubRoutes(app: FastifyInstance, { db, corsOrigins, rooms: 
           void visit(msg.owner);
         } else if (msg.t === 'emote' && typeof msg.e === 'string') {
           room.emote(userId, msg.e);
+          // greetings count for the notice board, at most one every few seconds
+          const now = Date.now();
+          if (now - lastEmoteQuest > 5000) {
+            lastEmoteQuest = now;
+            void bumpHubQuest(db, userId, 'emote').catch(() => undefined);
+          }
         } else if (msg.t === 'chat' && typeof msg.text === 'string') {
           void chat(msg.text.slice(0, 500));
         }
@@ -299,6 +332,7 @@ export async function hubRoutes(app: FastifyInstance, { db, corsOrigins, rooms: 
 
       /** Where a player goes back to when leaving a house: the door they came in by. */
       let houseReturn: { x: number; y: number } | null = null;
+      let lastEmoteQuest = 0;
 
       /** Moves this player to another room (their profile goes with them). */
       function enter(next: Room, at?: { x: number; y: number }) {
@@ -355,6 +389,7 @@ export async function hubRoutes(app: FastifyInstance, { db, corsOrigins, rooms: 
         houseReturn = { x: door.x, y: door.y + 22 };
         const next = houseRoom(owner);
         enter(next, next.map.spawn);
+        if (owner !== userId) await bumpHubQuest(db, userId, 'visit_house').catch(() => undefined);
       }
 
       async function chat(raw: string) {

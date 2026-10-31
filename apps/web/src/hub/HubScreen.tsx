@@ -5,6 +5,7 @@ import type { HouseView } from '../api';
 import type { Api } from '../api';
 import { useLook } from '../avatar/store';
 import { ArenaPanel, GymPanel } from './Activities';
+import { BoardPanel } from './Board';
 import { DecoratePanel, HousesPanel } from './House';
 import { MarketPanel } from './Market';
 import { EMOTE_ICONS, Town, newBody } from './engine';
@@ -28,16 +29,18 @@ type Dialog =
   | { kind: 'market' }
   | { kind: 'houses' }
   | { kind: 'decorate' }
+  | { kind: 'board' }
   | null;
 
 /** NPCs with something to do rather than just a word. */
-const NPC_PANELS: Record<string, 'gym' | 'arena' | 'market'> = {
+const NPC_PANELS: Record<string, 'gym' | 'arena' | 'market' | 'board'> = {
+  guide: 'board',
   coach: 'gym',
   host: 'arena',
   merchant: 'market',
 };
 /** Dialogs that hold a whole panel (wider, scrolling). */
-const PANELS = new Set(['gym', 'arena', 'market', 'houses', 'decorate']);
+const PANELS = new Set(['gym', 'arena', 'market', 'houses', 'decorate', 'board']);
 
 const REPORT_REASONS = ['harassment', 'spam', 'inappropriate', 'personal_info', 'other'] as const;
 
@@ -553,6 +556,12 @@ export default function HubScreen({
             <>
               <h2 id="hub-dialog-title">{t('hub.npc.host.name')}</h2>
               <ArenaPanel api={api} />
+            </>
+          )}
+          {dialog.kind === 'board' && (
+            <>
+              <h2 id="hub-dialog-title">{t('hub.npc.guide.name')}</h2>
+              <BoardPanel api={api} />
             </>
           )}
           {dialog.kind === 'market' && (

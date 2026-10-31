@@ -426,6 +426,52 @@ export interface ArenaInfo {
   history: HubBout[];
   defended: HubBout[];
   leaderboard: { me: boolean; name: string; rating: number; wins: number; losses: number }[];
+  season?: string;
+  myRank?: number | null;
+}
+
+export interface HubQuest {
+  id: string;
+  kind: string;
+  target: number;
+  gold: number;
+  xp: number;
+  progress: number;
+  completed: boolean;
+  claimed: boolean;
+}
+
+export interface Achievement {
+  id: string;
+  goal: number;
+  value: number | null;
+  done: boolean;
+}
+
+export interface TournamentInfo {
+  current: {
+    id: string;
+    startsAt: string;
+    entrants: number;
+    min: number;
+    max: number;
+    myCreature: string | null;
+  };
+  last: {
+    id: string;
+    finishedAt: string;
+    champion: string | null;
+    rounds: { a: string | null; b: string | null; winner: string | null; turns: number }[][];
+    myPlace: number | null;
+    myPrize: number;
+    entered: boolean;
+  } | null;
+  prizes: number[];
+}
+
+export interface SeasonsInfo {
+  current: string;
+  past: { season: string; rating: number; wins: number; losses: number; rank: number }[];
 }
 
 export interface ArenaResult extends HubReward {
@@ -699,6 +745,18 @@ export function createApi(baseUrl: string) {
       call<HouseView>('GET', `/v1/hub/house/${encodeURIComponent(owner)}`),
     hubSaveHouse: (body: { privacy?: HousePrivacy; layout?: HousePiece[] }) =>
       call<{ privacy: HousePrivacy; layout: HousePiece[] }>('PUT', '/v1/hub/house', body),
+    hubQuests: () => call<{ day: string; quests: HubQuest[] }>('GET', '/v1/hub/quests'),
+    hubClaimQuest: (id: string) =>
+      call<{ reward: { xp: number; gold: number }; quests: HubQuest[] }>(
+        'POST',
+        `/v1/hub/quests/${encodeURIComponent(id)}/claim`,
+      ),
+    hubAchievements: () => call<{ achievements: Achievement[] }>('GET', '/v1/hub/achievements'),
+    hubTournament: () => call<TournamentInfo>('GET', '/v1/hub/tournament'),
+    hubJoinTournament: (creature: string) =>
+      call<{ joined: true }>('POST', '/v1/hub/tournament/join', { creature }),
+    hubLeaveTournament: () => call<void>('DELETE', '/v1/hub/tournament/join'),
+    hubSeasons: () => call<SeasonsInfo>('GET', '/v1/hub/seasons'),
     hubBlocks: () => call<{ blocked: { id: string; name: string }[] }>('GET', '/v1/hub/blocks'),
     duels: () => call<{ duels: Duel[] }>('GET', '/v1/duels'),
     challenge: (to: string, creature: string) =>

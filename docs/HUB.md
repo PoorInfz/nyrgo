@@ -1,6 +1,6 @@
 # Social hub — Phase 1 audit and proposed architecture
 
-Status: **Phases 2–4 built** (town square; gym and arena; market and houses) — see §6–§8. Phase 5 not started. This answers Phase 1 of the hub brief (2026-10-31): what
+Status: **Phases 2–5 built** (town square; gym and arena; market and houses; quests, seasons, tournaments) — see §6–§9. This answers Phase 1 of the hub brief (2026-10-31): what
 exists, what the hub can reuse, the smallest compatible architecture, and the conflicts that
 need a decision before Phase 2.
 
@@ -160,6 +160,30 @@ drawn with the **owner's art sheet** (`art/hub/sheet-01.png`).
   and stands on open floor. Visits need the same age group and no block either way; when the owner
   changes the layout everyone inside reloads it, and when the door closes visitors are moved back
   to the square at once.
+
+## 9. Phase 5 — quests, seasons, tournaments, monitoring (2026-10-31)
+
+- **Notice board** (`board.ts`, `HUB_QUESTS` in shared): three quests per player and local day,
+  picked from a seed, stored in `mission_progress` with ids `hub:<kind>:<target>`. Progress is
+  bumped where the action happens (training, ranked battles, market listing and purchase,
+  furniture placed, a house visit over the socket, greetings at most once per 5 s). Claiming pays
+  through `grantReward(source: 'hub')`, so Gold stays in the daily gameplay cap and XP under the
+  50 % rule. These ~45 XP a day are outside the activities' 250 a day.
+- **Achievements**: `ACHIEVEMENTS` in shared, computed on request from existing tables (nothing
+  extra stored).
+- **Seasons**: `players.arena_season`; `rollSeason()` runs lazily for a player (and their
+  opponent) and hourly for everyone from the retention job, copying the finished season into
+  `arena_season_results` and carrying the rating halfway back to 1000. Ranks are computed per age
+  group.
+- **Tournaments**: `hub_tournaments` (one open per age group, Saturday 18:00 UTC) and entries.
+  The `tournaments` job (every 5 minutes) plays the due ones: seeded shuffle, byes for the first
+  seeds, the shared duel engine at full health, a draw going to the lower level, forfeits for
+  creatures no longer owned; prizes go through the Gold ledger (`tournament_prize`). Fewer than 4
+  entrants cancels it.
+- **Monitoring**: `/admin/v1/hub/stats` (live room counts and last-hour activity).
+- **Scaling, not done**: rooms still live in one API process. Several instances need a shared bus
+  (Postgres `LISTEN/NOTIFY` or Redis) for positions and chat, and sticky routing; the REST parts
+  already work across instances.
 
 ### What the art needs next (for the owner)
 

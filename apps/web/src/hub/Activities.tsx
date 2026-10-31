@@ -14,6 +14,7 @@ import {
 } from '../api';
 import { useContent } from '../content';
 import { DuelReplay } from '../screens/DuelReplay';
+import { SeasonsList, TournamentTab } from './Board';
 
 /**
  * What the coach and the arena host offer: training bouts and battles against other players'
@@ -219,7 +220,7 @@ export function ArenaPanel({ api }: { api: Api }) {
   const { t } = useTranslation();
   const { dex } = useContent(api);
   const mine = useCreatures(api);
-  const [tab, setTab] = useState<'fight' | 'board' | 'history'>('fight');
+  const [tab, setTab] = useState<'fight' | 'tournament' | 'board' | 'history'>('fight');
   const [info, setInfo] = useState<ArenaInfo | null>(null);
   const [pick, setPick] = useState('');
   const [busy, setBusy] = useState(false);
@@ -309,10 +310,12 @@ export function ArenaPanel({ api }: { api: Api }) {
         <strong>{t('arena.rating', { rating: info.rating })}</strong>{' '}
         <span className="muted small">
           {t('arena.record', { wins: info.wins, losses: info.losses })}
+          {info.season && <> · {t('arena.season', { season: info.season })}</>}
+          {info.myRank ? <> · #{info.myRank}</> : null}
         </span>
       </p>
-      <div className="tabs" role="tablist">
-        {(['fight', 'board', 'history'] as const).map((k) => (
+      <div className="hub-tabs" role="tablist">
+        {(['fight', 'tournament', 'board', 'history'] as const).map((k) => (
           <button
             key={k}
             type="button"
@@ -404,6 +407,9 @@ export function ArenaPanel({ api }: { api: Api }) {
         </>
       )}
 
+      {tab === 'tournament' && <TournamentTab api={api} mine={mine} />}
+
+      {tab === 'board' && <SeasonsList api={api} />}
       {tab === 'board' &&
         (info.leaderboard.length ? (
           <ol className="hub-board">

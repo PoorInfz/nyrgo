@@ -6,6 +6,7 @@ import {
   CREATURES,
   CREATURES_BY_ID,
   DEFAULT_CONFIG,
+  arenaSeason,
   battleXp,
   createFighter,
   eloUpdate,
@@ -19,6 +20,7 @@ import { HttpProblem } from '../../http/problem.js';
 import { requireAuth } from '../auth/sessions.js';
 import { PLAYER_TZ_SQL, grantReward } from '../progress/rewards.js';
 import { addCreatureXp, loadOwned, type OwnedView } from '../creatures/owned.js';
+import { bumpHubQuest, rollSeason } from './board.js';
 
 /**
  * What the town's buildings do: training against the gym's coach and battles in the arena
@@ -248,6 +250,8 @@ export async function hubActivityRoutes(
         // the creature learns from every bout, more from a win
         const cXp = Math.round(battleXp(coachLevel) * (won ? 0.5 : 0.2));
         const grown = await addCreatureXp(c, mine, cXp, mine.hp);
+        await bumpHubQuest(c, auth.userId, 'train');
+        if (won) await bumpHubQuest(c, auth.userId, 'train_win');
         const s = await settle(c, auth.userId, {
           kind: 'training',
           mine,
@@ -275,6 +279,7 @@ export async function hubActivityRoutes(
 
   app.get('/v1/hub/arena', async (req) => {
     const auth = requireAuth(req);
+    await rollSeason(db, auth.userId);
     const t = await today(db, auth.userId);
     const { rows } = await db.query<{
       rating: number;
@@ -296,9 +301,9 @@ export async function hubActivityRoutes(
               p.arena_wins AS wins, p.arena_losses AS losses
          FROM players p JOIN users u ON u.id = p.user_id
         WHERE u.status = 'active' AND (u.age_band = '18+') = $2
-          AND p.arena_wins + p.arena_losses > 0
+          AND p.arena_wins + p.arena_losses > 0 AND p.arena_season = $3
         ORDER BY p.arena_rating DESC, p.arena_wins DESC LIMIT 20`,
-      [auth.userId, me.adult],
+      [auth.userId, me.adult, arenaSeason()],
     );
     const defended = await db.query(
       `SELECT a.id, a.created_at AS "at", NOT a.won AS won, p.display_name AS "opponentName",
@@ -322,6 +327,8 @@ export async function hubActivityRoutes(
       history: await history(auth.userId, ['arena_ranked', 'arena_practice'], 15),
       defended: defended.rows,
       leaderboard: board.rows,
+      season: arenaSeason(),
+      myRank: await myRank(db, auth.userId, me.adult),
     };
   });
 
@@ -355,6 +362,7 @@ export async function hubActivityRoutes(
       mustBeIn(auth.userId, 'arena');
       const ranked = req.body.mode === 'ranked';
       return withTx(db, async (c) => {
+        await rollSeason(c, auth.userId);
         const { rows } = await c.query<{ rating: number; adult: boolean }>(
           `SELECT p.arena_rating AS rating, u.age_band = '18+' AS adult
              FROM players p JOIN users u ON u.id = p.user_id WHERE p.user_id = $1 FOR UPDATE OF p`,
@@ -373,6 +381,14 @@ export async function hubActivityRoutes(
         let foe: { user?: string; name?: string; def: string; level: number; rating?: number };
         let foeFighter;
         if (opp) {
+          // their rating as of this season (a returning player carries half of the old one)
+          if (await rollSeason(c, opp.user_id)) {
+            const r = await c.query<{ rating: number }>(
+              `SELECT arena_rating AS rating FROM players WHERE user_id = $1`,
+              [opp.user_id],
+            );
+            opp.rating = r.rows[0]!.rating;
+          }
           const d = await defenderOf(c, opp.user_id);
           if (!d) throw new HttpProblem('no_opponent', 'Nobody to fight right now');
           foe = {
@@ -421,6 +437,10 @@ export async function hubActivityRoutes(
           );
         }
         const xp = !ranked ? 0 : won ? cfg().rankedWinXp : cfg().rankedLossXp;
+        if (ranked) {
+          await bumpHubQuest(c, auth.userId, 'ranked');
+          if (won) await bumpHubQuest(c, auth.userId, 'ranked_win');
+        }
         const s = await settle(c, auth.userId, {
           kind: ranked ? 'arena_ranked' : 'arena_practice',
           mine,
@@ -473,4 +493,18 @@ async function findOpponent(c: PoolClient, userId: string, rating: number, adult
     if (rows[0]) return rows[0];
   }
   return null;
+}
+
+/** This player's place on the current season's board of their age group (null before playing). */
+async function myRank(db: Db, userId: string, adult: boolean): Promise<number | null> {
+  const { rows } = await db.query<{ rank: number | null }>(
+    `SELECT CASE WHEN me.arena_wins + me.arena_losses = 0 THEN NULL ELSE 1 + (
+              SELECT count(*) FROM players p JOIN users u ON u.id = p.user_id
+               WHERE u.status = 'active' AND (u.age_band = '18+') = $2
+                 AND p.arena_season = me.arena_season AND p.arena_wins + p.arena_losses > 0
+                 AND p.arena_rating > me.arena_rating) END::int AS rank
+       FROM players me WHERE me.user_id = $1`,
+    [userId, adult],
+  );
+  return rows[0]?.rank ?? null;
 }

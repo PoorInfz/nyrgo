@@ -47,6 +47,8 @@ jobs:
           check "api market"    "curl -sS -o /dev/null -w '%{http_code}' https://api.nyrgo.fun/v1/hub/market | grep -x 401"
           check "api houses"    "curl -sS -o /dev/null -w '%{http_code}' https://api.nyrgo.fun/v1/hub/houses | grep -x 401"
           check "app furniture" "curl -fsS -o /dev/null -w '%{http_code}' https://app.nyrgo.fun/hub/f-sofa-red.webp"
+          check "api quests"    "curl -sS -o /dev/null -w '%{http_code}' https://api.nyrgo.fun/v1/hub/quests | grep -x 401"
+          check "api tournament" "curl -sS -o /dev/null -w '%{http_code}' https://api.nyrgo.fun/v1/hub/tournament | grep -x 401"
           check "api cors"      "curl -fsS -o /dev/null -D - -X OPTIONS https://api.nyrgo.fun/v1/me -H 'Origin: https://app.nyrgo.fun' -H 'Access-Control-Request-Method: PUT' | grep -i '^access-control-allow-origin'"
           check "api render"    "curl -fsS https://nyrgo-api.onrender.com/health"
           exit $fail

@@ -84,6 +84,8 @@ export class Town {
   /** Input direction for the local player, -1…1 on each axis. */
   input = { x: 0, y: 0 };
   camera = { x: 0, y: 0, zoom: 1 };
+  /** When the view last changed room (for a short fade from black). */
+  private enteredAt = -1;
   /** In a house: the owner's furniture, each standing with its bottom centre at (x, y). */
   furniture: { f: string; x: number; y: number; flip: boolean }[] = [];
   private groundPattern = new Map<string, CanvasPattern | null>();
@@ -96,6 +98,7 @@ export class Town {
     if (map === this.map) return;
     this.map = map;
     this.furniture = [];
+    this.enteredAt = this.time;
     const me = this.me();
     this.bodies.clear();
     if (me) {
@@ -266,8 +269,16 @@ export class Town {
     for (const b of this.bodies.values()) {
       if (!inView(b.x - 60, b.y - 120, 120, 140)) continue;
       this.label(ctx, b.x, b.y, b.name, b.id === this.meId ? '#43f289' : '#eef3ff');
-      if (b.emote) this.emoteBubble(ctx, b.x, b.y, EMOTE_ICONS[b.emote.e] ?? '•');
+      if (b.emote)
+        this.emoteBubble(ctx, b.x, b.y, EMOTE_ICONS[b.emote.e] ?? '•', b.emote.until - this.time);
       else if (b.bubble) this.speech(ctx, b.x, b.y, b.bubble.text);
+    }
+
+    // through a door: the new room fades in from black
+    const since = this.time - this.enteredAt;
+    if (this.enteredAt >= 0 && since < 400) {
+      ctx.fillStyle = `rgba(5, 7, 16, ${1 - since / 400})`;
+      ctx.fillRect(view.x, view.y, view.w, view.h);
     }
   }
 
@@ -371,8 +382,21 @@ export class Town {
     lines.forEach((l, i) => ctx.fillText(l, x, top + 13 + i * 13));
   }
 
-  private emoteBubble(ctx: CanvasRenderingContext2D, x: number, y: number, icon: string) {
+  private emoteBubble(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    icon: string,
+    left: number,
+  ) {
+    // pops in with a little overshoot during its first 200 ms (emotes last 2.5 s)
+    const age = Math.max(0, 2500 - left);
+    const k = age < 200 ? 0.6 + 0.6 * Math.sin((age / 200) * (Math.PI / 2)) : 1;
     const top = y - EXPLORER.h - 44;
+    ctx.save();
+    ctx.translate(x, top + 10);
+    ctx.scale(k, k);
+    ctx.translate(-x, -(top + 10));
     ctx.fillStyle = '#ffffff';
     ctx.beginPath();
     ctx.arc(x, top + 10, 13, 0, Math.PI * 2);
@@ -380,6 +404,7 @@ export class Town {
     ctx.font = '16px system-ui, "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(icon, x, top + 16);
+    ctx.restore();
   }
 }
 

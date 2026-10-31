@@ -1,5 +1,6 @@
 import { DEFAULT_CONFIG } from '@nyrgo/shared';
 import { withTx, type Db } from '../db.js';
+import { rollSeason } from '../modules/hub/board.js';
 import { expireListings } from '../modules/hub/market.js';
 
 /**
@@ -33,6 +34,8 @@ export interface RetentionReport {
   hubChatDeleted: number;
   /** Market listings that lapsed: their items went back to the sellers. */
   listingsExpired: number;
+  /** Players moved into the new arena season (their old record kept). */
+  seasonRolled: number;
 }
 
 async function batched(db: Db, sql: string, params: unknown[]): Promise<number> {
@@ -110,6 +113,7 @@ export async function runRetention(db: Db): Promise<RetentionReport> {
       [SPAWN_RETENTION_D],
     ),
     listingsExpired: await withTx(db, (c) => expireListings(c)),
+    seasonRolled: await rollSeason(db),
     hubChatDeleted: await batched(
       db,
       `DELETE FROM hub_chat WHERE id IN (

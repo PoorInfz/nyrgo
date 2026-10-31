@@ -9,6 +9,7 @@ import { idempotent, readIdempotencyKey } from '../../http/idempotency.js';
 import { requireAuth } from '../auth/sessions.js';
 import { loadInventory } from '../capture/routes.js';
 import { addItems, spendGold, takeItems } from '../economy/routes.js';
+import { bumpHubQuest } from './board.js';
 
 /**
  * The town market: players sell game items to each other for Gold (never creatures, NFTs or
@@ -144,6 +145,7 @@ export async function marketRoutes(
             cfg().marketListingHours,
           ],
         );
+        await bumpHubQuest(c, auth.userId, 'market_list');
         return {
           id: ins.rows[0]!.id,
           fee: marketFee(req.body.price),
@@ -208,6 +210,7 @@ export async function marketRoutes(
             `UPDATE hub_listings SET status = 'sold', buyer_id = $2, closed_at = now() WHERE id = $1`,
             [req.params.id, auth.userId],
           );
+          await bumpHubQuest(c, auth.userId, 'market_buy');
           return {
             bought: { itemId: l.item_id, qty: l.qty, price: l.price },
             gold: await gold(c, auth.userId),

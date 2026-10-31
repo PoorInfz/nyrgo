@@ -57,6 +57,8 @@ export const ERROR_CODES = {
   listing_gone: 409,
   listing_limit: 429,
   house_closed: 403,
+  quest_not_done: 409,
+  tournament_closed: 409,
   attest_unavailable: 503,
   attest_failed: 403,
   attest_required: 403,

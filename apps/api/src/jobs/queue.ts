@@ -3,6 +3,7 @@ import type { FastifyBaseLogger } from 'fastify';
 import type { Db } from '../db.js';
 import { decayAllRisk } from '../modules/anticheat/risk.js';
 import { runRetention } from './retention.js';
+import { runTournaments } from '../modules/hub/board.js';
 import { loadDueAreas } from '../modules/world/areas.js';
 import type { Syncer } from '../modules/nft/service.js';
 import type { TipChain } from '../modules/tips/chain.js';
@@ -22,6 +23,8 @@ export const JOBS = {
   tips: { name: 'tips', cron: '* * * * *' },
   /** New places where people play, loaded from OpenStreetMap (see world/areas.ts). */
   worldAreas: { name: 'world-areas', cron: '* * * * *' },
+  /** The town's weekly arena tournaments: played when due, the next ones opened. */
+  tournaments: { name: 'tournaments', cron: '1-59/5 * * * *' },
 } as const;
 
 export type JobName = (typeof JOBS)[keyof typeof JOBS]['name'];
@@ -38,6 +41,7 @@ export function jobHandlers(
       nftSyncer ? { accounts: await nftSyncer.all() } : { skipped: 'NFTs are off' },
     'world-areas': () => loadDueAreas(db),
     tips: () => runTips(db, tipChain),
+    tournaments: () => runTournaments(db),
   };
 }
 
@@ -59,7 +63,8 @@ export async function startJobs(
       const result = await handlers[job.name]();
       // the every-minute world job only logs when it did something
       const idle =
-        job.name === 'world-areas' && JSON.stringify(result) === '{"ready":0,"failed":0}';
+        (job.name === 'world-areas' && JSON.stringify(result) === '{"ready":0,"failed":0}') ||
+        (job.name === 'tournaments' && JSON.stringify(result) === '{"played":[]}');
       if (!idle) log.info({ job: job.name, result }, 'job finished');
       return result;
     });

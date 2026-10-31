@@ -62,7 +62,7 @@ export function MarketPanel({ api }: { api: Api }) {
   return (
     <div className="stack">
       <p className="muted small">{t('townMarket.gold', { gold: info.gold })}</p>
-      <div className="tabs" role="tablist">
+      <div className="hub-tabs" role="tablist">
         {(['buy', 'sell', 'furniture'] as const).map((k) => (
           <button
             key={k}

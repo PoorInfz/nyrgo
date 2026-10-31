@@ -6,6 +6,7 @@ import { withTx, type Db } from '../../db.js';
 import { HttpProblem } from '../../http/problem.js';
 import { requireAuth } from '../auth/sessions.js';
 import { areFriends } from '../social/routes.js';
+import { bumpHubQuest } from './board.js';
 
 /**
  * Houses: every player has one, the same cottage, which they furnish with what they buy from the
@@ -179,6 +180,8 @@ export async function houseRoutes(
            ON CONFLICT (owner_id) DO UPDATE SET privacy = $2, layout = $3, updated_at = now()`,
           [auth.userId, privacy, JSON.stringify(layout)],
         );
+        // furniture newly placed counts for the notice board
+        await bumpHubQuest(c, auth.userId, 'place_furniture', layout.length - now.layout.length);
         return { privacy, layout };
       });
       await changed(auth.userId);

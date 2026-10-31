@@ -193,7 +193,8 @@ describe.skipIf(!TEST_DB_URL)('the gym and the arena', () => {
     // the defender sees it; the board lists both
     const info = (await b.call('GET', '/v1/hub/arena')).json();
     expect(info.defended[0]).toMatchObject({ defended: true, opponentCreatureId: 'gwisp' });
-    expect(info.leaderboard.map((l: { me: boolean }) => l.me)).toContain(true);
+    expect(info.myRank).toBeGreaterThanOrEqual(1);
+    expect(info.season).toMatch(/^\d{4}-\d{2}$/);
   });
 
   it('limits ranked battles against one opponent and finds nobody out of range', async () => {

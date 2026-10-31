@@ -4,6 +4,7 @@ import type { PoolClient } from 'pg';
 import { Type, type Static } from '@sinclair/typebox';
 import type { AdminAccount, AdminRole, AppConfig } from '../../config.js';
 import { withTx, type Db } from '../../db.js';
+import type { HubLive } from '../hub/routes.js';
 import { HttpProblem } from '../../http/problem.js';
 import { cancelEvent, createEvent } from '../events/service.js';
 
@@ -118,7 +119,7 @@ async function audit(
 
 export async function adminRoutes(
   app: FastifyInstance,
-  { db, config }: { db: Db; config: AppConfig },
+  { db, config, hubLive }: { db: Db; config: AppConfig; hubLive?: HubLive },
 ) {
   const admins = config.admins;
   // Everything here needs a valid token; the player session cookie is ignored on purpose.
@@ -337,6 +338,21 @@ export async function adminRoutes(
   // ------------------------------------------------------------------ hub chat moderation
 
   /** Open chat reports with the reported message and the reported player's recent history. */
+  /** The town right now: who is where, and the last hour's activity. */
+  app.get('/admin/v1/hub/stats', async () => {
+    const { rows } = await db.query(
+      `SELECT
+         (SELECT count(*) FROM hub_chat WHERE created_at > now() - interval '1 hour')::int AS "chatLastHour",
+         (SELECT count(*) FROM hub_reports WHERE status = 'open')::int AS "openReports",
+         (SELECT count(*) FROM hub_activities WHERE created_at > now() - interval '1 hour')::int AS "battlesLastHour",
+         (SELECT count(*) FROM hub_listings WHERE status = 'open')::int AS "openListings",
+         (SELECT count(*) FROM hub_listings WHERE status = 'sold' AND closed_at > now() - interval '1 day')::int AS "salesLastDay",
+         (SELECT count(*) FROM hub_tournament_entries e JOIN hub_tournaments t ON t.id = e.tournament_id
+           WHERE t.status = 'open')::int AS "tournamentEntrants"`,
+    );
+    return { live: hubLive?.snapshot() ?? null, ...rows[0] };
+  });
+
   app.get('/admin/v1/hub/reports', async () => {
     const { rows } = await db.query(
       `SELECT r.id, r.reason, r.body, r.created_at, r.message_id, r.reported_id,

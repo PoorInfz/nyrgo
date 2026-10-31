@@ -28,7 +28,7 @@ import { tipsRoutes } from './modules/tips/routes.js';
 import { socialRoutes } from './modules/social/routes.js';
 import { duelRoutes } from './modules/social/duels.js';
 import { avatarRoutes } from './modules/avatar/routes.js';
-import { hubRoutes } from './modules/hub/routes.js';
+import { hubRoutes, type HubLive } from './modules/hub/routes.js';
 import type { Room } from './modules/hub/room.js';
 import websocket from '@fastify/websocket';
 import { attestRoutes } from './modules/attest/routes.js';
@@ -200,15 +200,17 @@ export async function buildApp({
   await app.register(duelRoutes, { db });
   await app.register(avatarRoutes, { db });
   await app.register(websocket, { options: { maxPayload: 4096 } });
+  const hubLive: HubLive = { snapshot: () => ({ online: 0, rooms: {}, houses: 0 }) };
   await app.register(hubRoutes, {
     db,
     corsOrigins: config.corsOrigins,
     ...(hubRooms ? { rooms: hubRooms } : {}),
+    live: hubLive,
   });
   await app.register(economyRoutes, { db });
   await app.register(contentRoutes);
   // Own plugin scope: the token hook only applies to /admin/v1/*.
-  await app.register(adminRoutes, { db, config });
+  await app.register(adminRoutes, { db, config, hubLive });
   if (chain) {
     await app.register(nftRoutes, {
       db,

@@ -207,6 +207,9 @@ export interface HubConfig {
   marketPriceMax: number;
   /** Houses: most pieces of furniture placed at once. */
   houseItemsMax: number;
+  /** Weekly arena tournament: fewest and most entrants. */
+  tournamentMin: number;
+  tournamentMax: number;
 }
 
 export interface GameConfig {
@@ -332,6 +335,8 @@ export const DEFAULT_CONFIG: GameConfig = {
     marketListingHours: 72,
     marketPriceMax: 10000,
     houseItemsMax: 30,
+    tournamentMin: 4,
+    tournamentMax: 64,
   },
   tips: {
     amountMilliNear: 5,

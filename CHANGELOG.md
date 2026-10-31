@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.34.0 — 2026-10-31 — Quests, seasons and tournaments (social hub, phase 5)
+
+- **Notice board**: Ivy gives three daily town quests per player (train, win, greet, visit a
+  house, trade, decorate, sign up for the tournament), paying Gold and town XP once each; and
+  12 town achievements worked out from what you have done.
+- **Arena seasons**: one per calendar month (UTC). At the turn, each record is kept with its final
+  place and the rating carries halfway back to 1000. The board shows the current season, your
+  place and your past seasons.
+- **Weekly tournament**: every Saturday 18:00 UTC, one per age group. Sign up in the arena with a
+  creature (4 to 64 players); a seeded knockout bracket is played by the server; 300 / 150 / 75
+  Gold for the top four; the last bracket is shown in the arena.
+- **Admin**: `/admin/v1/hub/stats` shows who is where in the town right now and the last
+  hour's chat, battles, reports, listings and tournament sign-ups.
+- Polish: rooms fade in through doors, emotes pop. Fix: the gym/arena/market panels' tabs
+  were drawn over the bottom of the screen.
+
 ## 0.33.0 — 2026-10-31 — Market and houses (social hub, phase 4)
 
 - **Town market**: Mira, on the square, runs a players' market for game items. Sellers set a

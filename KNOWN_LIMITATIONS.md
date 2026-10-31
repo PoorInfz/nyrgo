@@ -158,6 +158,9 @@ Stated openly so nobody relies on something that is not there.
   ("no opponent"); practice then falls back to the host. No seasons or rating decay yet.
 - The gym's and arena's numbers (XP, limits, tiers, Elo K) are first guesses in config, not tuned
   with real players.
+- Tournaments are played by the server at a fixed time (Saturday 18:00 UTC) without anyone
+  watching live; players see the bracket afterwards. With fewer than 4 entrants it is cancelled.
+- Seasons follow the UTC calendar month; season rewards are only the record and the achievement.
 - Live rooms run on one server instance: a few hundred players at once; more instances need a
   shared bus (Phase 5). A server restart drops connections; clients reconnect on their own.
 - The chat filter is a first line (word list, link and contact patterns); real safety relies on
