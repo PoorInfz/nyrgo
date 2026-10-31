@@ -6,6 +6,7 @@ export const resources = {
     translation: {
       tagline: 'Explora tu ciudad y descubre criaturas originales.',
       safety: 'Juega con cuidado: mira a tu alrededor y no entres en lugares privados.',
+      language: 'Idioma',
       loading: 'Cargando…',
       offline: 'No hay conexión con el servidor. Inténtalo de nuevo en un momento.',
       retry: 'Reintentar',
@@ -485,6 +486,7 @@ export const resources = {
     translation: {
       tagline: 'Explore your city and discover original creatures.',
       safety: 'Play safe: watch your surroundings and never enter private property.',
+      language: 'Language',
       loading: 'Loading…',
       offline: 'Cannot reach the server. Try again in a moment.',
       retry: 'Retry',
@@ -960,13 +962,65 @@ export const resources = {
   },
 } as const;
 
-const preferred =
-  typeof navigator !== 'undefined' && navigator.language.startsWith('en') ? 'en' : 'es';
+/** The languages a player can choose; the first is the default. */
+export const LANGUAGES = [
+  { code: 'en', label: 'English' },
+  { code: 'es', label: 'Español' },
+] as const;
+export type LanguageCode = (typeof LANGUAGES)[number]['code'];
+
+const KEY = 'nyrgo-lang';
+const known = (l: string | null | undefined): l is LanguageCode =>
+  LANGUAGES.some((x) => x.code === l);
+
+/**
+ * English unless the player chose otherwise: a `?lang=` link (the website passes its language)
+ * or the choice saved by the language switch.
+ */
+function initialLanguage(): LanguageCode {
+  try {
+    const params = new URLSearchParams(globalThis.location?.search ?? '');
+    const fromLink = params.get('lang');
+    if (fromLink !== null) {
+      // tidy the address bar: the choice is remembered, the parameter is not needed any more
+      params.delete('lang');
+      const rest = params.toString();
+      globalThis.history?.replaceState(
+        null,
+        '',
+        `${globalThis.location.pathname}${rest ? `?${rest}` : ''}${globalThis.location.hash}`,
+      );
+    }
+    if (known(fromLink)) {
+      localStorage.setItem(KEY, fromLink);
+      return fromLink;
+    }
+    const saved = localStorage.getItem(KEY);
+    if (known(saved)) return saved;
+  } catch {
+    // storage blocked (private mode): English, and the switch still works for this visit
+  }
+  return LANGUAGES[0].code;
+}
+
+/** Switches the game's language and remembers it on this device. */
+export function setLanguage(code: LanguageCode) {
+  try {
+    localStorage.setItem(KEY, code);
+  } catch {
+    // not remembered, but the change still applies now
+  }
+  void i18n.changeLanguage(code);
+}
+
+i18n.on('languageChanged', (l) => {
+  if (typeof document !== 'undefined') document.documentElement.lang = l;
+});
 
 void i18n.use(initReactI18next).init({
   resources,
-  lng: preferred,
-  fallbackLng: 'es',
+  lng: initialLanguage(),
+  fallbackLng: 'en',
   interpolation: { escapeValue: false },
 });
 

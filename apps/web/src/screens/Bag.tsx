@@ -14,7 +14,7 @@ function newKey(): string {
 /** The player's items, the shop (Gold) and the workshop (recipes). */
 export function Bag({ api }: { api: Api }) {
   const { t, i18n } = useTranslation();
-  const lang: Lang = i18n.language.startsWith('en') ? 'en' : 'es';
+  const lang: Lang = i18n.language.startsWith('es') ? 'es' : 'en';
   const { dex } = useContent(api);
   const [items, setItems] = useState<InventoryItem[] | null>(null);
   const [me, setMe] = useState<Pick<Profile, 'gold' | 'level'> | null>(null);

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { LanguageSwitch } from './components/LanguageSwitch';
 import { ApiError, createApi, type Profile } from './api';
 import { Game } from './screens/Game';
 import { Verify } from './screens/Verify';
@@ -65,6 +66,7 @@ export function App({ apiUrl }: { apiUrl: string }) {
 
   return (
     <main className="shell">
+      <LanguageSwitch />
       <h1 className={view.name === 'welcome' && !isAdmin ? 'hero big' : 'hero'}>
         <img
           src="/header-800.webp"

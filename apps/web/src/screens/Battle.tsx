@@ -66,7 +66,7 @@ export function Battle({
   onEnd: (final: BattleView) => void;
 }) {
   const { t, i18n } = useTranslation();
-  const lang: Lang = i18n.language.startsWith('en') ? 'en' : 'es';
+  const lang: Lang = i18n.language.startsWith('es') ? 'es' : 'en';
   const [b, setB] = useState(start);
   /** What is on screen: lags behind `b` while a turn plays back event by event. */
   const [shown, setShown] = useState(start);

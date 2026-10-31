@@ -11,7 +11,7 @@ type Lang = 'es' | 'en';
  */
 export function DuelReplay({ duel, dex }: { duel: Duel; dex: Dex | null }) {
   const { t, i18n } = useTranslation();
-  const lang: Lang = i18n.language.startsWith('en') ? 'en' : 'es';
+  const lang: Lang = i18n.language.startsWith('es') ? 'es' : 'en';
   const fight = duel.fight;
   if (!fight || !duel.toCreatureId) return null;
 

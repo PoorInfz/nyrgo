@@ -19,7 +19,7 @@ type Lang = 'es' | 'en';
  */
 export function Wardrobe({ api, onGold }: { api: Api; onGold?: (gold: number) => void }) {
   const { t, i18n } = useTranslation();
-  const lang: Lang = i18n.language.startsWith('en') ? 'en' : 'es';
+  const lang: Lang = i18n.language.startsWith('es') ? 'es' : 'en';
   const [state, setState] = useState<AvatarState | null>(null);
   const [draft, setDraft] = useState<AvatarLook | null>(null);
   const [slot, setSlot] = useState<CosmeticSlot>('hair');

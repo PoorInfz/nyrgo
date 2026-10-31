@@ -105,12 +105,14 @@ function render(lang: Lang): string {
     .join('');
   const total = CREATURES.reduce((n, c) => n + NFT_SUPPLY_BY_RARITY[c.rarity], 0);
 
+  // the app opens in English unless told otherwise: pass this page's language along
+  const appLink = lang === 'en' ? APP_URL : `${APP_URL}/?lang=${lang}`;
   const play = APP_OPEN
-    ? `<a class="btn btn-play" href="${esc(APP_URL)}">${esc(t.playNow)}</a>`
+    ? `<a class="btn btn-play" href="${esc(appLink)}">${esc(t.playNow)}</a>`
     : `<span class="btn btn-play soon" aria-disabled="true">${esc(t.soon)}</span>`;
 
   const playTop = APP_OPEN
-    ? `<a class="btn btn-play btn-small" href="${esc(APP_URL)}">${esc(t.navCta)}</a>`
+    ? `<a class="btn btn-play btn-small" href="${esc(appLink)}">${esc(t.navCta)}</a>`
     : '';
 
   // creatures drifting behind the page: spread over a grid of cells so they never pile up,

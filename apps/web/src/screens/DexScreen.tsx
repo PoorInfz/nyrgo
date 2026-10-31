@@ -9,7 +9,7 @@ type Lang = 'es' | 'en';
 /** The encyclopedia: every creature, its element, stats, skills and evolution. */
 export function DexScreen({ api }: { api: Api }) {
   const { t, i18n } = useTranslation();
-  const lang: Lang = i18n.language.startsWith('en') ? 'en' : 'es';
+  const lang: Lang = i18n.language.startsWith('es') ? 'es' : 'en';
   const [dex, setDex] = useState<Dex | null>(null);
   const [failed, setFailed] = useState(false);
   const [filter, setFilter] = useState<Element | 'all'>('all');

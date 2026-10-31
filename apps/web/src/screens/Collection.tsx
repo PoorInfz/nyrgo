@@ -28,7 +28,7 @@ type Lang = 'es' | 'en';
 /** The player's creatures; a new player first picks one of the three starters. */
 export function Collection({ api, caller = connectorCaller }: { api: Api; caller?: NearCaller }) {
   const { t, i18n } = useTranslation();
-  const lang: Lang = i18n.language.startsWith('en') ? 'en' : 'es';
+  const lang: Lang = i18n.language.startsWith('es') ? 'es' : 'en';
   const { dex, failed } = useContent(api);
   const [mine, setMine] = useState<OwnedCreature[] | null>(null);
   const [error, setError] = useState(false);

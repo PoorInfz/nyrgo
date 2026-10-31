@@ -140,7 +140,7 @@ export function Play({
       const itemNames = Object.entries(r.items)
         .map(([item, n]) => {
           const def = dex?.items.find((i) => i.id === item);
-          return `${n} × ${def?.name[i18n.language.startsWith('en') ? 'en' : 'es'] ?? item}`;
+          return `${n} × ${def?.name[i18n.language.startsWith('es') ? 'es' : 'en'] ?? item}`;
         })
         .join(', ');
       setVisit({

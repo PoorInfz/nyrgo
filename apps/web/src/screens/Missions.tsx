@@ -7,7 +7,7 @@ type Lang = 'es' | 'en';
 /** Today's three missions with progress; a completed one can be claimed for its reward. */
 export function Missions({ api, refresh = 0 }: { api: Api; refresh?: number }) {
   const { t, i18n } = useTranslation();
-  const lang: Lang = i18n.language.startsWith('en') ? 'en' : 'es';
+  const lang: Lang = i18n.language.startsWith('es') ? 'es' : 'en';
   const [missions, setMissions] = useState<Mission[] | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);

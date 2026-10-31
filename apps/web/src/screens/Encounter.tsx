@@ -56,7 +56,7 @@ export function Encounter({
   onClose: (gone: boolean) => void;
 }) {
   const { t, i18n } = useTranslation();
-  const lang: Lang = i18n.language.startsWith('en') ? 'en' : 'es';
+  const lang: Lang = i18n.language.startsWith('es') ? 'es' : 'en';
   const { dex } = useContent(api);
   const [enc, setEnc] = useState<Enc | null>(null);
   const [item, setItem] = useState<string | null>(null);

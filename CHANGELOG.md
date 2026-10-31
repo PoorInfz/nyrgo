@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.30.0 — 2026-10-31 — English first, language switch
+
+- The app starts in English for everyone (it used to follow the browser, Spanish by default).
+- Language switch on every screen, over the header banner: a list (English, Español) ready for
+  more languages; the choice is remembered on the device and sets the page's `lang`.
+- The website's Play buttons pass their language (`?lang=es` from the Spanish page), so players
+  arrive in the language they were reading; the app tidies the parameter away.
+- Creature names, lore and items fall back to English for any language without its own text.
+
 ## 0.29.0 — 2026-10-31 — The app in the website's look
 
 - The app now shares nyrgo.fun's dark theme: night-blue background with violet and cyan glows,

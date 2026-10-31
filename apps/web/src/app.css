@@ -2138,3 +2138,57 @@ button.wardrobe-item.wearing {
   background-clip: text;
   color: transparent;
 }
+
+/* language switch, over the top-right corner of the header banner */
+.shell {
+  position: relative;
+}
+
+.lang-switch {
+  position: absolute;
+  z-index: 5;
+  top: calc(max(16px, env(safe-area-inset-top)) - 6px);
+  right: 12px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px 0 10px;
+  border-radius: 999px;
+  background: rgb(7 11 31 / 72%);
+  border: 1px solid var(--edge-2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.lang-switch svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
+.lang-switch select {
+  width: auto;
+  min-height: 34px;
+  padding: 0 26px 0 2px;
+  border: 0;
+  background-color: transparent;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.lang-switch select:focus {
+  box-shadow: none;
+}
+
+.lang-switch:focus-within {
+  outline: 3px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.lang-switch option {
+  color: #0b1024;
+}
