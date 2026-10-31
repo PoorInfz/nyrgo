@@ -286,6 +286,19 @@ describe.skipIf(!TEST_DB_URL)('spawns, encounters and captures', () => {
     const dex = (await p.call('GET', '/v1/me/dex')).json();
     expect(dex.entries[0]).toMatchObject({ creatureId: 'gwisp', caughtCount: 1 });
 
+    // the website's globe gets only a half-degree cell, never the spot
+    const mark = await t.db.query(
+      `SELECT definition_id, cell_lat, cell_lng FROM capture_marks WHERE user_id = $1`,
+      [p.id],
+    );
+    expect(mark.rows).toEqual([
+      {
+        definition_id: 'gwisp',
+        cell_lat: Math.floor(p.at.lat * 2) / 2 + 0.25,
+        cell_lng: Math.floor(p.at.lng * 2) / 2 + 0.25,
+      },
+    ]);
+
     // 40 XP and 5 Gold for a common catch; level 2 needs 100 XP
     const me = (await p.call('GET', '/v1/me')).json();
     expect(me).toMatchObject({ level: 1, xp: 40, gold: 5 });

@@ -107,6 +107,7 @@ describe.skipIf(!TEST_DB_URL)('scheduled jobs', () => {
         hubChatDeleted: 0,
         listingsExpired: 0,
         seasonRolled: 0,
+        captureMarksDeleted: 0,
       });
     });
   });

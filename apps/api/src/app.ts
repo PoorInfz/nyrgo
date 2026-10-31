@@ -27,6 +27,7 @@ import { nearTipChain, type TipChain } from './modules/tips/chain.js';
 import { tipsRoutes } from './modules/tips/routes.js';
 import { socialRoutes } from './modules/social/routes.js';
 import { leaderboardRoutes } from './modules/leaderboard/routes.js';
+import { publicRoutes } from './modules/public/routes.js';
 import { duelRoutes } from './modules/social/duels.js';
 import { avatarRoutes } from './modules/avatar/routes.js';
 import { hubRoutes, type HubLive } from './modules/hub/routes.js';
@@ -199,6 +200,7 @@ export async function buildApp({
   await app.register(battleRoutes, { db });
   await app.register(socialRoutes, { db });
   await app.register(leaderboardRoutes, { db });
+  await app.register(publicRoutes, { db });
   await app.register(duelRoutes, { db });
   await app.register(avatarRoutes, { db });
   await app.register(websocket, { options: { maxPayload: 4096 } });

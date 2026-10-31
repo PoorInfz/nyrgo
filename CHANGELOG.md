@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.38.0 — 2026-10-31 — The website shows the game
+
+- **World globe** at the top of nyrgo.fun: a small pixel-art Earth (Natural Earth land, drawn
+  in the browser) that turns with a finger or the mouse, with marks where creatures were caught
+  in the last 30 days. Tap a mark (or a chip below) to see the creature and who caught it, masked
+  ("E******"). Places are half-degree cells (about 50 km), only adults' catches, shown at least an
+  hour later; the API keeps only the cell (`capture_marks`, 90 days) and serves
+  `/v1/public/captures` to any site, cached for 5 minutes.
+- **Demo section**: the trailer (720p) and a real arena battle recorded from the game, in a phone.
+
 ## 0.37.0 — 2026-10-31 — A rebuilt town square
 
 - The square is rebuilt, smaller and fuller: gym, arena and market along the north street; two

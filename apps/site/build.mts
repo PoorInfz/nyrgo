@@ -9,6 +9,7 @@
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
+import { feature } from 'topojson-client';
 import { LANGS, RARITY, TEXT, type Lang, type TextKey } from './i18n.mjs';
 import {
   CREATURES,
@@ -25,6 +26,9 @@ const APP_URL = process.env.SITE_APP_URL ?? 'https://app.nyrgo.fun';
 /** Set when the game is open to players; until then the play button says "coming soon". */
 // the game is open to everyone; SITE_APP_OPEN=false shows "coming soon" instead of the link
 const APP_OPEN = process.env.SITE_APP_OPEN !== 'false';
+
+/** The API the page reads public data from (the latest catches on the globe). */
+const API_URL = process.env.SITE_API_URL ?? 'https://api.nyrgo.fun';
 
 const esc = (s: string) =>
   s.replace(
@@ -56,6 +60,68 @@ const font = dirname(
   createRequire(import.meta.url).resolve('@fontsource-variable/fredoka/package.json'),
 );
 cpSync(join(font, 'files/fredoka-latin-wght-normal.woff2'), join(OUT, 'assets/fredoka.woff2'));
+
+// The globe's land: Natural Earth (via world-atlas, public domain) rasterised once at build time
+// into a small equirectangular bit mask, plus each creature's name and element colour.
+{
+  const req = createRequire(import.meta.url);
+  const topo = JSON.parse(readFileSync(req.resolve('world-atlas/land-110m.json'), 'utf8'));
+  const land = feature(topo, topo.objects.land) as unknown as {
+    features: { geometry: { type: string; coordinates: number[][][][] | number[][][] } }[];
+  };
+  const polys: { rings: number[][][]; box: number[] }[] = [];
+  for (const f of land.features) {
+    const g = f.geometry;
+    const list = (g.type === 'Polygon' ? [g.coordinates] : g.coordinates) as number[][][][];
+    for (const rings of list) {
+      const xs = rings[0]!.map((p) => p[0]!);
+      const ys = rings[0]!.map((p) => p[1]!);
+      polys.push({
+        rings,
+        box: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)],
+      });
+    }
+  }
+  const inRing = (x: number, y: number, ring: number[][]) => {
+    let inside = false;
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const [xi, yi] = ring[i]!;
+      const [xj, yj] = ring[j]!;
+      if (yi! > y !== yj! > y && x < ((xj! - xi!) * (y - yi!)) / (yj! - yi!) + xi!)
+        inside = !inside;
+    }
+    return inside;
+  };
+  const W = 256;
+  const H = 128;
+  const bytes = new Uint8Array((W * H) / 8);
+  for (let j = 0; j < H; j++) {
+    const lat = 90 - ((j + 0.5) / H) * 180;
+    for (let i = 0; i < W; i++) {
+      const lng = ((i + 0.5) / W) * 360 - 180;
+      const hit = polys.some(
+        (p) =>
+          lng >= p.box[0]! &&
+          lng <= p.box[2]! &&
+          lat >= p.box[1]! &&
+          lat <= p.box[3]! &&
+          inRing(lng, lat, p.rings[0]!) &&
+          !p.rings.slice(1).some((h) => inRing(lng, lat, h)),
+      );
+      if (hit) bytes[(j * W + i) >> 3]! |= 0x80 >> ((j * W + i) & 7);
+    }
+  }
+  const creatures = Object.fromEntries(
+    CREATURES.map((c) => [c.id, [c.name, ELEMENT_INFO[c.element].color]]),
+  );
+  writeFileSync(
+    join(OUT, 'globe-data.js'),
+    `window.NYRGO_GLOBE=${JSON.stringify({
+      land: { w: W, h: H, bits: Buffer.from(bytes).toString('base64') },
+      creatures,
+    })};\n`,
+  );
+}
 
 /** A small seeded generator, so the background is the same on every build. */
 function mulberry(seed: number) {
@@ -157,6 +223,7 @@ function render(lang: Lang): string {
       return t[k as TextKey];
     })
     .replaceAll('{{LANG}}', lang)
+    .replaceAll('{{API}}', esc(API_URL))
     .replaceAll('{{PATH}}', LANGS[lang].path)
     .replaceAll('{{OGLOCALE}}', locale.replace('-', '_'))
     .replaceAll('{{ALTERNATES}}', alternates)

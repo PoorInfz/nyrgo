@@ -383,6 +383,7 @@ export async function captureRoutes(
               enc.spawn_id,
             );
             await markDex(c, auth.userId, enc.definition_id, true);
+            await markCapture(c, auth.userId, enc.spawn_id, enc.definition_id);
           }
           const tip = success
             ? await awardTip(c, tips, auth.userId, enc.spawn_id, attempt.rows[0]!.id)
@@ -473,6 +474,20 @@ export async function captureRoutes(
         throw err;
       }
     },
+  );
+}
+
+/**
+ * Notes a catch for the website's world globe: only the half-degree cell (about 50 km), and only
+ * for adults.
+ */
+async function markCapture(c: PoolClient, userId: string, spawnId: string, definitionId: string) {
+  await c.query(
+    `INSERT INTO capture_marks (user_id, definition_id, cell_lat, cell_lng)
+     SELECT $1, $3, floor(ST_Y(s.geom::geometry) * 2) / 2 + 0.25, floor(ST_X(s.geom::geometry) * 2) / 2 + 0.25
+       FROM spawns s JOIN users u ON u.id = $1
+      WHERE s.id = $2 AND u.age_band = '18+'`,
+    [userId, spawnId, definitionId],
   );
 }
 

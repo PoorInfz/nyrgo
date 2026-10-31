@@ -27,6 +27,7 @@
         <span>nyrGo!</span>
       </a>
       <nav aria-label="{{t:navLabel}}">
+        <a href="#demo">{{t:navDemo}}</a>
         <a href="#play">{{t:navPlay}}</a>
         <a href="#creatures">{{t:navCreatures}}</a>
         <a href="#nft">{{t:navNft}}</a>
@@ -56,17 +57,73 @@
             <li><strong>🌍</strong><span>{{t:statWorld}}</span></li>
           </ul>
         </div>
-        <div class="hero-art">
-          <picture>
-            <source media="(max-width: 700px)" srcset="/assets/header-800.webp" />
-            <img
-              class="banner"
-              src="/assets/header-1600.webp"
-              alt="{{t:bannerAlt}}"
-              width="1600"
-              height="600"
-            />
-          </picture>
+        <div class="hero-art globe-wrap">
+          <div
+            class="globe"
+            id="globe"
+            data-api="{{API}}"
+            data-by="{{t:globeBy}}"
+            data-today="{{t:globeToday}}"
+            data-ago="{{t:globeAgo}}"
+            data-ago1="{{t:globeAgo1}}"
+            data-here="{{t:globeHere}}"
+            data-empty="{{t:globeEmpty}}"
+            data-count="{{t:globeCount}}"
+            data-offline="{{t:globeOffline}}"
+          >
+            <canvas
+              width="128"
+              height="128"
+              tabindex="0"
+              role="img"
+              aria-label="{{t:globeLabel}}"
+            ></canvas>
+            <div class="globe-tip" hidden></div>
+          </div>
+          <p class="globe-cap" aria-live="polite">{{t:globeLoading}}</p>
+          <ul class="globe-latest" aria-label="{{t:globeLatest}}"></ul>
+          <p class="globe-note">{{t:globeNote}}</p>
+        </div>
+      </section>
+
+      <section id="demo" class="section">
+        <p class="kicker">{{t:demoKicker}}</p>
+        <h2 class="title">{{t:demoTitle}}</h2>
+        <p class="sub">{{t:demoSub}}</p>
+        <div class="demo">
+          <figure class="demo-trailer">
+            <video
+              controls
+              playsinline
+              preload="none"
+              poster="/assets/media/trailer.jpg"
+              width="1280"
+              height="720"
+            >
+              <source src="/assets/media/trailer.mp4" type="video/mp4" />
+            </video>
+            <figcaption>{{t:demoTrailer}}</figcaption>
+          </figure>
+          <figure class="demo-battle">
+            <div class="demo-phone">
+              <video
+                autoplay
+                muted
+                loop
+                playsinline
+                preload="metadata"
+                poster="/assets/media/battle.jpg"
+                width="540"
+                height="960"
+              >
+                <source src="/assets/media/battle.mp4" type="video/mp4" />
+              </video>
+            </div>
+            <figcaption>
+              <strong>{{t:demoBattle}}</strong>
+              <span>{{t:demoBattleSub}}</span>
+            </figcaption>
+          </figure>
         </div>
       </section>
 
@@ -217,5 +274,7 @@
     </footer>
 
     <script src="/site.js" defer></script>
+    <script src="/globe-data.js" defer></script>
+    <script src="/globe.js" defer></script>
   </body>
 </html>

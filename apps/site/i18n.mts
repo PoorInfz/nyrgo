@@ -32,6 +32,27 @@ export const RARITY: Record<Lang, Record<Rarity, string>> = {
 
 export const TEXT = {
   en: {
+    navDemo: 'Demo',
+    demoKicker: 'See it in action',
+    demoTitle: 'Explore, catch, battle, meet',
+    demoSub:
+      'The trailer, made from the game itself, and a real arena battle as you see it on your phone.',
+    demoTrailer: 'nyrGo! trailer',
+    demoBattle: 'Battles you watch',
+    demoBattleSub:
+      'Arena, gym and duels play out turn by turn: a VS screen, moves, criticals and a K.O.',
+    globeLabel: 'A globe showing where creatures were caught recently. Drag to turn it.',
+    globeLoading: 'Loading the latest catches…',
+    globeLatest: 'Latest catches',
+    globeCount: '{n} catches in the last 30 days. Drag the globe, tap a mark.',
+    globeEmpty: 'No catches in the last 30 days yet. Be the first!',
+    globeOffline: 'The latest catches could not be loaded right now.',
+    globeBy: 'caught by {by}',
+    globeToday: 'today',
+    globeAgo: '{n} days ago',
+    globeAgo1: 'yesterday',
+    globeHere: '{n} caught around here',
+    globeNote: 'Approximate places (about 50 km), adults only, shown an hour later; names hidden.',
     title: 'nyrGo! · Get outside and catch creatures',
     description:
       'nyrGo! is a real-world exploration game: walk anywhere in the world, discover {{COUNT}} original creatures, battle and collect them. Free to play.',
@@ -112,6 +133,29 @@ export const TEXT = {
     code: 'Code on GitHub',
   },
   es: {
+    navDemo: 'Demo',
+    demoKicker: 'Míralo en acción',
+    demoTitle: 'Explora, captura, combate, conoce gente',
+    demoSub:
+      'El tráiler, hecho con el propio juego, y un combate real de la arena tal como lo ves en el móvil.',
+    demoTrailer: 'Tráiler de nyrGo!',
+    demoBattle: 'Combates que se ven',
+    demoBattleSub:
+      'Arena, gimnasio y duelos se juegan turno a turno: pantalla VS, ataques, críticos y K.O.',
+    globeLabel:
+      'Un globo con los lugares donde se han capturado criaturas hace poco. Arrástralo para girarlo.',
+    globeLoading: 'Cargando las últimas capturas…',
+    globeLatest: 'Últimas capturas',
+    globeCount: '{n} capturas en los últimos 30 días. Gira el globo y toca una marca.',
+    globeEmpty: 'Aún no hay capturas en los últimos 30 días. ¡Sé el primero!',
+    globeOffline: 'Ahora mismo no se pueden cargar las últimas capturas.',
+    globeBy: 'capturado por {by}',
+    globeToday: 'hoy',
+    globeAgo: 'hace {n} días',
+    globeAgo1: 'ayer',
+    globeHere: '{n} capturas por esta zona',
+    globeNote:
+      'Lugares aproximados (unos 50 km), solo adultos, con una hora de retraso y nombres ocultos.',
     title: 'nyrGo! · Sal a la calle y caza criaturas',
     description:
       'nyrGo! es un juego de exploración en el mundo real: camina por cualquier lugar del mundo, descubre {{COUNT}} criaturas originales, combate y hazte con ellas. Gratis.',

@@ -36,6 +36,8 @@ export interface RetentionReport {
   listingsExpired: number;
   /** Players moved into the new arena season (their old record kept). */
   seasonRolled: number;
+  /** Coarse catch marks for the website's globe, after 90 days. */
+  captureMarksDeleted: number;
 }
 
 async function batched(db: Db, sql: string, params: unknown[]): Promise<number> {
@@ -114,6 +116,12 @@ export async function runRetention(db: Db): Promise<RetentionReport> {
     ),
     listingsExpired: await withTx(db, (c) => expireListings(c)),
     seasonRolled: await rollSeason(db),
+    captureMarksDeleted: await batched(
+      db,
+      `DELETE FROM capture_marks WHERE id IN (
+         SELECT id FROM capture_marks WHERE created_at < now() - interval '90 days' LIMIT ${BATCH})`,
+      [],
+    ),
     hubChatDeleted: await batched(
       db,
       `DELETE FROM hub_chat WHERE id IN (
