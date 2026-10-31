@@ -18,3 +18,4 @@ export * from './nft.js';
 export * from './hub/art.js';
 export * from './hub/map.js';
 export * from './hub/quests.js';
+export * from './languages.js';

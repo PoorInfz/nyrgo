@@ -1,6 +1,6 @@
 /**
  * Builds the public website (nyrgo.fun) into dist/: page.html once per language (English at /,
- * Spanish at /es/, text in i18n.mts), filled with the game's creatures, elements and NFT supplies
+ * the others at /<code>/, text in locales/), filled with the game's creatures, elements and NFT supplies
  * from @nyrgo/shared, plus static/ and the art copied from the
  * web app, so the site never drifts from the game.
  *
@@ -10,7 +10,7 @@ import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { feature } from 'topojson-client';
-import { LANGS, RARITY, TEXT, type Lang, type TextKey } from './i18n.mjs';
+import { BUILT, LANGS, MISSING, RARITY, TEXT, type Lang, type TextKey } from './i18n.mjs';
 import {
   CREATURES,
   ELEMENT_INFO,
@@ -137,7 +137,9 @@ function mulberry(seed: number) {
 function render(lang: Lang): string {
   const t = TEXT[lang];
   const { locale } = LANGS[lang];
-  const name = (e: keyof typeof ELEMENT_INFO) => ELEMENT_INFO[e][lang];
+  // game content (element names, lore) exists in English and Spanish; other pages show English
+  const gl = lang === 'es' ? 'es' : 'en';
+  const name = (e: keyof typeof ELEMENT_INFO) => ELEMENT_INFO[e][gl];
   const chip = (e: keyof typeof ELEMENT_INFO) =>
     `<span class="chip" style="--el:${ELEMENT_INFO[e].color}">${esc(name(e))}</span>`;
 
@@ -148,7 +150,7 @@ function render(lang: Lang): string {
           <div class="info">
             <h3><span class="dexno">#${String(c.dex).padStart(3, '0')}</span> ${esc(c.name)}</h3>
             <p class="tags">${chip(c.element)}<span class="rar rar-${c.rarity}">${RARITY[lang][c.rarity]}</span></p>
-            <p class="lore">${esc(c.lore[lang])}</p>
+            <p class="lore">${esc(c.lore[gl])}</p>
           </div>
         </article>`,
   ).join('');
@@ -201,14 +203,19 @@ function render(lang: Lang): string {
     })
     .join('');
 
-  const langs = Object.keys(LANGS) as Lang[];
-  const switchHtml = langs
-    .map((l) =>
-      l === lang
-        ? `<span class="on" aria-current="true" lang="${l}" title="${LANGS[l].name}">${LANGS[l].label}</span>`
-        : `<a href="${LANGS[l].path}" hreflang="${l}" lang="${l}" data-lang="${l}" title="${LANGS[l].name}">${LANGS[l].label}</a>`,
-    )
-    .join('');
+  const langs = BUILT;
+  const flag = (l: Lang) =>
+    `<img src="/assets/flags/${LANGS[l].flag}.webp" alt="" width="22" height="16" />`;
+  const switchHtml = `<details class="lang">
+          <summary aria-label="${esc(t.langLabel!)}: ${esc(LANGS[lang].name)}">${flag(lang)}<span>${LANGS[lang].label}</span></summary>
+          <ul>${langs
+            .map((l) =>
+              l === lang
+                ? `<li><span class="on" aria-current="true" lang="${l}">${flag(l)}${esc(LANGS[l].name)}</span></li>`
+                : `<li><a href="${LANGS[l].path}" hreflang="${l}" lang="${l}" data-lang="${l}">${flag(l)}${esc(LANGS[l].name)}</a></li>`,
+            )
+            .join('')}</ul>
+        </details>`;
   const alternates = [
     ...langs.map(
       (l) => `<link rel="alternate" hreflang="${l}" href="https://nyrgo.fun${LANGS[l].path}" />`,
@@ -220,9 +227,11 @@ function render(lang: Lang): string {
   return readFileSync('page.html', 'utf8')
     .replace(/\{\{t:(\w+)\}\}/g, (_, k: string) => {
       if (!(k in t)) throw new Error(`missing text ${k} (${lang})`);
-      return t[k as TextKey];
+      return t[k as TextKey]!;
     })
     .replaceAll('{{LANG}}', lang)
+    .replaceAll('{{DIR}}', LANGS[lang].rtl ? 'rtl' : 'ltr')
+    .replaceAll('{{LANGCODES}}', BUILT.join(','))
     .replaceAll('{{API}}', esc(API_URL))
     .replaceAll('{{PATH}}', LANGS[lang].path)
     .replaceAll('{{OGLOCALE}}', locale.replace('-', '_'))
@@ -240,7 +249,10 @@ function render(lang: Lang): string {
     .replaceAll('{{YEAR}}', String(new Date().getFullYear()));
 }
 
-for (const lang of Object.keys(LANGS) as Lang[]) {
+for (const [l, keys] of Object.entries(MISSING)) {
+  process.stdout.write(`note: ${l} has no text for ${keys.join(', ')} (English used)\n`);
+}
+for (const lang of BUILT) {
   const html = render(lang);
   if (/\{\{[\w:]+\}\}/.test(html)) throw new Error(`unfilled placeholder in the ${lang} page`);
   const dir = join(OUT, LANGS[lang].path);
@@ -248,5 +260,5 @@ for (const lang of Object.keys(LANGS) as Lang[]) {
   writeFileSync(join(dir, 'index.html'), html);
 }
 process.stdout.write(
-  `site built in ${OUT}/ (${Object.keys(LANGS).join(', ')}; ${CREATURES.length} creatures, app ${APP_OPEN ? 'open' : 'coming soon'})\n`,
+  `site built in ${OUT}/ (${BUILT.join(', ')}; ${CREATURES.length} creatures, app ${APP_OPEN ? 'open' : 'coming soon'})\n`,
 );

@@ -194,26 +194,100 @@ main,
   gap: 12px;
 }
 
-.lang {
-  display: flex;
-  border: 1px solid var(--border-2);
+.x-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
   border-radius: 999px;
-  padding: 3px;
+  border: 1px solid var(--border-2);
+  color: var(--text);
 }
 
-.lang a,
-.lang span {
-  font-size: 13px;
-  font-weight: 600;
-  padding: 4px 10px;
+.x-link:hover {
+  background: rgb(255 255 255 / 8%);
+}
+
+.lang {
+  position: relative;
+}
+
+.lang summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 10px 0 8px;
+  border: 1px solid var(--border-2);
   border-radius: 999px;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.lang summary::-webkit-details-marker {
+  display: none;
+}
+
+.lang summary::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  margin-inline-start: 2px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+}
+
+.lang img {
+  width: 22px;
+  height: 16px;
+  border-radius: 3px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 18%);
+  flex: none;
+}
+
+.lang ul {
+  position: absolute;
+  z-index: 50;
+  top: calc(100% + 8px);
+  inset-inline-end: 0;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  width: max-content;
+  min-width: 200px;
+  max-height: min(70vh, 460px);
+  overflow-y: auto;
+  border-radius: 14px;
+  background: var(--bg);
+  border: 1px solid var(--border-2);
+  box-shadow: 0 14px 34px rgb(0 0 0 / 45%);
+}
+
+.lang li a,
+.lang li span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  font-size: 14px;
   text-decoration: none;
-  color: var(--muted);
+  color: var(--text);
+}
+
+.lang li a:hover {
+  background: rgb(255 255 255 / 8%);
 }
 
 .lang .on {
-  background: var(--text);
-  color: var(--bg);
+  color: var(--cyan);
+  font-weight: 700;
 }
 
 /* ------------------------------------------------------------ buttons, chips */

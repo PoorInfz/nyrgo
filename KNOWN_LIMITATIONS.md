@@ -175,3 +175,14 @@ Stated openly so nobody relies on something that is not there.
 - The nyrGo! logo and the creature art are the owner's; their rights still need confirming before
   launch. App icons are generated from the logo and are busy at small sizes; a simplified mark
   would read better on a home screen.
+
+## Languages
+
+- Only English and Spanish were written by hand. The other 17 languages (app and website) are
+  machine translations by Claude that no native speaker has reviewed; expect awkward wording,
+  and some UI strings may run long in German, Russian or Thai.
+- Game content (creature names and lore, moves, items, furniture, quest names) exists in English
+  and Spanish only; other languages show English. Art with text in it is not translated.
+- Arabic turns the layout right to left, but the town, fights and the map were drawn left to
+  right and have only been checked in screenshots, not by an Arabic reader. Map labels in
+  Arabic script may show their letters unjoined (the map's right-to-left text plugin is not loaded).

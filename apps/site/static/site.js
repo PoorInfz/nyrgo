@@ -1,7 +1,7 @@
 /* global document, window */
 
 // Language: a choice made with the switch is remembered; on a first visit to the English page,
-// a Spanish browser is sent to /es/ once.
+// a browser in another language we have is sent to that page once.
 const KEY = 'nyrgo-lang';
 const read = () => {
   try {
@@ -10,6 +10,7 @@ const read = () => {
     return null;
   }
 };
+const switcher = document.querySelector('details.lang');
 document.querySelectorAll('.lang a[data-lang]').forEach((a) => {
   a.addEventListener('click', () => {
     try {
@@ -19,12 +20,28 @@ document.querySelectorAll('.lang a[data-lang]').forEach((a) => {
     }
   });
 });
-const chosen = read();
+if (switcher) {
+  document.addEventListener('click', (e) => {
+    if (switcher.open && !switcher.contains(e.target)) switcher.open = false;
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && switcher.open) {
+      switcher.open = false;
+      switcher.querySelector('summary').focus();
+    }
+  });
+}
+const have = (document.documentElement.dataset.langs || 'en').split(',');
+const match = (tag) => {
+  const base = (tag || '').toLowerCase().split('-')[0];
+  return have.includes(base) ? base : null;
+};
+const chosen = match(read());
 const here = document.documentElement.lang;
 if (window.location.pathname === '/' && here === 'en') {
   const wanted =
-    chosen ?? ((navigator.language || '').toLowerCase().startsWith('es') ? 'es' : 'en');
-  if (wanted === 'es') window.location.replace('/es/' + window.location.hash);
+    chosen ?? (navigator.languages || [navigator.language]).map(match).find(Boolean) ?? 'en';
+  if (wanted !== 'en') window.location.replace('/' + wanted + '/' + window.location.hash);
 }
 
 // Element filter for the creature grid.

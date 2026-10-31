@@ -7,9 +7,11 @@ A static page presenting the game, built from the game's own data (`@nyrgo/share
 pnpm --filter "@nyrgo/site..." build     # → apps/site/dist
 ```
 
-- English at `/` (main), Spanish at `/es/`; the switch in the top bar remembers the choice, and a
-  first visit from a Spanish browser goes to `/es/`.
-- `page.html` + `i18n.mts` — the page and its text in each language.
+- English at `/` (main), every other language at `/<code>/` (the list is `LANGUAGES` in
+  `@nyrgo/shared`); the flag picker in the top bar remembers the choice, and a first visit to `/`
+  goes to the browser's language when there is a page for it.
+- `page.html` + `locales/<code>.json` (read by `i18n.mts`) — the page and its text. A language
+  without a file is not built; a key missing from a file falls back to English (the build says so).
 - `static/` — styles, script (language, element filter), NFT card examples, Cloudflare `_headers`.
 - `build.mts` — renders each language with the creature grid, starters, filters and NFT supplies.
 - The "Play now" buttons link to `SITE_APP_URL` (default `https://app.nyrgo.fun`);

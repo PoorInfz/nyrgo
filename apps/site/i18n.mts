@@ -1,242 +1,80 @@
 /**
- * The website's text. English is the main language (served at /), Spanish at /es/.
- * {{COUNT}}, {{ELEMENTS}} and {{TOTAL}} are filled from the game's data.
+ * The website's text, one JSON file per language in locales/ (English is the reference and the
+ * fallback). English is served at /, every other language at /<code>/. {{COUNT}}, {{ELEMENTS}}
+ * and {{TOTAL}} in the text are filled from the game's data.
  */
-import type { Rarity } from '@nyrgo/shared';
+import { readFileSync } from 'node:fs';
+import { LANGUAGES, type LanguageCode, type Rarity } from '@nyrgo/shared';
 
-export type Lang = 'en' | 'es';
+export type Lang = LanguageCode;
 
-export const LANGS: Record<Lang, { path: string; locale: string; label: string; name: string }> = {
-  en: { path: '/', locale: 'en-US', label: 'EN', name: 'English' },
-  es: { path: '/es/', locale: 'es-ES', label: 'ES', name: 'Español' },
+/** Number formatting for each language. */
+const LOCALE: Record<Lang, string> = {
+  en: 'en-US',
+  es: 'es-ES',
+  pt: 'pt-BR',
+  fr: 'fr-FR',
+  de: 'de-DE',
+  it: 'it-IT',
+  nl: 'nl-NL',
+  pl: 'pl-PL',
+  tr: 'tr-TR',
+  ru: 'ru-RU',
+  uk: 'uk-UA',
+  ar: 'ar',
+  hi: 'hi-IN',
+  id: 'id-ID',
+  ja: 'ja-JP',
+  ko: 'ko-KR',
+  zh: 'zh-CN',
+  vi: 'vi-VN',
+  th: 'th-TH',
 };
 
-export const RARITY: Record<Lang, Record<Rarity, string>> = {
-  en: {
-    common: 'Common',
-    uncommon: 'Uncommon',
-    rare: 'Rare',
-    epic: 'Epic',
-    legendary: 'Legendary',
-    mythic: 'Mythic',
-  },
-  es: {
-    common: 'Común',
-    uncommon: 'Poco común',
-    rare: 'Rara',
-    epic: 'Épica',
-    legendary: 'Legendaria',
-    mythic: 'Mítica',
-  },
+export const LANGS = Object.fromEntries(
+  LANGUAGES.map((l) => [
+    l.code,
+    {
+      path: l.code === 'en' ? '/' : `/${l.code}/`,
+      locale: LOCALE[l.code],
+      label: l.code.toUpperCase(),
+      name: l.name,
+      flag: l.flag,
+      rtl: 'rtl' in l && l.rtl === true,
+    },
+  ]),
+) as Record<
+  Lang,
+  { path: string; locale: string; label: string; name: string; flag: string; rtl: boolean }
+>;
+
+type File = Record<string, string> & { _rarity?: Partial<Record<Rarity, string>> };
+const load = (l: Lang): File | null => {
+  try {
+    return JSON.parse(readFileSync(new URL(`./locales/${l}.json`, import.meta.url), 'utf8'));
+  } catch {
+    return null;
+  }
 };
 
-export const TEXT = {
-  en: {
-    navDemo: 'Demo',
-    demoKicker: 'See it in action',
-    demoTitle: 'Explore, catch, battle, meet',
-    demoSub:
-      'The trailer, made from the game itself, and a real arena battle as you see it on your phone.',
-    demoTrailer: 'nyrGo! trailer',
-    demoBattle: 'Battles you watch',
-    demoBattleSub:
-      'Arena, gym and duels play out turn by turn: a VS screen, moves, criticals and a K.O.',
-    globeLabel: 'A globe showing where creatures were caught recently. Drag to turn it.',
-    globeLoading: 'Loading the latest catches…',
-    globeLatest: 'Latest catches',
-    globeCount: '{n} catches in the last 30 days. Drag the globe, tap a mark.',
-    globeEmpty: 'No catches in the last 30 days yet. Be the first!',
-    globeOffline: 'The latest catches could not be loaded right now.',
-    globeBy: 'caught by {by}',
-    globeToday: 'today',
-    globeAgo: '{n} days ago',
-    globeAgo1: 'yesterday',
-    globeHere: '{n} caught around here',
-    globeNote:
-      'Approximate places (about 50 km), adults only, shown an hour later; names hidden. Players can turn it off in their profile.',
-    title: 'nyrGo! · Get outside and catch creatures',
-    description:
-      'nyrGo! is a real-world exploration game: walk anywhere in the world, discover {{COUNT}} original creatures, battle and collect them. Free to play.',
-    ogDescription: 'Walk your city, discover {{COUNT}} original creatures and collect them.',
-    home: 'nyrGo! home',
-    navLabel: 'Sections',
-    navPlay: 'How to play',
-    navCreatures: 'Creatures',
-    navNft: 'NFTs',
-    navFaq: 'FAQ',
-    langLabel: 'Language',
-    bannerAlt: 'nyrGo!: creatures in a world of floating islands',
-    h1a: 'Get outside.',
-    h1b: 'Discover creatures.',
-    lead: 'nyrGo! turns your city into the map. Walk around, find {{COUNT}} original creatures from {{ELEMENTS}} elements, battle with them and take them with you.',
-    playNow: 'Play now!',
-    soon: 'Coming soon',
-    seeCreatures: 'See the creatures',
-    navCta: 'Play',
-    eyebrow: 'Available worldwide · Free to play',
-    statsLabel: 'nyrGo! in numbers',
-    statCreatures: 'original creatures',
-    statElements: 'elements',
-    statWorld: 'play anywhere',
-    howKicker: 'The game',
-    creaturesKicker: 'The collection',
-    nftKicker: 'On NEAR',
-    faqKicker: 'Questions',
-    finalTitle: 'Your city is full of creatures.',
-    finalLead:
-      'Open the game in your phone’s browser and take your first steps. No download, no wallet needed.',
-    startersLabel: 'The three starter creatures',
-    howTitle: 'How to play',
-    s1t: 'Walk',
-    s1: 'The map is your real city. As you move, creatures appear near you, different in each area: parks, the river, downtown…',
-    s2t: 'Catch',
-    s2: 'Try to catch them: rare ones put up more of a fight. Each one is born with its own stats, so no two are alike.',
-    s3t: 'Battle',
-    s3: 'Fight wild creatures with yours. Every element beats two others and loses to two more: choose wisely who you send out.',
-    s4t: 'Explore and evolve',
-    s4: 'Visit places to get gold and materials, complete the daily missions and evolve your creatures.',
-    creaturesTitle: '{{COUNT}} original creatures',
-    creaturesSub:
-      'Designed for nyrGo!, inspired by the crypto world: gas fees, airdrops, liquidity, oracles… Filter by element.',
-    filterLabel: 'Filter by element',
-    all: 'All',
-    nftTitle: 'Your creature, your NFT',
-    nftLead:
-      'If you want, you can take a creature out of the game as an NFT on NEAR. The NFT <strong>is</strong> the creature: whoever holds the token has it in the game.',
-    nft1: 'Each card shows its stats and its grade, from D to S.',
-    nft2: 'Each species has a fixed number of editions that never grows.',
-    nft3: 'Optional and only for adults (18+). The game plays the same without a wallet.',
-    supplyCaption: 'Editions per species',
-    thRarity: 'Rarity',
-    thSpecies: 'Species',
-    thEditions: 'Editions of each',
-    total: 'Total',
-    totalValue: '{{TOTAL}} creatures at most',
-    testnet:
-      'Right now on the <strong>NEAR test network</strong> (testnet): the NFTs have no monetary value.',
-    cardsLabel: 'Example cards, from common to mythic',
-    cardCommon: 'Burnlet card, common',
-    cardRare: 'Airdragon card, rare',
-    cardLegendary: 'Genesaur card, legendary',
-    cardMythic: 'Zeroknowl card, mythic',
-    faqTitle: 'FAQ',
-    q1: 'Is it free?',
-    a1: 'Yes. You play for free in your phone’s browser, and you can install it as an app.',
-    q2: 'Do I need a crypto wallet?',
-    a2: 'No. Only to take creatures out as NFTs, which is optional and for adults (18+). The game will never ask for your seed phrase or private keys.',
-    q3: 'What do you do with my location?',
-    a3: 'It is used for the game: knowing which creatures and places are near you. The browser only shares it while the app is open and with your permission.',
-    q4: 'Where can I play?',
-    a4: 'Anywhere in the world. The map, the places and the creatures come from wherever you are, built from OpenStreetMap data.',
-    q5: 'Do the creatures look like another game’s?',
-    a5: 'No. They are all original nyrGo! designs, with their own names, elements and stories.',
-    footerNote: 'NFTs on the NEAR test network, with no monetary value.',
-    code: 'Code on GitHub',
-  },
-  es: {
-    navDemo: 'Demo',
-    demoKicker: 'Míralo en acción',
-    demoTitle: 'Explora, captura, combate, conoce gente',
-    demoSub:
-      'El tráiler, hecho con el propio juego, y un combate real de la arena tal como lo ves en el móvil.',
-    demoTrailer: 'Tráiler de nyrGo!',
-    demoBattle: 'Combates que se ven',
-    demoBattleSub:
-      'Arena, gimnasio y duelos se juegan turno a turno: pantalla VS, ataques, críticos y K.O.',
-    globeLabel:
-      'Un globo con los lugares donde se han capturado criaturas hace poco. Arrástralo para girarlo.',
-    globeLoading: 'Cargando las últimas capturas…',
-    globeLatest: 'Últimas capturas',
-    globeCount: '{n} capturas en los últimos 30 días. Gira el globo y toca una marca.',
-    globeEmpty: 'Aún no hay capturas en los últimos 30 días. ¡Sé el primero!',
-    globeOffline: 'Ahora mismo no se pueden cargar las últimas capturas.',
-    globeBy: 'capturado por {by}',
-    globeToday: 'hoy',
-    globeAgo: 'hace {n} días',
-    globeAgo1: 'ayer',
-    globeHere: '{n} capturas por esta zona',
-    globeNote:
-      'Lugares aproximados (unos 50 km), solo adultos, con una hora de retraso y nombres ocultos.',
-    title: 'nyrGo! · Sal a la calle y caza criaturas',
-    description:
-      'nyrGo! es un juego de exploración en el mundo real: camina por cualquier lugar del mundo, descubre {{COUNT}} criaturas originales, combate y hazte con ellas. Gratis.',
-    ogDescription:
-      'Camina por tu ciudad, descubre {{COUNT}} criaturas originales y hazte con ellas.',
-    home: 'nyrGo! inicio',
-    navLabel: 'Secciones',
-    navPlay: 'Cómo se juega',
-    navCreatures: 'Criaturas',
-    navNft: 'NFT',
-    navFaq: 'Preguntas',
-    langLabel: 'Idioma',
-    bannerAlt: 'nyrGo!: criaturas en un mundo de islas flotantes',
-    h1a: 'Sal a la calle.',
-    h1b: 'Descubre criaturas.',
-    lead: 'nyrGo! convierte tu ciudad en el mapa. Camina, encuentra {{COUNT}} criaturas originales de {{ELEMENTS}} elementos, combate con ellas y llévalas contigo.',
-    playNow: '¡Jugar ahora!',
-    soon: 'Muy pronto',
-    seeCreatures: 'Ver las criaturas',
-    navCta: 'Jugar',
-    eyebrow: 'Disponible en todo el mundo · Gratis',
-    statsLabel: 'nyrGo! en cifras',
-    statCreatures: 'criaturas originales',
-    statElements: 'elementos',
-    statWorld: 'juega donde quieras',
-    howKicker: 'El juego',
-    creaturesKicker: 'La colección',
-    nftKicker: 'En NEAR',
-    faqKicker: 'Preguntas',
-    finalTitle: 'Tu ciudad está llena de criaturas.',
-    finalLead:
-      'Abre el juego en el navegador del móvil y da tus primeros pasos. Sin descargas y sin cartera.',
-    startersLabel: 'Las tres criaturas iniciales',
-    howTitle: 'Cómo se juega',
-    s1t: 'Camina',
-    s1: 'El mapa es tu ciudad de verdad. Mientras te mueves aparecen criaturas cerca de ti, distintas según la zona: parques, río, centro…',
-    s2t: 'Captura',
-    s2: 'Intenta capturarlas: las raras se resisten más. Cada una nace con sus propias estadísticas, así que no hay dos iguales.',
-    s3t: 'Combate',
-    s3: 'Lucha con tus criaturas contra criaturas salvajes. Cada elemento gana a dos y pierde contra otros dos: elige bien a quién sacas.',
-    s4t: 'Explora y evoluciona',
-    s4: 'Visita lugares para conseguir oro y materiales, cumple las misiones del día y haz evolucionar a tus criaturas.',
-    creaturesTitle: '{{COUNT}} criaturas originales',
-    creaturesSub:
-      'Diseñadas para nyrGo!, inspiradas en el mundo cripto: comisiones de gas, airdrops, liquidez, oráculos… Filtra por elemento.',
-    filterLabel: 'Filtrar por elemento',
-    all: 'Todas',
-    nftTitle: 'Tu criatura, tu NFT',
-    nftLead:
-      'Si quieres, puedes sacar una criatura del juego como NFT en NEAR. El NFT <strong>es</strong> la criatura: quien tiene el token, la tiene en el juego.',
-    nft1: 'Cada carta muestra sus estadísticas y su grado, de D a S.',
-    nft2: 'Cada especie tiene un número fijo de ediciones que nunca aumenta.',
-    nft3: 'Opcional y solo para mayores de 18 años. Se juega igual sin cartera.',
-    supplyCaption: 'Ediciones por especie',
-    thRarity: 'Rareza',
-    thSpecies: 'Especies',
-    thEditions: 'Ediciones de cada una',
-    total: 'Total',
-    totalValue: '{{TOTAL}} criaturas como máximo',
-    testnet:
-      'Ahora mismo en la <strong>red de pruebas de NEAR</strong> (testnet): los NFT no tienen valor económico.',
-    cardsLabel: 'Ejemplos de cartas, de común a mítica',
-    cardCommon: 'Carta de Burnlet, común',
-    cardRare: 'Carta de Airdragon, rara',
-    cardLegendary: 'Carta de Genesaur, legendaria',
-    cardMythic: 'Carta de Zeroknowl, mítica',
-    faqTitle: 'Preguntas',
-    q1: '¿Es gratis?',
-    a1: 'Sí. Se juega gratis desde el navegador del móvil y se puede instalar como app.',
-    q2: '¿Necesito una cartera cripto?',
-    a2: 'No. Solo para sacar criaturas como NFT, que es opcional y para mayores de 18 años. El juego nunca te pedirá tu frase semilla ni tus claves privadas.',
-    q3: '¿Qué hacéis con mi ubicación?',
-    a3: 'Se usa para el juego: saber qué criaturas y lugares tienes cerca. El navegador solo la comparte con la app abierta y con tu permiso.',
-    q4: '¿Dónde se puede jugar?',
-    a4: 'En cualquier parte del mundo. El mapa, los lugares y las criaturas salen de donde estés, a partir de los datos de OpenStreetMap.',
-    q5: '¿Las criaturas se parecen a las de otro juego?',
-    a5: 'No. Todas son diseños originales de nyrGo!, con nombres, elementos e historia propios.',
-    footerNote: 'NFT en la red de pruebas de NEAR, sin valor económico.',
-    code: 'Código en GitHub',
-  },
-} satisfies Record<Lang, Record<string, string>>;
+const EN = load('en')!;
+export type TextKey = Exclude<keyof typeof EN, '_rarity'>;
 
-export type TextKey = keyof (typeof TEXT)['en'];
+/** Languages with a translation file; the others are not built. */
+export const BUILT: Lang[] = [];
+export const TEXT = {} as Record<Lang, Record<string, string>>;
+export const RARITY = {} as Record<Lang, Record<Rarity, string>>;
+/** Keys a language is missing (filled from English), for the build log. */
+export const MISSING: Partial<Record<Lang, string[]>> = {};
+
+for (const { code } of LANGUAGES) {
+  const f = load(code);
+  if (!f) continue;
+  BUILT.push(code);
+  const { _rarity, ...text } = f;
+  const { _rarity: enRarity, ...enText } = EN;
+  const missing = Object.keys(enText).filter((k) => typeof text[k] !== 'string' || !text[k]);
+  if (missing.length) MISSING[code] = missing;
+  TEXT[code] = { ...enText, ...text } as Record<string, string>;
+  RARITY[code] = { ...enRarity, ..._rarity } as Record<Rarity, string>;
+}

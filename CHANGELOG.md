@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.39.0 — 2026-10-31 — Nineteen languages
+
+- The game and the website now come in 19 languages: English, Español, Português, Français,
+  Deutsch, Italiano, Nederlands, Polski, Türkçe, Русский, Українська, العربية (right to left),
+  हिन्दी, Bahasa Indonesia, 日本語, 한국어, 中文, Tiếng Việt and ไทย. English and Spanish were
+  written by hand; the others are machine translations (by Claude) that no native speaker has
+  reviewed yet. Creature names, lore, moves and item names stay in English (Spanish on the
+  Spanish pages), as before.
+- Language picker with flags (flag-icons, MIT) in the app's top corner and in the website's top
+  bar. The app loads a language only when it is picked; the website has a page per language
+  (`/fr/`, `/ja/`…), and a first visit to `/` goes to the browser's language when we have it.
+- The website's top bar links to nyrGo! on X (@nyrGofun); so does the footer.
+
 ## 0.38.1 — 2026-10-31 — Leave the globe
 
 - Profile → Your data: "Show my catches on the world map at nyrgo.fun" (adults; on by default).
