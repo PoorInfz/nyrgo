@@ -307,7 +307,8 @@
       "hairColor": "Warna rambut",
       "top": "Pakaian",
       "hat": "Topi",
-      "accessory": "Aksesori"
+      "accessory": "Aksesori",
+      "outfit": "Kostum"
     },
     "free": "Gratis",
     "owned": "Milikmu",
@@ -319,7 +320,10 @@
     "tryingOn": "Kamu sedang mencobanya: beli dulu agar bisa disimpan.",
     "save": "Simpan gaya",
     "undo": "Urungkan",
-    "saved": "Gaya tersimpan! Beginilah kamu terlihat di peta."
+    "saved": "Gaya tersimpan! Beginilah kamu terlihat di peta.",
+    "holderOpen": "Holder",
+    "holderLocked": "Peringkat 3+",
+    "holderNote": "Kostum holder untuk pemegang token uji mulai peringkat 3 (0,5 %). Kamu bisa mencobanya di sini; menyimpannya butuh peringkat."
   },
   "gym": {
     "why": "Pilih makhluk dan tingkat kesulitan: pelatih membalas dengan salah satu miliknya. Setiap ronde mengajari makhlukmu sesuatu, dan kemenangan memberi XP kota. Maksimal {{n}} per hari.",
@@ -863,5 +867,26 @@
     "continue": "Ayo!",
     "failed": "Gagal menyimpan. Coba lagi.",
     "later": "Nanti"
+  },
+  "holder": {
+    "title": "Token {{symbol}} (testnet)",
+    "why": "Token uji tanpa nilai, di NEAR {{network}}. Simpan di akun NEAR yang tertaut: peringkatmu dihitung dari saldo terendah {{days}} hari terakhir, jadi peringkat berlaku {{days}} hari setelah kamu mencapainya.",
+    "noAccount": "Tautkan akun NEAR di atas untuk mendapat peringkat.",
+    "notRead": "Saldo belum dibaca.",
+    "balance": "Saldo: {{n}} {{symbol}}",
+    "checked": "dibaca {{when}}",
+    "current": "Peringkatmu: {{rank}}",
+    "none": "Belum ada peringkat yang berlaku.",
+    "next": "{{rank}} berlaku mulai {{when}} jika kamu menyimpan token sampai saat itu.",
+    "stale": "Saldo sudah lama tidak dibaca; peringkat dijeda sampai dibaca lagi.",
+    "refresh": "Periksa sekarang",
+    "tableCaption": "Peringkat dan manfaatnya",
+    "colRank": "Peringkat",
+    "colAmount": "{{symbol}} dimiliki",
+    "colPerks": "Manfaat",
+    "rank": "Peringkat {{n}} ({{share}})",
+    "boost": "+{{pct}} % NEAR per tip",
+    "outfits": "kostum holder",
+    "note": "Bonus NEAR diambil dari pot hadiah harian yang sama (paling banyak seperempatnya); jika bagian itu habis, tip dibayar tanpa bonus. Hanya testnet: tidak ada yang bernilai di sini."
   }
 }

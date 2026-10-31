@@ -186,3 +186,11 @@ Stated openly so nobody relies on something that is not there.
 - Arabic turns the layout right to left, but the town, fights and the map were drawn left to
   right and have only been checked in screenshots, not by an Arabic reader. Map labels in
   Arabic script may show their letters unjoined (the map's right-to-left text plugin is not loaded).
+
+## Test token
+
+- The NYRGO token and holder ranks run on testnet only and have only been tried with test data
+  and unit tests, not with real players holding tokens. Ranks read balances once an hour from the
+  public NEAR RPC; if it is down for long, ranks pause.
+- The holder outfits are cut from an AI-made sheet: some side views were not consistent (a
+  different person, or a back view), so those outfits show their front view while walking.

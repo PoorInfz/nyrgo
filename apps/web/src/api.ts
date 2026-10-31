@@ -1,6 +1,7 @@
 import type {
   AgeBand,
   AvatarLook,
+  HolderTier,
   ProgressBreakdown,
   BattleEvent,
   Element,
@@ -213,6 +214,8 @@ export interface MyTips {
   tips: {
     id: string;
     amountNear: string;
+    /** Percent added by a holder rank. */
+    boostPct?: number;
     status: string;
     txHash: string | null;
     createdAt: string;
@@ -353,11 +356,30 @@ export interface Duel {
   fight: DuelFight | null;
 }
 
+/** The player's test token rank (testnet). */
+export interface HolderState {
+  network: string;
+  /** The token contract; null when ranks are off. */
+  contract: string | null;
+  account: string | null;
+  symbol: string;
+  holdDays: number;
+  /** Whole tokens in the latest reading. */
+  balance: number | null;
+  checkedAt: string | null;
+  stale: boolean;
+  tier: HolderTier['id'] | null;
+  next: { tier: HolderTier['id']; countsAt: string } | null;
+  tiers: HolderTier[];
+}
+
 export interface AvatarState {
   avatar: AvatarLook;
   /** Cosmetics bought (free ones are not listed: everyone has them). */
   owned: string[];
   gold: number;
+  /** Whether the player's test token rank unlocks the holder outfits. */
+  holderOutfits?: boolean;
 }
 
 export interface HubMe {
@@ -710,6 +732,8 @@ export function createApi(baseUrl: string) {
     declineTrade: (id: string) =>
       call<{ status: 'closed' }>('POST', `/v1/trades/${encodeURIComponent(id)}/decline`),
     avatar: () => call<AvatarState>('GET', '/v1/me/avatar'),
+    holder: () => call<HolderState>('GET', '/v1/me/holder'),
+    refreshHolder: () => call<HolderState>('POST', '/v1/me/holder/refresh'),
     saveAvatar: (avatar: AvatarLook) => call<AvatarState>('PUT', '/v1/me/avatar', { avatar }),
     /** `key` must stay the same when retrying the same purchase. */
     buyCosmetic: (item: string, key: string) =>

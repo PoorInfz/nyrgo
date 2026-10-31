@@ -8,6 +8,15 @@ import { loadDueAreas } from '../modules/world/areas.js';
 import type { Syncer } from '../modules/nft/service.js';
 import type { TipChain } from '../modules/tips/chain.js';
 import { runTips } from '../modules/tips/payout.js';
+import { runHolders } from '../modules/holder/ranks.js';
+import type { NearRpc } from '../modules/wallet/rpc.js';
+
+/** What the holder ranks job needs; null when ranks are off. */
+export interface HolderJob {
+  rpc: NearRpc;
+  contract: string | null;
+  network: string;
+}
 
 /**
  * Scheduled jobs on pg-boss (PostgreSQL-backed, so no extra service). pg-boss keeps its tables
@@ -25,6 +34,8 @@ export const JOBS = {
   worldAreas: { name: 'world-areas', cron: '* * * * *' },
   /** The town's weekly arena tournaments: played when due, the next ones opened. */
   tournaments: { name: 'tournaments', cron: '1-59/5 * * * *' },
+  /** Test token balances of linked accounts, for holder ranks (see holder/ranks.ts). */
+  holders: { name: 'holders', cron: '23 * * * *' },
 } as const;
 
 export type JobName = (typeof JOBS)[keyof typeof JOBS]['name'];
@@ -33,6 +44,7 @@ export function jobHandlers(
   db: Db,
   nftSyncer: Syncer | null = null,
   tipChain: TipChain | null = null,
+  holders: HolderJob | null = null,
 ): Record<JobName, () => Promise<unknown>> {
   return {
     retention: () => runRetention(db),
@@ -42,6 +54,13 @@ export function jobHandlers(
     'world-areas': () => loadDueAreas(db),
     tips: () => runTips(db, tipChain),
     tournaments: () => runTournaments(db),
+    holders: () =>
+      runHolders(
+        db,
+        holders?.rpc ?? null,
+        holders?.contract ?? null,
+        holders?.network ?? 'testnet',
+      ),
   };
 }
 
@@ -51,11 +70,12 @@ export async function startJobs(
   log: FastifyBaseLogger,
   nftSyncer: Syncer | null = null,
   tipChain: TipChain | null = null,
+  holders: HolderJob | null = null,
 ): Promise<PgBoss> {
   const boss = new PgBoss(connectionString);
   boss.on('error', (err) => log.error({ err }, 'job queue error'));
   await boss.start();
-  const handlers = jobHandlers(db, nftSyncer, tipChain);
+  const handlers = jobHandlers(db, nftSyncer, tipChain, holders);
   for (const job of Object.values(JOBS)) {
     await boss.createQueue(job.name);
     await boss.schedule(job.name, job.cron);

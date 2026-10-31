@@ -307,7 +307,8 @@
       "hairColor": "Cor do cabelo",
       "top": "Roupa",
       "hat": "Chapéu",
-      "accessory": "Acessório"
+      "accessory": "Acessório",
+      "outfit": "Roupa"
     },
     "free": "Grátis",
     "owned": "Seu",
@@ -319,7 +320,10 @@
     "tryingOn": "Você está experimentando: compre para poder salvar.",
     "save": "Salvar visual",
     "undo": "Desfazer",
-    "saved": "Visual salvo! É assim que você vai aparecer no mapa."
+    "saved": "Visual salvo! É assim que você vai aparecer no mapa.",
+    "holderOpen": "Holder",
+    "holderLocked": "Nível 3+",
+    "holderNote": "As roupas de holder são para quem tem o token de teste a partir do nível 3 (0,5 %). Você pode experimentá-las aqui; para salvar, precisa do nível."
   },
   "gym": {
     "why": "Escolha uma criatura e uma dificuldade: o treinador responde com uma das dele. Cada luta ensina algo à sua criatura, e vitórias dão XP da vila. Até {{n}} por dia.",
@@ -863,5 +867,26 @@
     "continue": "Vamos lá!",
     "failed": "Não foi possível salvar. Tente de novo.",
     "later": "Depois"
+  },
+  "holder": {
+    "title": "Token {{symbol}} (testnet)",
+    "why": "Um token de teste sem valor, na NEAR {{network}}. Mantenha-o na sua conta NEAR vinculada: seu nível conta o menor saldo dos últimos {{days}} dias, então um nível começa {{days}} dias depois de alcançá-lo.",
+    "noAccount": "Vincule uma conta NEAR acima para ter um nível.",
+    "notRead": "Saldo ainda não lido.",
+    "balance": "Saldo: {{n}} {{symbol}}",
+    "checked": "lido {{when}}",
+    "current": "Seu nível: {{rank}}",
+    "none": "Nenhum nível em vigor ainda.",
+    "next": "{{rank}} conta a partir de {{when}} se você mantiver os tokens até lá.",
+    "stale": "Os saldos não são lidos há algum tempo; os níveis ficam pausados até lá.",
+    "refresh": "Verificar agora",
+    "tableCaption": "Níveis e o que oferecem",
+    "colRank": "Nível",
+    "colAmount": "{{symbol}} mantidos",
+    "colPerks": "Vantagens",
+    "rank": "Nível {{n}} ({{share}})",
+    "boost": "+{{pct}} % NEAR por gorjeta",
+    "outfits": "roupas de holder",
+    "note": "O bônus em NEAR sai do mesmo pote diário de recompensas (no máximo um quarto dele); quando essa parte acaba, as gorjetas são pagas sem bônus. Só testnet: nada aqui tem valor."
   }
 }

@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.41.0 — 2026-10-31 — Test token holder ranks (testnet)
+
+- **NYRGO test token** (`contracts/token`, NEP-141, testnet only, no value): 1,000,000,000 minted
+  once to the game account. Deployed by a new manual workflow, which can also send test tokens.
+- **Holder ranks**: the API reads linked adults' token balances every hour. A rank counts the
+  smallest balance of the last 7 days: 0.1 % of supply gives +10 % on NEAR catch tips, 0.3 % gives
+  +15 %, 0.5 % +25 %, 1 % +50 % and 2 % +100 %. Ranks are fixed token amounts. At most a quarter of
+  each day's tip budget goes to boosts. The profile shows the balance, the rank in force, when the
+  next one starts counting, the rank table, and a "Check again now" button.
+- **Holder outfits**: 22 pixel-art characters cut from the owner's sheet, worn over the explorer
+  from rank 3 (0.5 %). They show on the map, in the town (standing faces you, walking turns to
+  the side) and in leaderboards. A new "Outfit" tab in the wardrobe lets anyone try them on; only
+  rank 3+ can save. Lookalikes of characters owned by others were left out.
+- Texts in all 19 languages; game names (outfits) stay English/Spanish.
+
 ## 0.40.0 — 2026-10-31 — The starter chest
 
 - A new player's first creature now comes out of a chest. Tap it: it knocks three times and leaks

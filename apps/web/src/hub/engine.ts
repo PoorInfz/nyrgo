@@ -8,6 +8,7 @@ import {
   type HubMap,
   type Interaction,
 } from '@nyrgo/shared';
+import { wearsOutfit } from '../avatar/Avatar';
 import {
   EXPLORER,
   companionSheet,
@@ -317,7 +318,8 @@ export class Town {
   ) {
     const frames = explorerFrames(look);
     const step = moving ? Math.floor(this.time / 140) % 4 : 0;
-    const frame = frames[[0, 1, 0, 2][step]!]!;
+    const outfit = wearsOutfit(look);
+    const frame = outfit ? frames[moving ? 1 : 0]! : frames[[0, 1, 0, 2][step]!]!;
     // soft shadow
     ctx.fillStyle = 'rgba(6, 34, 43, 0.25)';
     ctx.beginPath();
@@ -326,8 +328,18 @@ export class Town {
     if (!ready(frame)) return;
     const bob = moving && step % 2 === 1 ? -1.5 : 0;
     ctx.save();
-    ctx.imageSmoothingEnabled = true;
     ctx.translate(x, y + bob);
+    if (outfit) {
+      // pixel art: whole pixels, the walking picture faces left
+      ctx.imageSmoothingEnabled = false;
+      if (moving && facing === 'r') ctx.scale(-1, 1);
+      const h = EXPLORER.h * this.k * (122 / 140) * 1.05;
+      const w = (frame.naturalWidth / frame.naturalHeight) * h;
+      ctx.drawImage(frame, -w / 2, -h, w, h);
+      ctx.restore();
+      return;
+    }
+    ctx.imageSmoothingEnabled = true;
     if (facing === 'l') ctx.scale(-1, 1);
     // the SVG's feet sit at 130/140 of its height
     const w = EXPLORER.w * this.k;

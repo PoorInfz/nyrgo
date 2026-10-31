@@ -7,6 +7,7 @@ import { HttpProblem } from '../../http/problem.js';
 import { idempotent, readIdempotencyKey } from '../../http/idempotency.js';
 import { requireAuth } from '../auth/sessions.js';
 import { spendGold } from '../economy/routes.js';
+import { rankOf } from '../holder/ranks.js';
 
 /**
  * The explorer's look on the map. Cosmetics are bought once with Gold and change nothing in play;
@@ -21,7 +22,11 @@ const LookBody = Type.Object(
   {
     avatar: Type.Object(
       Object.fromEntries(
-        COSMETIC_SLOTS.map((s) => [s, Type.String({ minLength: 2, maxLength: 40 })]),
+        COSMETIC_SLOTS.map((s) => {
+          const id = Type.String({ minLength: 2, maxLength: 40 });
+          // looks saved before outfits existed have none
+          return [s, s === 'outfit' ? Type.Optional(id) : id];
+        }),
       ),
       { additionalProperties: false },
     ),
@@ -29,8 +34,8 @@ const LookBody = Type.Object(
   { additionalProperties: false },
 );
 
-async function state(c: Db | PoolClient, userId: string) {
-  const [p, o] = await Promise.all([
+async function state(c: Db | PoolClient, userId: string, network: string) {
+  const [p, o, rank] = await Promise.all([
     c.query<{ avatar: unknown; gold: string }>(
       `SELECT avatar, gold FROM players WHERE user_id = $1`,
       [userId],
@@ -39,17 +44,23 @@ async function state(c: Db | PoolClient, userId: string) {
       `SELECT item_id FROM player_cosmetics WHERE user_id = $1 ORDER BY acquired_at`,
       [userId],
     ),
+    rankOf(c, userId, network),
   ]);
   return {
     avatar: normaliseLook(p.rows[0]?.avatar),
     owned: o.rows.map((r) => r.item_id),
     gold: Number(p.rows[0]?.gold ?? 0),
+    /** Whether the player's holder rank unlocks the holder outfits (testnet). */
+    holderOutfits: rank.tier?.outfits === true,
   };
 }
 
-export async function avatarRoutes(app: FastifyInstance, { db }: { db: Db }) {
+export async function avatarRoutes(
+  app: FastifyInstance,
+  { db, network }: { db: Db; network: string },
+) {
   /** The look being worn, the cosmetics bought and the Gold to buy more. */
-  app.get('/v1/me/avatar', async (req) => state(db, requireAuth(req).userId));
+  app.get('/v1/me/avatar', async (req) => state(db, requireAuth(req).userId, network));
 
   /** Wears a look: every piece must be free or already bought. */
   app.put<{ Body: Static<typeof LookBody> }>(
@@ -61,13 +72,18 @@ export async function avatarRoutes(app: FastifyInstance, { db }: { db: Db }) {
         `SELECT item_id FROM player_cosmetics WHERE user_id = $1`,
         [auth.userId],
       );
-      const why = invalidLook(req.body.avatar, new Set(owned.rows.map((r) => r.item_id)));
+      const rank = await rankOf(db, auth.userId, network);
+      const why = invalidLook(
+        req.body.avatar,
+        new Set(owned.rows.map((r) => r.item_id)),
+        rank.tier?.outfits === true,
+      );
       if (why) throw new HttpProblem('validation_failed', 'This look cannot be worn', why);
       await db.query(`UPDATE players SET avatar = $2, updated_at = now() WHERE user_id = $1`, [
         auth.userId,
-        JSON.stringify(req.body.avatar),
+        JSON.stringify(normaliseLook(req.body.avatar)),
       ]);
-      return state(db, auth.userId);
+      return state(db, auth.userId, network);
     },
   );
 
@@ -88,7 +104,7 @@ export async function avatarRoutes(app: FastifyInstance, { db }: { db: Db }) {
           );
           if (!res.rowCount) throw new HttpProblem('conflict', 'Already yours');
           await spendGold(c, auth.userId, def.price, 'cosmetic');
-          return state(c, auth.userId);
+          return state(c, auth.userId, network);
         }),
       );
       return response;

@@ -35,6 +35,7 @@ describe.skipIf(!TEST_DB_URL)('avatar and cosmetics', () => {
       avatar: DEFAULT_AVATAR,
       owned: [],
       gold: 0,
+      holderOutfits: false,
     });
     const look = { ...DEFAULT_AVATAR, skin: 'skin_4', hair: 'hair_ponytail', hairColor: 'hc_red' };
     const r = await p.call('PUT', '/v1/me/avatar', { avatar: look });

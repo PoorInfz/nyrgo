@@ -111,6 +111,39 @@ jobs:
           name: nyrgo-creatures-wasm
           path: contracts/creatures/target/near/*.wasm
 
+  token-contract:
+    name: Token contract (test and build wasm)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: contracts/token
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: contracts/token
+
+      - name: Unit tests
+        run: cargo test
+
+      # cargo-near sets the wasm flags the NEAR runtime accepts and runs wasm-opt
+      - name: Install cargo-near
+        run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/near/cargo-near/releases/latest/download/cargo-near-installer.sh | sh
+
+      - name: Build the contract
+        run: cargo near build non-reproducible-wasm
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nyrgo-token-wasm
+          path: contracts/token/target/near/*.wasm
+
   api-image:
     name: API image (build and boot)
     runs-on: ubuntu-24.04

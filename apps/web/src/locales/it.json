@@ -307,7 +307,8 @@
       "hairColor": "Colore capelli",
       "top": "Vestiti",
       "hat": "Cappello",
-      "accessory": "Accessorio"
+      "accessory": "Accessorio",
+      "outfit": "Outfit"
     },
     "free": "Gratis",
     "owned": "Tuo",
@@ -319,7 +320,10 @@
     "tryingOn": "Lo stai provando: compralo per poter salvare.",
     "save": "Salva look",
     "undo": "Annulla",
-    "saved": "Look salvato! Ecco come apparirai sulla mappa."
+    "saved": "Look salvato! Ecco come apparirai sulla mappa.",
+    "holderOpen": "Holder",
+    "holderLocked": "Rango 3+",
+    "holderNote": "Gli outfit da holder sono per chi ha il token di prova dal rango 3 (0,5 %) in su. Puoi provarli qui; per salvarne uno serve il rango."
   },
   "gym": {
     "why": "Scegli una creatura e una difficoltà: l’allenatore risponde con una delle sue. Ogni incontro insegna qualcosa alla tua creatura e le vittorie danno XP del paese. Fino a {{n}} al giorno.",
@@ -863,5 +867,26 @@
     "continue": "Andiamo!",
     "failed": "Impossibile salvare. Riprova.",
     "later": "Più tardi"
+  },
+  "holder": {
+    "title": "Token {{symbol}} (testnet)",
+    "why": "Un token di prova senza valore, su NEAR {{network}}. Tienilo nel tuo account NEAR collegato: il tuo rango conta il saldo più basso degli ultimi {{days}} giorni, quindi un rango parte {{days}} giorni dopo averlo raggiunto.",
+    "noAccount": "Collega un account NEAR qui sopra per avere un rango.",
+    "notRead": "Saldo non ancora letto.",
+    "balance": "Saldo: {{n}} {{symbol}}",
+    "checked": "letto {{when}}",
+    "current": "Il tuo rango: {{rank}}",
+    "none": "Nessun rango attivo per ora.",
+    "next": "{{rank}} vale dal {{when}} se tieni i token fino ad allora.",
+    "stale": "I saldi non vengono letti da un po'; i ranghi sono in pausa finché non lo saranno.",
+    "refresh": "Controlla ora",
+    "tableCaption": "I ranghi e cosa danno",
+    "colRank": "Rango",
+    "colAmount": "{{symbol}} tenuti",
+    "colPerks": "Vantaggi",
+    "rank": "Rango {{n}} ({{share}})",
+    "boost": "+{{pct}} % di NEAR per mancia",
+    "outfits": "outfit da holder",
+    "note": "Il bonus in NEAR esce dallo stesso fondo giornaliero di ricompense (al massimo un quarto); quando quella parte finisce, le mance si pagano senza bonus. Solo testnet: qui niente ha valore."
   }
 }

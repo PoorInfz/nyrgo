@@ -307,7 +307,8 @@
       "hairColor": "Color de pelo",
       "top": "Ropa",
       "hat": "Gorro",
-      "accessory": "Accesorio"
+      "accessory": "Accesorio",
+      "outfit": "Traje"
     },
     "free": "Gratis",
     "owned": "Tuyo",
@@ -319,7 +320,10 @@
     "tryingOn": "Te lo estás probando: cómpralo para poder guardarlo.",
     "save": "Guardar look",
     "undo": "Deshacer",
-    "saved": "¡Look guardado! Así te verás en el mapa."
+    "saved": "¡Look guardado! Así te verás en el mapa.",
+    "holderOpen": "Holder",
+    "holderLocked": "Rango 3+",
+    "holderNote": "Los trajes de holder son para quienes tienen el token de prueba desde el rango 3 (0,5 %). Puedes probártelos aquí; para guardarlos necesitas el rango."
   },
   "gym": {
     "why": "Elige criatura y dificultad: el entrenador responde con una de las suyas. Cada combate le enseña algo a tu criatura y las victorias dan XP del pueblo. Hasta {{n}} al día.",
@@ -863,5 +867,26 @@
     "continue": "¡Vamos!",
     "failed": "No se pudo guardar. Inténtalo de nuevo.",
     "later": "Más tarde"
+  },
+  "holder": {
+    "title": "Token {{symbol}} (testnet)",
+    "why": "Un token de prueba sin valor, en NEAR {{network}}. Guárdalo en tu cuenta NEAR vinculada: tu rango cuenta el saldo más bajo de los últimos {{days}} días, así que un rango empieza {{days}} días después de alcanzarlo.",
+    "noAccount": "Vincula una cuenta NEAR arriba para tener rango.",
+    "notRead": "Saldo aún sin leer.",
+    "balance": "Saldo: {{n}} {{symbol}}",
+    "checked": "leído {{when}}",
+    "current": "Tu rango: {{rank}}",
+    "none": "Aún no tienes rango en vigor.",
+    "next": "{{rank}} cuenta desde el {{when}} si mantienes los tokens hasta entonces.",
+    "stale": "Hace tiempo que no se leen los saldos; los rangos se pausan hasta que se lean.",
+    "refresh": "Comprobar ahora",
+    "tableCaption": "Rangos y lo que dan",
+    "colRank": "Rango",
+    "colAmount": "{{symbol}} guardados",
+    "colPerks": "Ventajas",
+    "rank": "Rango {{n}} ({{share}})",
+    "boost": "+{{pct}} % NEAR por propina",
+    "outfits": "trajes de holder",
+    "note": "El aumento en NEAR sale del mismo bote diario de recompensas (como mucho una cuarta parte); cuando esa parte se agota, las propinas se pagan sin aumento. Solo testnet: aquí nada tiene valor."
   }
 }

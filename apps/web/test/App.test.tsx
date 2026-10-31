@@ -97,7 +97,7 @@ describe('signed out', () => {
 const gameCalls = (fetch: { mock: { calls: unknown[][] } }) =>
   fetch.mock.calls.filter(
     ([url]) =>
-      !/\/v1\/(me\/(wallet|tips|avatar|creatures)|hub\/me|dex|leaderboards\?.*|me\/privacy)$/.test(
+      !/\/v1\/(me\/(wallet|tips|avatar|creatures|holder)|hub\/me|dex|leaderboards\?.*|me\/privacy)$/.test(
         String(url),
       ),
   );

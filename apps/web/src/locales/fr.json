@@ -307,7 +307,8 @@
       "hairColor": "Couleur des cheveux",
       "top": "Vêtements",
       "hat": "Chapeau",
-      "accessory": "Accessoire"
+      "accessory": "Accessoire",
+      "outfit": "Tenue"
     },
     "free": "Gratuit",
     "owned": "À toi",
@@ -319,7 +320,10 @@
     "tryingOn": "Tu l’essaies : achète-le pour pouvoir enregistrer.",
     "save": "Enregistrer le look",
     "undo": "Annuler",
-    "saved": "Look enregistré ! C’est ainsi que tu apparaîtras sur la carte."
+    "saved": "Look enregistré ! C’est ainsi que tu apparaîtras sur la carte.",
+    "holderOpen": "Holder",
+    "holderLocked": "Rang 3+",
+    "holderNote": "Les tenues de holder sont pour les détenteurs du jeton de test à partir du rang 3 (0,5 %). Tu peux les essayer ici ; pour en garder une, il faut le rang."
   },
   "gym": {
     "why": "Choisis une créature et une difficulté : le coach répond avec l’une des siennes. Chaque combat apprend quelque chose à ta créature, et les victoires rapportent de l’XP de village. Jusqu’à {{n}} par jour.",
@@ -863,5 +867,26 @@
     "continue": "C'est parti !",
     "failed": "Impossible d'enregistrer. Réessaie.",
     "later": "Plus tard"
+  },
+  "holder": {
+    "title": "Jeton {{symbol}} (testnet)",
+    "why": "Un jeton de test sans valeur, sur NEAR {{network}}. Garde-le sur ton compte NEAR lié : ton rang compte le solde le plus bas des {{days}} derniers jours, donc un rang commence {{days}} jours après l'avoir atteint.",
+    "noAccount": "Lie un compte NEAR ci-dessus pour obtenir un rang.",
+    "notRead": "Solde pas encore lu.",
+    "balance": "Solde : {{n}} {{symbol}}",
+    "checked": "lu {{when}}",
+    "current": "Ton rang : {{rank}}",
+    "none": "Aucun rang en vigueur pour l'instant.",
+    "next": "{{rank}} compte à partir du {{when}} si tu gardes les jetons jusque-là.",
+    "stale": "Les soldes n'ont pas été lus depuis un moment ; les rangs sont en pause d'ici là.",
+    "refresh": "Vérifier maintenant",
+    "tableCaption": "Les rangs et ce qu'ils donnent",
+    "colRank": "Rang",
+    "colAmount": "{{symbol}} détenus",
+    "colPerks": "Avantages",
+    "rank": "Rang {{n}} ({{share}})",
+    "boost": "+{{pct}} % de NEAR par pourboire",
+    "outfits": "tenues de holder",
+    "note": "Le bonus en NEAR vient de la même cagnotte quotidienne (au plus un quart) ; quand cette part est épuisée, les pourboires sont versés sans bonus. Testnet uniquement : rien ici n'a de valeur."
   }
 }

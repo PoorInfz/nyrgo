@@ -307,7 +307,8 @@
       "hairColor": "Kolor włosów",
       "top": "Ubranie",
       "hat": "Kapelusz",
-      "accessory": "Dodatek"
+      "accessory": "Dodatek",
+      "outfit": "Strój"
     },
     "free": "Za darmo",
     "owned": "Twoje",
@@ -319,7 +320,10 @@
     "tryingOn": "Przymierzasz: kup, aby móc zapisać.",
     "save": "Zapisz wygląd",
     "undo": "Cofnij",
-    "saved": "Wygląd zapisany! Tak będziesz wyglądać na mapie."
+    "saved": "Wygląd zapisany! Tak będziesz wyglądać na mapie.",
+    "holderOpen": "Holder",
+    "holderLocked": "Ranga 3+",
+    "holderNote": "Stroje holdera są dla posiadaczy testowego tokena od rangi 3 (0,5 %). Możesz je tu przymierzyć; zapisanie wymaga rangi."
   },
   "gym": {
     "why": "Wybierz stworka i poziom trudności: trener odpowie jednym ze swoich. Każda walka czegoś uczy Twojego stworka, a zwycięstwa dają XP z miasteczka. Do {{n}} dziennie.",
@@ -863,5 +867,26 @@
     "continue": "Ruszamy!",
     "failed": "Nie udało się zapisać. Spróbuj ponownie.",
     "later": "Później"
+  },
+  "holder": {
+    "title": "Token {{symbol}} (testnet)",
+    "why": "Testowy token bez wartości, w NEAR {{network}}. Trzymaj go na połączonym koncie NEAR: twoja ranga liczy najniższe saldo z ostatnich {{days}} dni, więc ranga zaczyna obowiązywać {{days}} dni po jej osiągnięciu.",
+    "noAccount": "Połącz konto NEAR powyżej, aby mieć rangę.",
+    "notRead": "Saldo jeszcze nie odczytane.",
+    "balance": "Saldo: {{n}} {{symbol}}",
+    "checked": "odczyt {{when}}",
+    "current": "Twoja ranga: {{rank}}",
+    "none": "Na razie brak aktywnej rangi.",
+    "next": "{{rank}} zacznie obowiązywać {{when}}, jeśli zatrzymasz tokeny do tego czasu.",
+    "stale": "Salda dawno nie były odczytywane; rangi są wstrzymane do odczytu.",
+    "refresh": "Sprawdź teraz",
+    "tableCaption": "Rangi i co dają",
+    "colRank": "Ranga",
+    "colAmount": "{{symbol}} w posiadaniu",
+    "colPerks": "Korzyści",
+    "rank": "Ranga {{n}} ({{share}})",
+    "boost": "+{{pct}} % NEAR za napiwek",
+    "outfits": "stroje holdera",
+    "note": "Bonus w NEAR pochodzi z tej samej dziennej puli nagród (najwyżej jej ćwierć); gdy ta część się wyczerpie, napiwki są wypłacane bez bonusu. Tylko testnet: nic tu nie ma wartości."
   }
 }

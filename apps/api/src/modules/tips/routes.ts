@@ -53,8 +53,9 @@ export async function tipsRoutes(
       status: string;
       tx_hash: string | null;
       created_at: Date;
+      boost_pct: number;
     }>(
-      `SELECT id, amount_yocto::text AS amount, status, tx_hash, created_at FROM tips
+      `SELECT id, amount_yocto::text AS amount, status, tx_hash, created_at, boost_pct FROM tips
         WHERE user_id = $1 ORDER BY created_at DESC LIMIT 10`,
       [auth.userId],
     );
@@ -75,6 +76,7 @@ export async function tipsRoutes(
       tips: rows.map((r) => ({
         id: r.id,
         amountNear: nearString(BigInt(r.amount)),
+        boostPct: r.boost_pct,
         status: r.status,
         txHash: r.tx_hash,
         createdAt: r.created_at.toISOString(),

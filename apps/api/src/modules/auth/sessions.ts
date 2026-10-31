@@ -20,6 +20,7 @@ declare module 'fastify' {
     nftSyncer: import('../nft/service.js').Syncer | null;
     /** Null when NEAR tips are switched off. */
     tipChain: import('../tips/chain.js').TipChain | null;
+    nearRpc: import('../wallet/rpc.js').NearRpc;
   }
   interface FastifyRequest {
     auth: AuthContext | null;

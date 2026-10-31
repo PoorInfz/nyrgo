@@ -114,6 +114,9 @@ export async function accountRoutes(
         globeMarks: await q(
           `SELECT definition_id, cell_lat, cell_lng, created_at FROM capture_marks WHERE user_id = $1 ORDER BY id`,
         ),
+        tokenBalances: await q(
+          `SELECT account_id, taken_at, balance::text AS balance FROM holder_snapshots WHERE user_id = $1 ORDER BY taken_at`,
+        ),
         placeVisits: await q(
           `SELECT poi_id, last_visit_at, visits FROM poi_visits WHERE user_id = $1`,
         ),

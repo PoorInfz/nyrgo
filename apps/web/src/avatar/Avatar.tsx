@@ -90,7 +90,74 @@ function Cel({
 
 // ------------------------------------------------------------------ the figure
 
-export function Avatar({
+type AvatarProps = {
+  look: AvatarLook;
+  walking?: boolean;
+  facing?: 'left' | 'right';
+  size?: number;
+  /** Accessible name; without it the figure is decorative. */
+  title?: string;
+  /**
+   * A fixed walking pose (-1, 0, 1) drawn into the SVG itself, for places where CSS animation
+   * does not apply (the figure drawn as an image on the town's canvas).
+   */
+  pose?: -1 | 0 | 1;
+};
+
+/** Whether this look wears a holder outfit (a whole pixel-art character). */
+export const wearsOutfit = (look: AvatarLook) =>
+  !!look.outfit && COSMETICS_BY_ID.get(look.outfit)?.holder === true;
+
+/** The outfit's pictures: standing (facing the viewer) and walking (facing left). */
+export const outfitUrl = (id: string, view: 'front' | 'side') => `/skins/${id}-${view}.webp`;
+
+/** The player's explorer, or the holder outfit worn over it. */
+export function Avatar(props: AvatarProps) {
+  return wearsOutfit(props.look) ? <OutfitAvatar {...props} /> : <DrawnAvatar {...props} />;
+}
+
+/**
+ * A holder outfit in the same 100×140 box as the drawn explorer (feet at 130). It stands facing
+ * the viewer and turns to the side while walking; the side picture faces left, so it is
+ * mirrored to walk right.
+ */
+function OutfitAvatar({ look, walking = false, facing = 'right', size = 64, title }: AvatarProps) {
+  const side = walking;
+  const cls = [
+    'avatar',
+    'outfit',
+    walking ? 'walking' : '',
+    side && facing === 'right' ? 'facing-left' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  return (
+    <svg
+      className={cls}
+      viewBox="0 0 100 140"
+      width={size}
+      height={(size * 140) / 100}
+      role={title ? 'img' : undefined}
+      aria-hidden={title ? undefined : true}
+      aria-label={title}
+    >
+      <ellipse cx="50" cy="134" rx="22" ry="4.5" fill={INK} opacity="0.2" />
+      <g className="avatar-body">
+        <image
+          href={outfitUrl(look.outfit, side ? 'side' : 'front')}
+          x="8"
+          y="10"
+          width="84"
+          height="122"
+          preserveAspectRatio="xMidYMax meet"
+          style={{ imageRendering: 'pixelated' }}
+        />
+      </g>
+    </svg>
+  );
+}
+
+function DrawnAvatar({
   look,
   walking = false,
   facing = 'right',

@@ -25,6 +25,7 @@ import { nftRoutes } from './modules/nft/routes.js';
 import { Syncer } from './modules/nft/service.js';
 import { nearTipChain, type TipChain } from './modules/tips/chain.js';
 import { tipsRoutes } from './modules/tips/routes.js';
+import { holderRoutes } from './modules/holder/routes.js';
 import { socialRoutes } from './modules/social/routes.js';
 import { leaderboardRoutes } from './modules/leaderboard/routes.js';
 import { publicRoutes } from './modules/public/routes.js';
@@ -202,7 +203,7 @@ export async function buildApp({
   await app.register(leaderboardRoutes, { db });
   await app.register(publicRoutes, { db });
   await app.register(duelRoutes, { db });
-  await app.register(avatarRoutes, { db });
+  await app.register(avatarRoutes, { db, network: config.near.network });
   await app.register(websocket, { options: { maxPayload: 4096 } });
   const hubLive: HubLive = { snapshot: () => ({ online: 0, rooms: {}, houses: 0 }) };
   await app.register(hubRoutes, {
@@ -223,10 +224,14 @@ export async function buildApp({
       requireAttestation: config.rewardsRequireAttestation,
     });
   }
-  await app.register(walletRoutes, {
+  const rpc = nearRpc ?? httpNearRpc(config.near.rpcUrl);
+  app.decorate('nearRpc', rpc);
+  await app.register(walletRoutes, { db, config, rpc });
+  await app.register(holderRoutes, {
     db,
-    config,
-    rpc: nearRpc ?? httpNearRpc(config.near.rpcUrl),
+    network: config.near.network,
+    contract: config.near.token,
+    rpc,
   });
 
   if (config.devRoutes) {

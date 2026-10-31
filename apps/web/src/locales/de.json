@@ -307,7 +307,8 @@
       "hairColor": "Haarfarbe",
       "top": "Kleidung",
       "hat": "Hut",
-      "accessory": "Accessoire"
+      "accessory": "Accessoire",
+      "outfit": "Outfit"
     },
     "free": "Gratis",
     "owned": "Deins",
@@ -319,7 +320,10 @@
     "tryingOn": "Du probierst es an: Kauf es, um speichern zu können.",
     "save": "Look speichern",
     "undo": "Rückgängig",
-    "saved": "Look gespeichert! So siehst du jetzt auf der Karte aus."
+    "saved": "Look gespeichert! So siehst du jetzt auf der Karte aus.",
+    "holderOpen": "Holder",
+    "holderLocked": "Rang 3+",
+    "holderNote": "Holder-Outfits gibt es für Halter des Test-Tokens ab Rang 3 (0,5 %). Anprobieren kannst du sie hier; zum Speichern brauchst du den Rang."
   },
   "gym": {
     "why": "Wähle eine Kreatur und einen Schwierigkeitsgrad: Der Coach antwortet mit einer seiner eigenen. Jeder Kampf bringt deiner Kreatur etwas bei, und Siege geben Stadt-XP. Bis zu {{n}} pro Tag.",
@@ -863,5 +867,26 @@
     "continue": "Los geht's!",
     "failed": "Speichern fehlgeschlagen. Versuch es noch mal.",
     "later": "Später"
+  },
+  "holder": {
+    "title": "{{symbol}}-Token (Testnet)",
+    "why": "Ein Test-Token ohne Wert, auf NEAR {{network}}. Behalte ihn in deinem verknüpften NEAR-Konto: Dein Rang zählt den kleinsten Kontostand der letzten {{days}} Tage, ein Rang gilt also {{days}} Tage, nachdem du ihn erreicht hast.",
+    "noAccount": "Verknüpfe oben ein NEAR-Konto, um einen Rang zu bekommen.",
+    "notRead": "Kontostand noch nicht gelesen.",
+    "balance": "Kontostand: {{n}} {{symbol}}",
+    "checked": "gelesen {{when}}",
+    "current": "Dein Rang: {{rank}}",
+    "none": "Noch kein Rang aktiv.",
+    "next": "{{rank}} gilt ab {{when}}, wenn du die Token bis dahin behältst.",
+    "stale": "Die Kontostände wurden länger nicht gelesen; Ränge pausieren bis dahin.",
+    "refresh": "Jetzt prüfen",
+    "tableCaption": "Ränge und was sie bringen",
+    "colRank": "Rang",
+    "colAmount": "{{symbol}} gehalten",
+    "colPerks": "Vorteile",
+    "rank": "Rang {{n}} ({{share}})",
+    "boost": "+{{pct}} % NEAR pro Trinkgeld",
+    "outfits": "Holder-Outfits",
+    "note": "Der NEAR-Bonus kommt aus demselben täglichen Belohnungstopf (höchstens ein Viertel davon); ist dieser Anteil aufgebraucht, gibt es Trinkgeld ohne Bonus. Nur Testnet: nichts hier hat Wert."
   }
 }

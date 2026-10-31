@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ApiError, type Api, type Profile } from '../api';
 import { EmailForm } from '../components/EmailForm';
 import { TipsCard } from './TipsCard';
+import { HolderCard } from './HolderCard';
 import { NearWallet } from './NearWallet';
 import { Wardrobe } from './Wardrobe';
 import { ProgressCard } from './ProgressCard';
@@ -121,6 +122,7 @@ export function Home({
 
       {profile.canUseWeb3 && <NearWallet api={api} />}
       {profile.canUseWeb3 && <TipsCard api={api} />}
+      {profile.canUseWeb3 && <HolderCard api={api} />}
 
       <section className="card stack" aria-labelledby="privacy-title">
         <h2 id="privacy-title">{t('privacy')}</h2>

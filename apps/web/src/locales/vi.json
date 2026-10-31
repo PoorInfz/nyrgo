@@ -307,7 +307,8 @@
       "hairColor": "Màu tóc",
       "top": "Quần áo",
       "hat": "Mũ",
-      "accessory": "Phụ kiện"
+      "accessory": "Phụ kiện",
+      "outfit": "Trang phục"
     },
     "free": "Miễn phí",
     "owned": "Đã có",
@@ -319,7 +320,10 @@
     "tryingOn": "Bạn đang mặc thử: mua để có thể lưu.",
     "save": "Lưu diện mạo",
     "undo": "Hoàn tác",
-    "saved": "Đã lưu diện mạo! Đây là cách bạn sẽ xuất hiện trên bản đồ."
+    "saved": "Đã lưu diện mạo! Đây là cách bạn sẽ xuất hiện trên bản đồ.",
+    "holderOpen": "Holder",
+    "holderLocked": "Hạng 3+",
+    "holderNote": "Trang phục holder dành cho người giữ token thử nghiệm từ hạng 3 (0,5 %) trở lên. Bạn có thể thử ở đây; muốn lưu thì cần có hạng."
   },
   "gym": {
     "why": "Chọn sinh vật và độ khó: huấn luyện viên sẽ đáp trả bằng một sinh vật của họ. Mỗi trận giúp sinh vật học hỏi, và chiến thắng cho XP thị trấn. Tối đa {{n}} lần mỗi ngày.",
@@ -863,5 +867,26 @@
     "continue": "Lên đường!",
     "failed": "Không lưu được. Hãy thử lại.",
     "later": "Để sau"
+  },
+  "holder": {
+    "title": "Token {{symbol}} (testnet)",
+    "why": "Một token thử nghiệm không có giá trị, trên NEAR {{network}}. Hãy giữ nó trong tài khoản NEAR đã liên kết: hạng của bạn tính theo số dư thấp nhất trong {{days}} ngày gần nhất, nên hạng có hiệu lực {{days}} ngày sau khi bạn đạt được.",
+    "noAccount": "Liên kết một tài khoản NEAR ở trên để có hạng.",
+    "notRead": "Chưa đọc số dư.",
+    "balance": "Số dư: {{n}} {{symbol}}",
+    "checked": "đọc lúc {{when}}",
+    "current": "Hạng của bạn: {{rank}}",
+    "none": "Chưa có hạng nào có hiệu lực.",
+    "next": "{{rank}} có hiệu lực từ {{when}} nếu bạn giữ token đến lúc đó.",
+    "stale": "Đã lâu chưa đọc số dư; hạng tạm dừng cho đến khi đọc lại.",
+    "refresh": "Kiểm tra ngay",
+    "tableCaption": "Các hạng và quyền lợi",
+    "colRank": "Hạng",
+    "colAmount": "{{symbol}} đang giữ",
+    "colPerks": "Quyền lợi",
+    "rank": "Hạng {{n}} ({{share}})",
+    "boost": "+{{pct}} % NEAR mỗi lần thưởng",
+    "outfits": "trang phục holder",
+    "note": "Phần thưởng thêm NEAR lấy từ cùng quỹ thưởng hằng ngày (tối đa một phần tư); khi phần đó hết, tiền thưởng được trả không kèm phần thêm. Chỉ testnet: không gì ở đây có giá trị."
   }
 }

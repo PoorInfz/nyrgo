@@ -53,6 +53,11 @@ const EnvSchema = Type.Object({
    * key, which signs for it). Empty: no tips.
    */
   NEAR_TREASURY_ACCOUNT: Type.String({ default: '' }),
+  /**
+   * The nyrGo! test token (contracts/token, NEP-141). Empty: `token.<NEAR_MINTER_ACCOUNT>` when a
+   * minter is set; `off` switches holder ranks off.
+   */
+  NEAR_TOKEN_CONTRACT: Type.String({ default: '' }),
   /** Who the signed message is for (NEP-413 `recipient`); wallets show it to the player. */
   NEAR_SIGN_RECIPIENT: Type.String({ minLength: 1, maxLength: 64, default: 'nyrgo' }),
   /** Android package checked by Play Integrity. */
@@ -113,6 +118,8 @@ export interface AppConfig {
     nft: { contractId: string; minterAccount: string; minterKey: string } | null;
     /** Null when tips are switched off. */
     tips: { treasury: string; key: string } | null;
+    /** The test token whose holders get ranks; null when ranks are off. */
+    token: string | null;
   };
 }
 
@@ -269,6 +276,11 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
       tips: env.NEAR_TREASURY_ACCOUNT
         ? { treasury: env.NEAR_TREASURY_ACCOUNT, key: env.NEAR_MINTER_KEY }
         : null,
+      token:
+        env.NEAR_TOKEN_CONTRACT === 'off'
+          ? null
+          : env.NEAR_TOKEN_CONTRACT ||
+            (env.NEAR_MINTER_ACCOUNT ? `token.${env.NEAR_MINTER_ACCOUNT}` : null),
     },
   };
 }

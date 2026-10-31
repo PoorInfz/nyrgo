@@ -18,7 +18,8 @@
     "nft:deploy": "tsx scripts/nft-deploy.mts",
     "testnet:fund": "tsx scripts/testnet-fund.mts",
     "jobs:run": "tsx --env-file-if-exists=../../.env scripts/run-job.ts",
-    "content:sync": "tsx --env-file-if-exists=../../.env scripts/sync-content.ts"
+    "content:sync": "tsx --env-file-if-exists=../../.env scripts/sync-content.ts",
+    "token:deploy": "tsx scripts/token-deploy.mts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.1.5",

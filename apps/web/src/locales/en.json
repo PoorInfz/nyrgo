@@ -307,7 +307,8 @@
       "hairColor": "Hair colour",
       "top": "Clothes",
       "hat": "Hat",
-      "accessory": "Accessory"
+      "accessory": "Accessory",
+      "outfit": "Outfit"
     },
     "free": "Free",
     "owned": "Yours",
@@ -319,7 +320,10 @@
     "tryingOn": "You are trying it on: buy it to be able to save.",
     "save": "Save look",
     "undo": "Undo",
-    "saved": "Look saved! This is how you will look on the map."
+    "saved": "Look saved! This is how you will look on the map.",
+    "holderOpen": "Holder",
+    "holderLocked": "Rank 3+",
+    "holderNote": "Holder outfits are for test token holders from rank 3 (0.5 %) up. You can try them on here; saving one needs the rank."
   },
   "gym": {
     "why": "Pick a creature and a difficulty: the coach answers with one of theirs. Every bout teaches your creature something, and wins pay town XP. Up to {{n}} a day.",
@@ -863,5 +867,26 @@
     "continue": "Let's go!",
     "failed": "It could not be saved. Try again.",
     "later": "Later"
+  },
+  "holder": {
+    "title": "{{symbol}} token (testnet)",
+    "why": "A test token with no value, on NEAR {{network}}. Keep it in your linked NEAR account: your rank counts the smallest balance of the last {{days}} days, so a rank starts {{days}} days after you reach it.",
+    "noAccount": "Link a NEAR account above to get a rank.",
+    "notRead": "Balance not read yet.",
+    "balance": "Balance: {{n}} {{symbol}}",
+    "checked": "read {{when}}",
+    "current": "Your rank: {{rank}}",
+    "none": "No rank in force yet.",
+    "next": "{{rank}} counts from {{when}} if you keep the tokens until then.",
+    "stale": "Balances have not been read for a while; ranks pause until they are.",
+    "refresh": "Check again now",
+    "tableCaption": "Ranks and what they give",
+    "colRank": "Rank",
+    "colAmount": "{{symbol}} held",
+    "colPerks": "Perks",
+    "rank": "Rank {{n}} ({{share}})",
+    "boost": "+{{pct}} % NEAR per tip",
+    "outfits": "holder outfits",
+    "note": "The NEAR boost comes out of the same daily reward pot (at most a quarter of it); when that share is used up, tips are paid without the boost. Testnet only: nothing here has value."
   }
 }

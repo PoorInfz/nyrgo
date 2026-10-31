@@ -122,6 +122,10 @@ describe.skipIf(!TEST_DB_URL)('the notice board, seasons, tournaments and achiev
     expect(nextTournamentStart(new Date('2026-10-31T18:00:00Z')).toISOString()).toBe(
       '2026-11-07T18:00:00.000Z',
     );
+    // a tournament left open from an earlier run whose start has passed (the job plays those)
+    await t.db.query(
+      `UPDATE hub_tournaments SET status = 'cancelled' WHERE status = 'open' AND starts_at <= now()`,
+    );
     const ps = [];
     for (let i = 0; i < 5; i++) ps.push(await player());
     const first = (await ps[0]!.call('GET', '/v1/hub/tournament')).json();

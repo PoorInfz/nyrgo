@@ -2,7 +2,7 @@ import { createElement } from 'react';
 import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import type { AvatarLook, HubGround, HubSprite } from '@nyrgo/shared';
-import { Avatar } from '../avatar/Avatar';
+import { Avatar, outfitUrl, wearsOutfit } from '../avatar/Avatar';
 
 /**
  * Images for the town's canvas, loaded once and cached: the owner's town art, the creatures'
@@ -52,8 +52,15 @@ function svgMarkup(look: AvatarLook, pose: -1 | 0 | 1): string {
   return markup;
 }
 
-/** The three poses of an explorer: standing, left foot forward, right foot forward. */
+/**
+ * The three poses of an explorer: standing, left foot forward, right foot forward. A holder
+ * outfit has two pictures instead: standing (facing the viewer) and walking (facing left).
+ */
 export function explorerFrames(look: AvatarLook): HTMLImageElement[] {
+  if (wearsOutfit(look)) {
+    const side = image(outfitUrl(look.outfit, 'side'));
+    return [image(outfitUrl(look.outfit, 'front')), side, side];
+  }
   const key = JSON.stringify(look);
   let frames = explorers.get(key);
   if (!frames) {

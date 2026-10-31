@@ -45,7 +45,8 @@ export function Wardrobe({ api, onGold }: { api: Api; onGold?: (gold: number) =>
   }, [api]);
 
   const owned = useMemo(() => new Set(state?.owned ?? []), [state]);
-  const has = (c: CosmeticDef) => c.price === 0 || owned.has(c.id);
+  const has = (c: CosmeticDef) =>
+    c.holder ? state?.holderOutfits === true : c.price === 0 || owned.has(c.id);
 
   // a side card: if it cannot load, say so quietly (no alert competing with the rest)
   if (failed) return <p className="muted">{t('errors.other')}</p>;
@@ -141,14 +142,18 @@ export function Wardrobe({ api, onGold }: { api: Api; onGold?: (gold: number) =>
                 <Avatar look={{ ...draft, [slot]: c.id }} size={56} />
                 <span className="wardrobe-name">{c.name[lang]}</span>
                 <span className="muted small">
-                  {c.price === 0
-                    ? t('wardrobe.free')
-                    : mine
-                      ? t('wardrobe.owned')
-                      : t('wardrobe.price', { price: c.price })}
+                  {c.holder
+                    ? mine
+                      ? t('wardrobe.holderOpen')
+                      : t('wardrobe.holderLocked')
+                    : c.price === 0
+                      ? t('wardrobe.free')
+                      : mine
+                        ? t('wardrobe.owned')
+                        : t('wardrobe.price', { price: c.price })}
                 </span>
               </button>
-              {!mine && (
+              {!mine && !c.holder && (
                 <button
                   type="button"
                   className="small"
@@ -168,6 +173,7 @@ export function Wardrobe({ api, onGold }: { api: Api; onGold?: (gold: number) =>
           {notice.text}
         </p>
       )}
+      {slot === 'outfit' && <p className="muted small">{t('wardrobe.holderNote')}</p>}
       {!wearable && <p className="muted">{t('wardrobe.tryingOn')}</p>}
       <div className="row">
         <button type="button" disabled={busy || !changed || !wearable} onClick={() => void save()}>

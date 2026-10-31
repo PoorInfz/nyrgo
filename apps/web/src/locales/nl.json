@@ -307,7 +307,8 @@
       "hairColor": "Haarkleur",
       "top": "Kleding",
       "hat": "Hoed",
-      "accessory": "Accessoire"
+      "accessory": "Accessoire",
+      "outfit": "Outfit"
     },
     "free": "Gratis",
     "owned": "Van jou",
@@ -319,7 +320,10 @@
     "tryingOn": "Je past het: koop het om te kunnen opslaan.",
     "save": "Look opslaan",
     "undo": "Ongedaan maken",
-    "saved": "Look opgeslagen! Zo zie je eruit op de kaart."
+    "saved": "Look opgeslagen! Zo zie je eruit op de kaart.",
+    "holderOpen": "Holder",
+    "holderLocked": "Rang 3+",
+    "holderNote": "Holder-outfits zijn voor houders van de testtoken vanaf rang 3 (0,5 %). Je kunt ze hier passen; opslaan kan alleen met de rang."
   },
   "gym": {
     "why": "Kies een wezen en een moeilijkheid: de coach antwoordt met een van de zijne. Elk potje leert je wezen iets, en winst levert dorps-XP op. Maximaal {{n}} per dag.",
@@ -863,5 +867,26 @@
     "continue": "Op pad!",
     "failed": "Opslaan lukte niet. Probeer het opnieuw.",
     "later": "Later"
+  },
+  "holder": {
+    "title": "{{symbol}}-token (testnet)",
+    "why": "Een testtoken zonder waarde, op NEAR {{network}}. Houd hem in je gekoppelde NEAR-account: je rang telt het laagste saldo van de afgelopen {{days}} dagen, dus een rang begint {{days}} dagen nadat je hem bereikt.",
+    "noAccount": "Koppel hierboven een NEAR-account om een rang te krijgen.",
+    "notRead": "Saldo nog niet gelezen.",
+    "balance": "Saldo: {{n}} {{symbol}}",
+    "checked": "gelezen {{when}}",
+    "current": "Je rang: {{rank}}",
+    "none": "Nog geen rang actief.",
+    "next": "{{rank}} telt vanaf {{when}} als je de tokens tot dan houdt.",
+    "stale": "De saldi zijn een tijd niet gelezen; rangen staan stil tot dat weer gebeurt.",
+    "refresh": "Nu controleren",
+    "tableCaption": "Rangen en wat ze geven",
+    "colRank": "Rang",
+    "colAmount": "{{symbol}} in bezit",
+    "colPerks": "Voordelen",
+    "rank": "Rang {{n}} ({{share}})",
+    "boost": "+{{pct}} % NEAR per fooi",
+    "outfits": "holder-outfits",
+    "note": "De NEAR-bonus komt uit dezelfde dagelijkse beloningspot (hoogstens een kwart); is dat deel op, dan worden fooien zonder bonus betaald. Alleen testnet: niets hier heeft waarde."
   }
 }

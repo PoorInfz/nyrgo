@@ -307,7 +307,8 @@
       "hairColor": "Saç rengi",
       "top": "Kıyafet",
       "hat": "Şapka",
-      "accessory": "Aksesuar"
+      "accessory": "Aksesuar",
+      "outfit": "Kıyafet"
     },
     "free": "Ücretsiz",
     "owned": "Senin",
@@ -319,7 +320,10 @@
     "tryingOn": "Deniyorsun: kaydedebilmek için satın al.",
     "save": "Görünümü kaydet",
     "undo": "Geri al",
-    "saved": "Görünüm kaydedildi! Haritada böyle görüneceksin."
+    "saved": "Görünüm kaydedildi! Haritada böyle görüneceksin.",
+    "holderOpen": "Holder",
+    "holderLocked": "Rütbe 3+",
+    "holderNote": "Holder kıyafetleri rütbe 3 (%0,5) ve üstündeki test token sahipleri içindir. Burada deneyebilirsin; kaydetmek için rütbe gerekir."
   },
   "gym": {
     "why": "Bir yaratık ve zorluk seç: antrenör kendi yaratığıyla karşılık verir. Her maç yaratığına bir şey öğretir, galibiyetler kasaba XP'si kazandırır. Günde en fazla {{n}}.",
@@ -863,5 +867,26 @@
     "continue": "Haydi!",
     "failed": "Kaydedilemedi. Tekrar dene.",
     "later": "Sonra"
+  },
+  "holder": {
+    "title": "{{symbol}} token (testnet)",
+    "why": "NEAR {{network}} üzerinde değeri olmayan bir test token'ı. Bağlı NEAR hesabında tut: rütben son {{days}} gündeki en düşük bakiyeyi sayar, yani bir rütbe ulaştıktan {{days}} gün sonra başlar.",
+    "noAccount": "Rütbe almak için yukarıdan bir NEAR hesabı bağla.",
+    "notRead": "Bakiye henüz okunmadı.",
+    "balance": "Bakiye: {{n}} {{symbol}}",
+    "checked": "okundu: {{when}}",
+    "current": "Rütben: {{rank}}",
+    "none": "Henüz geçerli bir rütben yok.",
+    "next": "Token'ları o zamana kadar tutarsan {{rank}} {{when}} itibarıyla geçerli olur.",
+    "stale": "Bakiyeler bir süredir okunmadı; okunana kadar rütbeler duraklatıldı.",
+    "refresh": "Şimdi kontrol et",
+    "tableCaption": "Rütbeler ve sağladıkları",
+    "colRank": "Rütbe",
+    "colAmount": "Tutulan {{symbol}}",
+    "colPerks": "Avantajlar",
+    "rank": "Rütbe {{n}} ({{share}})",
+    "boost": "Bahşiş başına +%{{pct}} NEAR",
+    "outfits": "holder kıyafetleri",
+    "note": "NEAR bonusu aynı günlük ödül havuzundan gelir (en fazla dörtte biri); bu pay bitince bahşişler bonussuz ödenir. Yalnızca testnet: buradaki hiçbir şeyin değeri yok."
   }
 }

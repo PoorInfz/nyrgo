@@ -14,7 +14,11 @@ app.log.info(await syncContent(db), 'content synced');
 
 let boss: PgBoss | null = null;
 if (config.jobsEnabled) {
-  boss = await startJobs(config.databaseUrl, db, app.log, app.nftSyncer, app.tipChain);
+  boss = await startJobs(config.databaseUrl, db, app.log, app.nftSyncer, app.tipChain, {
+    rpc: app.nearRpc,
+    contract: config.near.token,
+    network: config.near.network,
+  });
 }
 
 const shutdown = async (signal: string): Promise<void> => {

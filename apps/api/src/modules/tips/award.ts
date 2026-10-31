@@ -1,5 +1,6 @@
 import type { PoolClient } from 'pg';
-import { DEFAULT_CONFIG, canUseWeb3, type AgeBand } from '@nyrgo/shared';
+import { DEFAULT_CONFIG, TOKEN, canUseWeb3, type AgeBand } from '@nyrgo/shared';
+import { rankOf } from '../holder/ranks.js';
 import { PLAYER_TZ_SQL } from '../progress/rewards.js';
 import { isAttested } from '../attest/routes.js';
 
@@ -21,6 +22,8 @@ export interface TipAward {
   id: string;
   amountNear: string;
   status: 'pending';
+  /** Percent added by the player's holder rank (0 when none, or when today's boost share is used up). */
+  boostPct: number;
 }
 
 /** "0.005" for 5 milliNEAR. */
@@ -85,23 +88,37 @@ export async function awardTip(
     return none('too_close');
   }
 
-  // take it out of today's budget (set by the payout job from the treasury's balance)
-  const amount = tipYocto();
-  const budget = await c.query(
-    `UPDATE tips_pool SET spent_yocto = spent_yocto + $1
-      WHERE day = (now() AT TIME ZONE 'UTC')::date AND spent_yocto + $1 <= budget_yocto`,
-    [amount.toString()],
-  );
-  if (budget.rowCount === 0) return none('pool_empty');
+  // a holder rank adds to the tip, within the share of today's budget kept for boosts
+  const base = tipYocto();
+  const rank = await rankOf(c, userId, opts.network);
+  let boostPct = rank.tier?.tipBoostPct ?? 0;
+  const take = async (pct: number) => {
+    const extra = (base * BigInt(pct)) / 100n;
+    const r = await c.query(
+      `UPDATE tips_pool
+          SET spent_yocto = spent_yocto + $1 + $2, boost_spent_yocto = boost_spent_yocto + $2
+        WHERE day = (now() AT TIME ZONE 'UTC')::date
+          AND spent_yocto + $1 + $2 <= budget_yocto
+          AND boost_spent_yocto + $2 <= floor(budget_yocto * $3)`,
+      [base.toString(), extra.toString(), TOKEN.boostShareOfBudget],
+    );
+    return r.rowCount ? base + extra : null;
+  };
+  let amount = await take(boostPct);
+  if (amount === null && boostPct > 0) {
+    boostPct = 0;
+    amount = await take(0);
+  }
+  if (amount === null) return none('pool_empty');
 
   const { rows: made } = await c.query<{ id: string }>(
-    `INSERT INTO tips (user_id, network, account_id, amount_yocto, geom, capture_id)
-     SELECT $1, $2, $3, $4, geom, $6 FROM spawns WHERE id = $5
+    `INSERT INTO tips (user_id, network, account_id, amount_yocto, geom, capture_id, boost_pct)
+     SELECT $1, $2, $3, $4, geom, $6, $7 FROM spawns WHERE id = $5
      RETURNING id`,
-    [userId, opts.network, u.account_id, amount.toString(), spawnId, captureId],
+    [userId, opts.network, u.account_id, amount.toString(), spawnId, captureId, boostPct],
   );
   return {
-    tip: { id: made[0]!.id, amountNear: nearString(amount), status: 'pending' },
+    tip: { id: made[0]!.id, amountNear: nearString(amount), status: 'pending', boostPct },
     reason: null,
   };
 }

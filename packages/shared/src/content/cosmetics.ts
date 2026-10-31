@@ -3,7 +3,7 @@
  * play), bought with Gold earned in the game. Price 0 means everyone has it from the start.
  */
 
-export type CosmeticSlot = 'skin' | 'hair' | 'hairColor' | 'top' | 'hat' | 'accessory';
+export type CosmeticSlot = 'skin' | 'hair' | 'hairColor' | 'top' | 'hat' | 'accessory' | 'outfit';
 
 export const COSMETIC_SLOTS: readonly CosmeticSlot[] = [
   'skin',
@@ -12,6 +12,7 @@ export const COSMETIC_SLOTS: readonly CosmeticSlot[] = [
   'top',
   'hat',
   'accessory',
+  'outfit',
 ] as const;
 
 export interface CosmeticDef {
@@ -23,6 +24,11 @@ export interface CosmeticDef {
   /** Main colour, and a second one for trims, where the piece has them. */
   color?: string;
   trim?: string;
+  /**
+   * A holder outfit: a whole pixel-art character worn over the explorer, not sold for Gold but
+   * unlocked by a token holder rank that includes outfits (testnet).
+   */
+  holder?: true;
 }
 
 const C = (
@@ -91,6 +97,35 @@ export const COSMETICS: readonly CosmeticDef[] = [
   C('acc_scarf', 'accessory', 90, 'Bufanda', 'Scarf', '#ef4a5b', '#ffcf4d'),
   C('acc_backpack', 'accessory', 120, 'Mochila', 'Backpack', '#22c96b', '#06222b'),
   C('acc_cape', 'accessory', 400, 'Capa', 'Cape', '#9b4ff5', '#ead9ff'),
+
+  // outfits: none is the explorer drawn from the pieces above; the rest are holder outfits
+  C('outfit_none', 'outfit', 0, 'Tu explorador', 'Your explorer'),
+  ...(
+    [
+      ['skin_cap', 'Gorra azul', 'Blue cap'],
+      ['skin_headphones', 'Cascos', 'Headphones'],
+      ['skin_spiky', 'Rayo', 'Bolt'],
+      ['skin_bluecoat', 'Abrigo azul', 'Blue coat'],
+      ['skin_witch', 'Bruja', 'Witch'],
+      ['skin_ranger', 'Explorador del bosque', 'Ranger'],
+      ['skin_knight', 'Caballero', 'Knight'],
+      ['skin_wizard', 'Mago', 'Wizard'],
+      ['skin_adventurer', 'Aventurera', 'Adventurer'],
+      ['skin_silver', 'Plata', 'Silver'],
+      ['skin_elf', 'Elfo', 'Elf'],
+      ['skin_shadow', 'Sombra', 'Shadow'],
+      ['skin_priestess', 'Sacerdotisa', 'Priestess'],
+      ['skin_casual', 'Paseante', 'Stroller'],
+      ['skin_strawhat', 'Sombrero de paja', 'Straw hat'],
+      ['skin_scientist', 'Científico', 'Scientist'],
+      ['skin_medic', 'Sanitaria', 'Medic'],
+      ['skin_farmer', 'Granjero', 'Farmer'],
+      ['skin_pink', 'Rosa', 'Pink'],
+      ['skin_chef', 'Chef', 'Chef'],
+      ['skin_officer', 'Agente', 'Officer'],
+      ['skin_office', 'Oficinista', 'Office worker'],
+    ] as const
+  ).map(([id, es, en]) => ({ ...C(id, 'outfit', 0, es, en), holder: true as const })),
 ];
 
 export const COSMETICS_BY_ID = new Map(COSMETICS.map((c) => [c.id, c]));
@@ -105,24 +140,33 @@ export const DEFAULT_AVATAR: AvatarLook = {
   top: 'top_tee_teal',
   hat: 'hat_none',
   accessory: 'acc_none',
+  outfit: 'outfit_none',
 };
 
-/** Why a look cannot be worn with these owned items, or null if it can. */
+/**
+ * Why a look cannot be worn with these owned items, or null if it can. Holder outfits need
+ * `holderOutfits`; a look from before outfits existed (no `outfit`) wears none.
+ */
 export function invalidLook(
   look: Record<string, unknown>,
   owned: ReadonlySet<string>,
+  holderOutfits = false,
 ): string | null {
   for (const slot of COSMETIC_SLOTS) {
-    const id = look[slot];
+    const id = look[slot] ?? (slot === 'outfit' ? 'outfit_none' : undefined);
     if (typeof id !== 'string') return `missing ${slot}`;
     const def = COSMETICS_BY_ID.get(id);
     if (!def || def.slot !== slot) return `unknown ${slot}`;
+    if (def.holder && !holderOutfits) return `holder outfit: ${id}`;
     if (def.price > 0 && !owned.has(id)) return `not owned: ${id}`;
   }
   if (Object.keys(look).some((k) => !(COSMETIC_SLOTS as readonly string[]).includes(k)))
     return 'unknown slot';
   return null;
 }
+
+/** The holder outfits, in display order. */
+export const HOLDER_OUTFITS: readonly CosmeticDef[] = COSMETICS.filter((c) => c.holder);
 
 /** A stored look, repaired: anything unknown falls back to the default for that slot. */
 export function normaliseLook(look: unknown): AvatarLook {

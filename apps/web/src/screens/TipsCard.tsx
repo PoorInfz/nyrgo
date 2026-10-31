@@ -43,7 +43,9 @@ export function TipsCard({ api }: { api: Api }) {
         <ul className="token-claims">
           {s.tips.map((x) => (
             <li key={x.id}>
-              {when(x.createdAt)} · {x.amountNear} NEAR · {t(`tips.status.${x.status}`)}
+              {when(x.createdAt)} · {x.amountNear} NEAR
+              {x.boostPct ? ` (${t('holder.boost', { pct: x.boostPct })})` : ''} ·{' '}
+              {t(`tips.status.${x.status}`)}
               {x.txHash && (
                 <>
                   {' · '}
