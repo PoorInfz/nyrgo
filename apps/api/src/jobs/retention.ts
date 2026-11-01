@@ -38,6 +38,10 @@ export interface RetentionReport {
   seasonRolled: number;
   /** Coarse catch marks for the website's globe, after 90 days. */
   captureMarksDeleted: number;
+  /** Days a player was active (playtest metrics), after 400 days. */
+  playerDaysDeleted: number;
+  /** Players' comments, a year after they were dealt with. */
+  feedbackDeleted: number;
 }
 
 async function batched(db: Db, sql: string, params: unknown[]): Promise<number> {
@@ -122,6 +126,15 @@ export async function runRetention(db: Db): Promise<RetentionReport> {
          SELECT id FROM capture_marks WHERE created_at < now() - interval '90 days' LIMIT ${BATCH})`,
       [],
     ),
+    playerDaysDeleted:
+      (await db.query(`DELETE FROM player_days WHERE day < (now() AT TIME ZONE 'UTC')::date - 400`))
+        .rowCount ?? 0,
+    feedbackDeleted:
+      (
+        await db.query(
+          `DELETE FROM feedback WHERE status = 'done' AND closed_at < now() - interval '365 days'`,
+        )
+      ).rowCount ?? 0,
     hubChatDeleted: await batched(
       db,
       `DELETE FROM hub_chat WHERE id IN (

@@ -800,7 +800,50 @@
       "hint": "The creature appears at the place for everyone, at this level. Write the reason above: it goes in the log.",
       "create": "Create event"
     },
-    "audit": "Latest actions"
+    "audit": "Latest actions",
+    "pt": {
+      "title": "Playtest",
+      "range": "Time range",
+      "days": "{{n}} days",
+      "players": "players",
+      "today": "played today",
+      "week": "played this week",
+      "daysPerPlayer": "days per player",
+      "catchesPerDay": "catches per player-day",
+      "openComments": "open comments",
+      "activeDaily": "Players a day",
+      "newDaily": "New players a day",
+      "catchesDaily": "Catches a day",
+      "retention": "Retention by day joined",
+      "cohort": "Joined",
+      "size": "Players",
+      "noData": "No data yet.",
+      "funnel": "First steps (players who joined in the last {{n}} days)",
+      "step": {
+        "joined": "Joined",
+        "starter": "Chose a starter",
+        "encounter": "Faced a creature",
+        "threw": "Threw a vault",
+        "caught": "Caught one",
+        "returned": "Came back another day",
+        "week": "Still playing a week later"
+      },
+      "minigame": "Capture mini-game",
+      "throwsLine": "{{throws}} throws · average score {{avg}} · {{perfect}} % perfect · {{rate}} % caught",
+      "skillHist": "Throws by score (%)",
+      "rarity": "Rarity",
+      "throws": "Throws",
+      "catchRate": "Caught",
+      "comments": "Comments from players",
+      "show": {
+        "open": "To read",
+        "done": "Dealt with"
+      },
+      "noComments": "No comments here.",
+      "played": "days played: {{n}}",
+      "note": "Note (optional)",
+      "done": "Done"
+    }
   },
   "fight": "Battle",
   "chooseFighter": "Who will battle?",
@@ -930,5 +973,29 @@
     "park": "Park",
     "historic": "Historic quarter",
     "culture": "Culture"
+  },
+  "feedback": {
+    "open": "Send a comment",
+    "title": "Tell us",
+    "intro": "You are one of the first to play nyrGo! Everything you tell us helps make it better.",
+    "kind": "What kind of comment",
+    "label": "Your comment",
+    "privacy": "We see your name, level, this screen, the app version and your browser. Never your location.",
+    "send": "Send",
+    "thanks": "Thank you! We read every comment.",
+    "another": "Send another",
+    "close": "Close",
+    "cat": {
+      "bug": "Bug",
+      "idea": "Idea",
+      "fun": "I liked it",
+      "other": "Other"
+    },
+    "hint": {
+      "bug": "What happened, and what did you expect?",
+      "idea": "What would you add or change?",
+      "fun": "What did you enjoy?",
+      "other": "Anything else on your mind"
+    }
   }
 }

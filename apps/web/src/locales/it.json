@@ -930,5 +930,29 @@
     "park": "Parco",
     "historic": "Centro storico",
     "culture": "Cultura"
+  },
+  "feedback": {
+    "open": "Invia un commento",
+    "title": "Raccontaci",
+    "intro": "Sei tra i primi a giocare a nyrGo!. Tutto quello che ci dici aiuta a migliorarlo.",
+    "kind": "Tipo di commento",
+    "label": "Il tuo commento",
+    "privacy": "Vediamo il tuo nome, il livello, questa schermata, la versione dell'app e il browser. Mai la tua posizione.",
+    "send": "Invia",
+    "thanks": "Grazie! Leggiamo ogni commento.",
+    "another": "Inviane un altro",
+    "close": "Chiudi",
+    "cat": {
+      "bug": "Errore",
+      "idea": "Idea",
+      "fun": "Mi è piaciuto",
+      "other": "Altro"
+    },
+    "hint": {
+      "bug": "Cos'è successo e cosa ti aspettavi?",
+      "idea": "Cosa aggiungeresti o cambieresti?",
+      "fun": "Cosa ti è piaciuto?",
+      "other": "Qualsiasi altra cosa"
+    }
   }
 }

@@ -26,6 +26,7 @@ import { Syncer } from './modules/nft/service.js';
 import { nearTipChain, type TipChain } from './modules/tips/chain.js';
 import { tipsRoutes } from './modules/tips/routes.js';
 import { holderRoutes } from './modules/holder/routes.js';
+import { feedbackRoutes } from './modules/feedback/routes.js';
 import { socialRoutes } from './modules/social/routes.js';
 import { leaderboardRoutes } from './modules/leaderboard/routes.js';
 import { publicRoutes } from './modules/public/routes.js';
@@ -204,6 +205,7 @@ export async function buildApp({
   await app.register(publicRoutes, { db });
   await app.register(duelRoutes, { db });
   await app.register(avatarRoutes, { db, network: config.near.network });
+  await app.register(feedbackRoutes, { db });
   await app.register(websocket, { options: { maxPayload: 4096 } });
   const hubLive: HubLive = { snapshot: () => ({ online: 0, rooms: {}, houses: 0 }) };
   await app.register(hubRoutes, {

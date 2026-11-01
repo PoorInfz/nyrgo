@@ -930,5 +930,29 @@
     "park": "Park",
     "historic": "Stare miasto",
     "culture": "Kultura"
+  },
+  "feedback": {
+    "open": "Wyślij komentarz",
+    "title": "Napisz nam",
+    "intro": "Jesteś jednym z pierwszych graczy nyrGo!. Wszystko, co nam napiszesz, pomaga ją ulepszyć.",
+    "kind": "Rodzaj komentarza",
+    "label": "Twój komentarz",
+    "privacy": "Widzimy twoją nazwę, poziom, ten ekran, wersję aplikacji i przeglądarkę. Nigdy twojej lokalizacji.",
+    "send": "Wyślij",
+    "thanks": "Dzięki! Czytamy każdy komentarz.",
+    "another": "Wyślij kolejny",
+    "close": "Zamknij",
+    "cat": {
+      "bug": "Błąd",
+      "idea": "Pomysł",
+      "fun": "Podobało mi się",
+      "other": "Inne"
+    },
+    "hint": {
+      "bug": "Co się stało i czego się spodziewałeś?",
+      "idea": "Co byś dodał lub zmienił?",
+      "fun": "Co ci się podobało?",
+      "other": "Cokolwiek chcesz nam przekazać"
+    }
   }
 }

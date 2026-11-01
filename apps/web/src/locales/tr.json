@@ -930,5 +930,29 @@
     "park": "Park",
     "historic": "Tarihi bölge",
     "culture": "Kültür"
+  },
+  "feedback": {
+    "open": "Yorum gönder",
+    "title": "Bize anlat",
+    "intro": "nyrGo!'yu ilk oynayanlardan birisin. Bize anlattığın her şey oyunu iyileştirmeye yardım eder.",
+    "kind": "Yorum türü",
+    "label": "Yorumun",
+    "privacy": "Adını, seviyeni, bu ekranı, uygulama sürümünü ve tarayıcını görürüz. Konumunu asla.",
+    "send": "Gönder",
+    "thanks": "Teşekkürler! Her yorumu okuyoruz.",
+    "another": "Bir tane daha gönder",
+    "close": "Kapat",
+    "cat": {
+      "bug": "Hata",
+      "idea": "Fikir",
+      "fun": "Beğendim",
+      "other": "Diğer"
+    },
+    "hint": {
+      "bug": "Ne oldu ve ne bekliyordun?",
+      "idea": "Neyi ekler ya da değiştirirdin?",
+      "fun": "Neyi beğendin?",
+      "other": "Söylemek istediğin başka bir şey"
+    }
   }
 }

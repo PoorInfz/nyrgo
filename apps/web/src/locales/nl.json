@@ -930,5 +930,29 @@
     "park": "Park",
     "historic": "Historisch centrum",
     "culture": "Cultuur"
+  },
+  "feedback": {
+    "open": "Reactie sturen",
+    "title": "Vertel het ons",
+    "intro": "Je bent een van de eersten die nyrGo! speelt. Alles wat je ons vertelt, helpt het beter te maken.",
+    "kind": "Soort reactie",
+    "label": "Je reactie",
+    "privacy": "We zien je naam, je level, dit scherm, de appversie en je browser. Nooit je locatie.",
+    "send": "Versturen",
+    "thanks": "Bedankt! We lezen elke reactie.",
+    "another": "Nog een sturen",
+    "close": "Sluiten",
+    "cat": {
+      "bug": "Fout",
+      "idea": "Idee",
+      "fun": "Vond ik leuk",
+      "other": "Anders"
+    },
+    "hint": {
+      "bug": "Wat gebeurde er, en wat verwachtte je?",
+      "idea": "Wat zou je toevoegen of veranderen?",
+      "fun": "Wat vond je leuk?",
+      "other": "Wat je ons verder wilt vertellen"
+    }
   }
 }

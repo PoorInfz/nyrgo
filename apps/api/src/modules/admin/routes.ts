@@ -7,6 +7,7 @@ import { withTx, type Db } from '../../db.js';
 import type { HubLive } from '../hub/routes.js';
 import { HttpProblem } from '../../http/problem.js';
 import { cancelEvent, createEvent } from '../events/service.js';
+import { playtestMetrics } from './metrics.js';
 
 /**
  * The admin API: a separate prefix (`/admin/v1`), separate credentials (bearer tokens from
@@ -62,6 +63,22 @@ const ReportCloseBody = Type.Object(
   { additionalProperties: false },
 );
 const NumIdParams = Type.Object({ id: Type.Integer({ minimum: 1 }) });
+const MetricsQuery = Type.Object(
+  { days: Type.Optional(Type.Integer({ minimum: 1, maximum: 90, default: 30 })) },
+  { additionalProperties: false },
+);
+const FeedbackQuery = Type.Object(
+  {
+    status: Type.Optional(
+      Type.Union([Type.Literal('open'), Type.Literal('done'), Type.Literal('all')]),
+    ),
+  },
+  { additionalProperties: false },
+);
+const FeedbackClose = Type.Object(
+  { note: Type.Optional(Type.String({ maxLength: 500 })) },
+  { additionalProperties: false },
+);
 const ListQuery = Type.Object(
   {
     status: Type.Optional(Type.Union([Type.Literal('open'), Type.Literal('closed')])),
@@ -129,6 +146,61 @@ export async function adminRoutes(
   });
 
   app.get('/admin/v1/me', async (req) => ({ name: req.admin!.name, role: req.admin!.role }));
+
+  // ------------------------------------------------------------------ playtest
+
+  /** Actives, retention, first-steps funnel, the capture mini-game and comments, over N days. */
+  app.get<{ Querystring: Static<typeof MetricsQuery> }>(
+    '/admin/v1/metrics',
+    { schema: { querystring: MetricsQuery } },
+    async (req) => playtestMetrics(db, req.query.days ?? 30),
+  );
+
+  /** Players' comments from the game, newest first. */
+  app.get<{ Querystring: Static<typeof FeedbackQuery> }>(
+    '/admin/v1/feedback',
+    { schema: { querystring: FeedbackQuery } },
+    async (req) => {
+      const status = req.query.status ?? 'open';
+      const { rows } = await db.query(
+        `SELECT f.id::int AS id, f.category, f.body, f.screen, f.build, f.agent, f.lang, f.status,
+                f.note, f.created_at AS "createdAt", f.closed_at AS "closedAt",
+                p.display_name AS player, p.level,
+                (SELECT count(*)::int FROM player_days d WHERE d.user_id = f.user_id) AS "daysPlayed"
+           FROM feedback f JOIN players p ON p.user_id = f.user_id
+          WHERE $1 = 'all' OR f.status = $1
+          ORDER BY f.created_at DESC LIMIT 200`,
+        [status],
+      );
+      return { feedback: rows };
+    },
+  );
+
+  /** Marks a comment as dealt with, with an optional note. */
+  app.post<{ Params: Static<typeof NumIdParams>; Body: Static<typeof FeedbackClose> }>(
+    '/admin/v1/feedback/:id/close',
+    { schema: { params: NumIdParams, body: FeedbackClose } },
+    async (req) => {
+      const admin = req.admin!;
+      return withTx(db, async (c) => {
+        const { rows } = await c.query(
+          `UPDATE feedback SET status = 'done', note = $2, closed_at = now()
+            WHERE id = $1 AND status = 'open' RETURNING id`,
+          [req.params.id, req.body.note ?? null],
+        );
+        if (!rows[0]) throw new HttpProblem('not_found', 'No open comment with that id');
+        await audit(
+          c,
+          admin,
+          'feedback.close',
+          { id: req.params.id },
+          null,
+          req.body.note || 'dealt with',
+        );
+        return { closed: true };
+      });
+    },
+  );
 
   /** Open (or closed) review cases with the signals behind them. No personal data beyond the display name. */
   app.get<{ Querystring: Static<typeof ListQuery> }>(

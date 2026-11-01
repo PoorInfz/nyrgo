@@ -1,5 +1,6 @@
 import { lazy, Suspense, type ReactNode, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Feedback } from '../components/Feedback';
 import type { Api, Profile } from '../api';
 import { Home } from './Home';
 import { Play } from './Play';
@@ -96,6 +97,7 @@ export function Game({
 
   return (
     <div className="stack">
+      {!inTown && <Feedback api={api} screen={tab} />}
       {inTown && (
         <Suspense fallback={<div className="hub" role="status" aria-label={t('loading')} />}>
           <HubScreen api={api} apiUrl={api.baseUrl} onExit={() => setInTown(false)} />

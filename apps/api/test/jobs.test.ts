@@ -108,6 +108,8 @@ describe.skipIf(!TEST_DB_URL)('scheduled jobs', () => {
         listingsExpired: 0,
         seasonRolled: 0,
         captureMarksDeleted: 0,
+        playerDaysDeleted: 0,
+        feedbackDeleted: 0,
       });
     });
   });

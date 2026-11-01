@@ -653,6 +653,13 @@ export function createApi(baseUrl: string) {
     inventory: () => call<{ items: InventoryItem[] }>('GET', '/v1/me/inventory'),
     myCreatures: () => call<{ creatures: OwnedCreature[] }>('GET', '/v1/me/creatures'),
     myDex: () => call<{ entries: DexEntry[] }>('GET', '/v1/me/dex'),
+    sendFeedback: (f: {
+      category: 'bug' | 'idea' | 'fun' | 'other';
+      body: string;
+      screen?: string;
+      build?: string;
+      lang?: string;
+    }) => call<{ id: number }>('POST', '/v1/feedback', f),
     pickStarter: (creatureId: string) =>
       call<OwnedCreature>('POST', '/v1/me/starter', { creatureId }),
     startBattle: (encounterId: string, creature: string) =>

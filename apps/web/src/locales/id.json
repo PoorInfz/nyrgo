@@ -930,5 +930,29 @@
     "park": "Taman",
     "historic": "Kawasan bersejarah",
     "culture": "Budaya"
+  },
+  "feedback": {
+    "open": "Kirim komentar",
+    "title": "Ceritakan pada kami",
+    "intro": "Kamu salah satu pemain pertama nyrGo!. Semua yang kamu ceritakan membantu membuatnya lebih baik.",
+    "kind": "Jenis komentar",
+    "label": "Komentarmu",
+    "privacy": "Kami melihat namamu, level, layar ini, versi aplikasi, dan browsermu. Tidak pernah lokasimu.",
+    "send": "Kirim",
+    "thanks": "Terima kasih! Kami membaca setiap komentar.",
+    "another": "Kirim lagi",
+    "close": "Tutup",
+    "cat": {
+      "bug": "Bug",
+      "idea": "Ide",
+      "fun": "Saya suka",
+      "other": "Lainnya"
+    },
+    "hint": {
+      "bug": "Apa yang terjadi, dan apa yang kamu harapkan?",
+      "idea": "Apa yang akan kamu tambah atau ubah?",
+      "fun": "Apa yang kamu sukai?",
+      "other": "Hal lain yang ingin kamu sampaikan"
+    }
   }
 }

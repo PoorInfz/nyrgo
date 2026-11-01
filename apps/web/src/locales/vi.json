@@ -930,5 +930,29 @@
     "park": "Công viên",
     "historic": "Khu phố cổ",
     "culture": "Văn hóa"
+  },
+  "feedback": {
+    "open": "Gửi góp ý",
+    "title": "Kể cho chúng tôi",
+    "intro": "Bạn là một trong những người chơi nyrGo! đầu tiên. Mọi điều bạn kể đều giúp trò chơi tốt hơn.",
+    "kind": "Loại góp ý",
+    "label": "Góp ý của bạn",
+    "privacy": "Chúng tôi thấy tên, cấp độ, màn hình này, phiên bản ứng dụng và trình duyệt của bạn. Không bao giờ thấy vị trí của bạn.",
+    "send": "Gửi",
+    "thanks": "Cảm ơn! Chúng tôi đọc mọi góp ý.",
+    "another": "Gửi thêm",
+    "close": "Đóng",
+    "cat": {
+      "bug": "Lỗi",
+      "idea": "Ý tưởng",
+      "fun": "Tôi thích",
+      "other": "Khác"
+    },
+    "hint": {
+      "bug": "Chuyện gì đã xảy ra và bạn mong đợi điều gì?",
+      "idea": "Bạn muốn thêm hoặc thay đổi gì?",
+      "fun": "Bạn thích điều gì?",
+      "other": "Bất cứ điều gì khác"
+    }
   }
 }

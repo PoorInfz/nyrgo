@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { AdminPlaytest } from './AdminPlaytest';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -208,6 +209,8 @@ export function Admin({ apiUrl }: { apiUrl: string }) {
         </label>
         {error && <p role="alert">{error}</p>}
       </section>
+
+      <AdminPlaytest call={call} />
 
       <section className="card stack" aria-labelledby="cases-title">
         <h3 id="cases-title">{t('admin.cases', { count: cases.length })}</h3>

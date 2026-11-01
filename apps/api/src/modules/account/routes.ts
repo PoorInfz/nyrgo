@@ -114,6 +114,10 @@ export async function accountRoutes(
         globeMarks: await q(
           `SELECT definition_id, cell_lat, cell_lng, created_at FROM capture_marks WHERE user_id = $1 ORDER BY id`,
         ),
+        activeDays: await q(`SELECT day FROM player_days WHERE user_id = $1 ORDER BY day`),
+        feedback: await q(
+          `SELECT category, body, screen, status, created_at FROM feedback WHERE user_id = $1 ORDER BY id`,
+        ),
         tokenBalances: await q(
           `SELECT account_id, taken_at, balance::text AS balance FROM holder_snapshots WHERE user_id = $1 ORDER BY taken_at`,
         ),
@@ -192,6 +196,8 @@ export async function accountRoutes(
           `DELETE FROM dex_entries WHERE user_id = $1`,
           `DELETE FROM encounters WHERE user_id = $1`,
           `DELETE FROM poi_visits WHERE user_id = $1`,
+          `DELETE FROM player_days WHERE user_id = $1`,
+          `DELETE FROM feedback WHERE user_id = $1`,
         ]) {
           await c.query(sql, [id]);
         }

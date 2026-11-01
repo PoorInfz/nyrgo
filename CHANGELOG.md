@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.45.0 — 2026-11-01 — Ready for a playtest
+
+- **💬 Comments from the game**: a button in the top corner of every screen opens a short form
+  (bug, idea, "I liked it", other). The screen, app version, browser and language go with the
+  comment; never the location. In all 19 languages. At most 20 a day per player.
+- **Admin → Playtest**:
+  - players, actives today and this week, days per player, catches per player-day;
+  - daily charts of players, new players and catches;
+  - retention by day joined (D1, D3, D7);
+  - first-steps funnel (starter, first creature, first throw, first catch, came back, a week
+    later);
+  - capture mini-game stats (score distribution, % perfect, catch rate by rarity);
+  - the comments, which can be marked done with a note.
+- The API now records one row per player per active day (`player_days`, kept 400 days,
+  backfilled from existing activity) so retention can be measured. Both new tables are in the
+  data export and deleted with the account. See docs/PLAYTEST.md.
+- Fixed: the holder rank and tips tests no longer clear each other's tables when run in
+  parallel.
+
 ## 0.44.0 — 2026-10-31 — Tune the vault, and habitats
 
 - **New capture mini-game, "Tune the vault"**, replacing the shrinking ring:

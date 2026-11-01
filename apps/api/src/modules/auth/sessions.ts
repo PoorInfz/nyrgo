@@ -75,6 +75,23 @@ export function clearSessionCookie(reply: FastifyReply, config: AppConfig): void
   });
 }
 
+/** Players already counted as active today, so the day is written once per player and process. */
+const seenToday = new Map<string, string>();
+
+/** Counts the player as active today (UTC) for the playtest metrics: one row a day, no more. */
+async function markActiveToday(db: Db, userId: string): Promise<void> {
+  const day = new Date().toISOString().slice(0, 10);
+  if (seenToday.get(userId) === day) return;
+  if (seenToday.size > 50_000) seenToday.clear();
+  seenToday.set(userId, day);
+  await db
+    .query(`INSERT INTO player_days (user_id, day) VALUES ($1, $2) ON CONFLICT DO NOTHING`, [
+      userId,
+      day,
+    ])
+    .catch(() => seenToday.delete(userId)); // metrics never block a request
+}
+
 /** Resolves the session cookie into `request.auth` (null when absent, invalid or expired). */
 export function sessionLoader(db: Db) {
   return async (req: FastifyRequest): Promise<void> => {
@@ -96,6 +113,7 @@ export function sessionLoader(db: Db) {
     );
     const row = rows[0];
     if (row) {
+      await markActiveToday(db, row.user_id);
       req.auth = {
         userId: row.user_id,
         sessionId: row.id,

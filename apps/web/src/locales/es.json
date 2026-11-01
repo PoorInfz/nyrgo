@@ -800,7 +800,50 @@
       "hint": "La criatura aparece en el lugar para todos, a este nivel. Escribe el motivo arriba: queda en el registro.",
       "create": "Crear evento"
     },
-    "audit": "Últimas acciones"
+    "audit": "Últimas acciones",
+    "pt": {
+      "title": "Prueba de juego",
+      "range": "Periodo",
+      "days": "{{n}} días",
+      "players": "jugadores",
+      "today": "han jugado hoy",
+      "week": "han jugado esta semana",
+      "daysPerPlayer": "días por jugador",
+      "catchesPerDay": "capturas por jugador y día",
+      "openComments": "comentarios sin leer",
+      "activeDaily": "Jugadores por día",
+      "newDaily": "Jugadores nuevos por día",
+      "catchesDaily": "Capturas por día",
+      "retention": "Retención por día de alta",
+      "cohort": "Alta",
+      "size": "Jugadores",
+      "noData": "Aún no hay datos.",
+      "funnel": "Primeros pasos (jugadores dados de alta en los últimos {{n}} días)",
+      "step": {
+        "joined": "Se dieron de alta",
+        "starter": "Eligieron inicial",
+        "encounter": "Se encontraron con una criatura",
+        "threw": "Lanzaron una bóveda",
+        "caught": "Capturaron una",
+        "returned": "Volvieron otro día",
+        "week": "Siguen jugando una semana después"
+      },
+      "minigame": "Minijuego de captura",
+      "throwsLine": "{{throws}} lanzamientos · puntuación media {{avg}} · {{perfect}} % perfectos · {{rate}} % capturados",
+      "skillHist": "Lanzamientos por puntuación (%)",
+      "rarity": "Rareza",
+      "throws": "Lanzamientos",
+      "catchRate": "Capturados",
+      "comments": "Comentarios de los jugadores",
+      "show": {
+        "open": "Por leer",
+        "done": "Atendidos"
+      },
+      "noComments": "No hay comentarios aquí.",
+      "played": "días jugados: {{n}}",
+      "note": "Nota (opcional)",
+      "done": "Hecho"
+    }
   },
   "fight": "Combatir",
   "chooseFighter": "¿Quién combate?",
@@ -930,5 +973,29 @@
     "park": "Parque",
     "historic": "Casco histórico",
     "culture": "Cultura"
+  },
+  "feedback": {
+    "open": "Enviar un comentario",
+    "title": "Cuéntanos",
+    "intro": "Eres de los primeros en jugar a nyrGo!. Todo lo que nos cuentes ayuda a mejorarlo.",
+    "kind": "Tipo de comentario",
+    "label": "Tu comentario",
+    "privacy": "Vemos tu nombre, tu nivel, esta pantalla, la versión de la app y tu navegador. Nunca tu ubicación.",
+    "send": "Enviar",
+    "thanks": "¡Gracias! Leemos todos los comentarios.",
+    "another": "Enviar otro",
+    "close": "Cerrar",
+    "cat": {
+      "bug": "Fallo",
+      "idea": "Idea",
+      "fun": "Me ha gustado",
+      "other": "Otro"
+    },
+    "hint": {
+      "bug": "¿Qué ha pasado y qué esperabas?",
+      "idea": "¿Qué añadirías o cambiarías?",
+      "fun": "¿Qué te ha gustado?",
+      "other": "Lo que quieras contarnos"
+    }
   }
 }

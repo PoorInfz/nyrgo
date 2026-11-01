@@ -930,5 +930,29 @@
     "park": "Parc",
     "historic": "Quartier historique",
     "culture": "Culture"
+  },
+  "feedback": {
+    "open": "Envoyer un commentaire",
+    "title": "Dis-nous tout",
+    "intro": "Tu es parmi les premiers à jouer à nyrGo!. Tout ce que tu nous dis aide à l'améliorer.",
+    "kind": "Type de commentaire",
+    "label": "Ton commentaire",
+    "privacy": "Nous voyons ton nom, ton niveau, cet écran, la version de l'appli et ton navigateur. Jamais ta position.",
+    "send": "Envoyer",
+    "thanks": "Merci ! Nous lisons tous les commentaires.",
+    "another": "En envoyer un autre",
+    "close": "Fermer",
+    "cat": {
+      "bug": "Bug",
+      "idea": "Idée",
+      "fun": "J'ai aimé",
+      "other": "Autre"
+    },
+    "hint": {
+      "bug": "Que s'est-il passé, et qu'attendais-tu ?",
+      "idea": "Qu'ajouterais-tu ou changerais-tu ?",
+      "fun": "Qu'as-tu aimé ?",
+      "other": "Tout ce que tu veux nous dire"
+    }
   }
 }

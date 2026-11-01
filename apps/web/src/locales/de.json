@@ -930,5 +930,29 @@
     "park": "Park",
     "historic": "Altstadt",
     "culture": "Kultur"
+  },
+  "feedback": {
+    "open": "Kommentar senden",
+    "title": "Erzähl uns",
+    "intro": "Du gehörst zu den Ersten, die nyrGo! spielen. Alles, was du uns sagst, hilft, es besser zu machen.",
+    "kind": "Art des Kommentars",
+    "label": "Dein Kommentar",
+    "privacy": "Wir sehen deinen Namen, dein Level, diesen Bildschirm, die App-Version und deinen Browser. Nie deinen Standort.",
+    "send": "Senden",
+    "thanks": "Danke! Wir lesen jeden Kommentar.",
+    "another": "Noch einen senden",
+    "close": "Schließen",
+    "cat": {
+      "bug": "Fehler",
+      "idea": "Idee",
+      "fun": "Hat mir gefallen",
+      "other": "Sonstiges"
+    },
+    "hint": {
+      "bug": "Was ist passiert, und was hast du erwartet?",
+      "idea": "Was würdest du hinzufügen oder ändern?",
+      "fun": "Was hat dir gefallen?",
+      "other": "Was du uns sonst sagen möchtest"
+    }
   }
 }
