@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Api, LeaderboardBoard, Leaderboard } from '../api';
-import { Avatar } from '../avatar/Avatar';
+import { Portrait } from '../avatar/Avatar3D';
 
 const BOARDS: LeaderboardBoard[] = ['level', 'captures', 'species', 'arena'];
 
@@ -62,7 +62,7 @@ export function Leaderboards({ api }: { api: Api }) {
                 <li key={r.id} className={r.me ? 'me' : ''}>
                   <span className={`lb-rank r${r.rank}`}>{r.rank}</span>
                   <span className="lb-av" aria-hidden="true">
-                    <Avatar look={r.look} size={34} />
+                    <Portrait look={r.look} close size={34} />
                   </span>
                   <span className="lb-name">
                     <strong>{r.name}</strong>

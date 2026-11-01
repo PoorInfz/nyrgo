@@ -3,7 +3,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import type { Map as MlMap, GeoJSONSource, Marker } from 'maplibre-gl';
 import { DEFAULT_AVATAR, type AvatarLook, type Rarity } from '@nyrgo/shared';
 import { RARITY_FX } from '../starter/rarity';
-import { Avatar } from '../avatar/Avatar';
+import { LiveExplorer } from '../avatar/Avatar3D';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { LocationFix } from '../geo/location';
 import { BIOME_COLORS, OSM_ATTRIBUTION, buildStyle, poisToGeoJSON, type MapPoi } from './style';
@@ -224,7 +224,9 @@ export default function MapView({
 
   // Draw the explorer whenever its look, gait or direction changes.
   useEffect(() => {
-    me.current?.root.render(<Avatar look={look} walking={walking} facing={facing} size={52} />);
+    me.current?.root.render(
+      <LiveExplorer look={look} walking={walking} facing={facing} size={52} />,
+    );
   }, [ready, look, walking, facing]);
 
   // Walk to each new fix: glide there, legs moving, facing the way it goes.

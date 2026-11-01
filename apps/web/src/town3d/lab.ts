@@ -5,6 +5,22 @@ import { loadLibrary } from './assets';
 import { Figure } from './explorer';
 
 const q = new URLSearchParams(location.search);
+if (q.get('set') === 'portraits') {
+  const { portrait } = await import('./stage');
+  const { COSMETICS: C, DEFAULT_AVATAR: D } = await import('@nyrgo/shared');
+  await portrait(D, false);
+  const t0 = performance.now();
+  const outfitIds = C.filter((c) => c.slot === 'outfit').map((c) => c.id);
+  await Promise.all(outfitIds.map((o) => portrait({ ...D, outfit: o }, false)));
+  console.warn(
+    'portraits',
+    outfitIds.length,
+    'ms each',
+    ((performance.now() - t0) / outfitIds.length).toFixed(1),
+  );
+  document.title = 'done';
+  throw new Error('stop');
+}
 if (q.get('set') === 'square') {
   await import('./lab-square');
   throw new Error('stop');

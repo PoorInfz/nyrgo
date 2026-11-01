@@ -138,16 +138,18 @@ let shared: {
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
+  /** One figure re-dressed for each picture (cloning a rig per picture is the slow part). */
+  fig: Figure;
 } | null = null;
 let queue: Promise<unknown> = Promise.resolve();
-const portraits = new Map<string, Promise<string>>();
+const portraits = new Map<string, Promise<ImageBitmap>>();
 const SIZE = 160;
 
 /**
- * A still picture of a look (a PNG data URL), facing the viewer a little turned: the
+ * A still picture of a look (a bitmap to draw on a canvas), facing the viewer a little turned: the
  * wardrobe's item tiles. `close` frames the head and shoulders (hair, hats, glasses).
  */
-export function portrait(look: AvatarLook, close: boolean): Promise<string> {
+export function portrait(look: AvatarLook, close: boolean): Promise<ImageBitmap> {
   const key = `${close ? 'c' : 'f'}|${JSON.stringify(look)}`;
   let p = portraits.get(key);
   if (!p) {
@@ -166,13 +168,14 @@ export function portrait(look: AvatarLook, close: boolean): Promise<string> {
         renderer.setSize(SIZE, SIZE, false);
         const scene = new THREE.Scene();
         lights(scene);
-        shared = { renderer, scene, camera: new THREE.PerspectiveCamera(30, 1, 0.1, 50) };
+        const fig = new Figure(lib, look);
+        fig.root.rotation.y = 0.35;
+        scene.add(fig.root);
+        shared = { renderer, scene, camera: new THREE.PerspectiveCamera(30, 1, 0.1, 50), fig };
       }
-      const { renderer, scene, camera } = shared;
-      const fig = new Figure(lib, look);
-      fig.root.rotation.y = 0.35;
-      scene.add(fig.root);
-      fig.update(0.4, performance.now(), 0);
+      const { renderer, scene, camera, fig } = shared;
+      fig.setLook(look);
+      fig.pose(0.4);
       if (close) {
         camera.position.set(0, 2.45, 4.1);
         camera.lookAt(0, 2.0, 0);
@@ -181,12 +184,92 @@ export function portrait(look: AvatarLook, close: boolean): Promise<string> {
         camera.lookAt(0, 1.3, 0);
       }
       renderer.render(scene, camera);
-      const url = renderer.domElement.toDataURL('image/png');
-      fig.dispose();
-      return url;
-    })) as Promise<string>;
+      // a bitmap, not an encoded image: copying the pixels is quick, encoding a PNG is not
+      const pic = await createImageBitmap(renderer.domElement);
+      return pic;
+    })) as Promise<ImageBitmap>;
     portraits.set(key, p);
     p.catch(() => portraits.delete(key));
   }
   return p;
+}
+
+/**
+ * The explorer walking on the map: a small transparent 3D view inside the map's marker. It walks
+ * or stands, turned the way it goes, and draws at most 30 times a second (and not at all while
+ * the page is hidden), to spare the battery.
+ */
+export class LiveFigure {
+  private renderer: THREE.WebGLRenderer;
+  private scene = new THREE.Scene();
+  private camera = new THREE.PerspectiveCamera(28, 1, 0.1, 40);
+  private fig: Figure;
+  private raf = 0;
+  private last = 0;
+  private drawn = 0;
+  private walking = false;
+  private yaw = 0.6;
+  private yawTo = 0.6;
+  private disposed = false;
+
+  static async create(canvas: HTMLCanvasElement, look: AvatarLook): Promise<LiveFigure> {
+    return new LiveFigure(canvas, await loadFigures(), look);
+  }
+
+  private constructor(
+    private canvas: HTMLCanvasElement,
+    lib: Figures,
+    look: AvatarLook,
+  ) {
+    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    lights(this.scene);
+    const shadow = new THREE.Mesh(
+      new THREE.CircleGeometry(0.7, 24),
+      new THREE.MeshBasicMaterial({ color: '#06222b', transparent: true, opacity: 0.3 }),
+    );
+    shadow.rotation.x = -Math.PI / 2;
+    shadow.position.y = 0.01;
+    this.scene.add(shadow);
+    this.fig = new Figure(lib, look);
+    this.scene.add(this.fig.root);
+    this.camera.position.set(0, 3.2, 7.6);
+    this.camera.lookAt(0, 1.25, 0);
+    const r = canvas.getBoundingClientRect();
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    this.renderer.setSize(Math.max(1, r.width), Math.max(1, r.height), false);
+    this.camera.aspect = Math.max(1, r.width) / Math.max(1, r.height);
+    this.camera.updateProjectionMatrix();
+    this.raf = requestAnimationFrame(this.frame);
+  }
+
+  setLook(look: AvatarLook) {
+    this.fig.setLook(look);
+  }
+
+  /** Walking or standing, turned to the left or the right (three-quarters towards the viewer). */
+  setMotion(walking: boolean, facing: 'left' | 'right') {
+    this.walking = walking;
+    this.yawTo = facing === 'left' ? -0.9 : 0.9;
+  }
+
+  private frame = (now: number) => {
+    if (this.disposed) return;
+    this.raf = requestAnimationFrame(this.frame);
+    if (document.hidden || now - this.drawn < 32) return;
+    const dt = this.last ? Math.min(0.1, (now - this.last) / 1000) : 0;
+    this.last = now;
+    this.drawn = now;
+    this.yaw += (this.yawTo - this.yaw) * Math.min(1, dt * 8);
+    this.fig.root.rotation.y = this.yaw;
+    this.fig.update(dt, now, this.walking ? 1.9 : 0);
+    this.renderer.render(this.scene, this.camera);
+  };
+
+  dispose() {
+    this.disposed = true;
+    cancelAnimationFrame(this.raf);
+    this.fig.dispose();
+    this.renderer.dispose();
+  }
 }

@@ -3440,3 +3440,12 @@ button.hub-round {
     animation: none;
   }
 }
+
+.live-explorer {
+  display: block;
+  position: relative;
+}
+
+.live-explorer canvas {
+  display: block;
+}

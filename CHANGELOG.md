@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.49.0 — 2026-11-01 — The explorer in 3D everywhere
+
+- **On the map**, your explorer is the 3D figure: it walks when you move, stands when you stop and
+  turns the way you go. It draws at most 30 times a second and not at all in the background.
+- **In the rankings**, every player is a 3D portrait of their look.
+- **Wardrobe portraits about four times faster**: one figure is re-dressed for each picture
+  and the picture is copied as a bitmap instead of encoded as a PNG (~9 ms each in a software
+  renderer, down from ~39 ms).
+- The drawn 2D explorer remains only where 3D cannot run.
+
 ## 0.48.0 — 2026-11-01 — 3D only, and a 3D wardrobe
 
 - **The town is 3D only**: the 2D/3D button is gone. The drawn 2D town now appears only on a device

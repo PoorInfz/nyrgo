@@ -220,6 +220,13 @@ export class Figure {
     this.emoting = { clip, until: now + action.getClip().duration * 1000 - 150 };
   }
 
+  /** Holds the idle pose at `t` seconds (for still pictures). */
+  pose(t: number) {
+    this.emoting = null;
+    this.play('Idle', 0);
+    this.mixer.setTime(t);
+  }
+
   /** Moves the animation on; `speed` is how fast the figure walks, in units per second. */
   update(dt: number, now: number, speed: number) {
     if (this.emoting && (speed > 0.3 || now > this.emoting.until)) this.emoting = null;

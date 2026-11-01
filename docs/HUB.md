@@ -248,3 +248,5 @@ state as the 2D one (the same map, collisions, doors, positions, chat and emotes
 - **Wardrobe** (0.48.0, `avatar/Avatar3D.tsx`, `town3d/stage.ts`): the explorer on a turning 3D
   stage and 3D portraits on the item tiles, drawn one by one with a single shared renderer and
   cached per look. Falls back to the drawn explorer without WebGL (and in tests).
+- **Map and rankings** (0.49.0): the map marker is a small live 3D view (`LiveFigure`) and the
+  rankings use the same portraits as the wardrobe. Portraits reuse one figure and return bitmaps.
