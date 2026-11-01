@@ -289,7 +289,11 @@
       "chat_muted": "운영자에 의해 채팅이 일시 중지되었습니다.",
       "chat_rate_limited": "조금 천천히 보내세요.",
       "chat_repeat": "방금 같은 말을 했어요."
-    }
+    },
+    "mode3d": "마을을 3D로 보기",
+    "mode2d": "마을을 2D로 보기",
+    "loading3d": "3D 불러오는 중…",
+    "failed3d": "이 기기에서 3D 마을을 불러올 수 없어 2D로 표시합니다."
   },
   "wardrobe": {
     "title": "내 탐험가",

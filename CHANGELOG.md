@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.46.0 — 2026-11-01 — The square in 3D
+
+- **The town's square in 3D**, with each player's own look:
+  - The same square, buildings, doors, paths and collisions as before, now with low-poly
+    buildings, trees, lamps, a fountain with water drops, a glowing portal and hills around the
+    town. The light follows the time of day; lamps glow in the evening.
+  - Every player is a 3D figure built from their wardrobe: hair style and colour, skin tone, top,
+    hat, glasses, scarf, backpack and cape; holder outfits too (knight, wizard, witch, ranger,
+    chef…). Figures walk, run, turn and play an animation for each emote. Names, speech and emote
+    bubbles stay on top; companions follow as their drawn picture standing in the world.
+  - **2D / 3D** button in the town's top bar (remembered). Building interiors stay in 2D. Devices
+    without WebGL 2 keep the 2D town; weak devices drop shadows and draw fewer players.
+  - In all 19 languages.
+- Models: KayKit packs by Kay Lousberg (CC0); see docs/HUB.md §10.
+
 ## 0.45.0 — 2026-11-01 — Ready for a playtest
 
 - **💬 Comments from the game**: a button in the top corner of every screen opens a short form

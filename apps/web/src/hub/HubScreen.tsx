@@ -10,6 +10,29 @@ import { DecoratePanel, HousesPanel } from './House';
 import { MarketPanel } from './Market';
 import { EMOTE_ICONS, Town, newBody } from './engine';
 import { connectHub, hubSocketUrl, type HubConnection, type HubEvent, type HubStatus } from './net';
+import type { TownView3D } from '../town3d/TownView3D';
+
+const PREF_3D = 'nyrgo.town3d';
+
+/** Whether this device can draw the square in 3D at all (WebGL 2). */
+function webgl2(): boolean {
+  try {
+    return !!document.createElement('canvas').getContext('webgl2');
+  } catch {
+    return false;
+  }
+}
+
+/** The player's choice of 2D or 3D for the square; 3D by default where it can run. */
+function prefers3d(): boolean {
+  let saved: string | null = null;
+  try {
+    saved = localStorage.getItem(PREF_3D);
+  } catch {
+    // no storage (private mode): the default
+  }
+  return saved === '0' ? false : webgl2();
+}
 
 interface ChatLine {
   mid: string;
@@ -68,6 +91,11 @@ export default function HubScreen({
   const [house, setHouse] = useState<HouseView | null>(null);
   const [myId, setMyId] = useState<string | null>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
+  /** The square in 3D: its own canvas under the 2D one, which then only carries the names. */
+  const canvas3d = useRef<HTMLCanvasElement>(null);
+  const view3d = useRef<TownView3D | null>(null);
+  const [want3d, setWant3d] = useState(prefers3d);
+  const [ready3d, setReady3d] = useState(false);
   const conn = useRef<HubConnection | null>(null);
   const me = useRef<{ name: string; level: number; companion: string | null } | null>(null);
   const [status, setStatus] = useState<HubStatus>('connecting');
@@ -232,6 +260,51 @@ export default function HubScreen({
     };
   }, [api, apiUrl, getTown, say, loadHouse]);
 
+  // the 3D square: loaded on demand (its code and models are fetched only by those who use it)
+  useEffect(() => {
+    if (!want3d || roomId !== 'plaza' || view3d.current) return;
+    const el = canvas3d.current;
+    if (!el) return;
+    let live = true;
+    import('../town3d/TownView3D')
+      .then((m) => m.TownView3D.create(el, getTown()))
+      .then((v) => {
+        if (!live) return v.dispose();
+        view3d.current = v;
+        setReady3d(true);
+      })
+      .catch(() => {
+        if (!live) return;
+        setWant3d(false);
+        say('hub.failed3d');
+      });
+    return () => {
+      live = false;
+    };
+  }, [want3d, roomId, getTown, say]);
+  useEffect(
+    () => () => {
+      view3d.current?.dispose();
+      view3d.current = null;
+    },
+    [],
+  );
+
+  function toggle3d() {
+    const next = !want3d;
+    try {
+      localStorage.setItem(PREF_3D, next ? '1' : '0');
+    } catch {
+      // not remembered, still switched
+    }
+    if (!next) {
+      view3d.current?.dispose();
+      view3d.current = null;
+      setReady3d(false);
+    }
+    setWant3d(next);
+  }
+
   // my look can change in the wardrobe; keep the drawn one in step
   useEffect(() => {
     const b = getTown().me();
@@ -314,6 +387,8 @@ export default function HubScreen({
     let raf = 0;
     let last = performance.now();
     let nearId: string | null = null;
+    /** The 3D view last given the screen's size. */
+    let sized: TownView3D | null = null;
     const size = { w: 0, h: 0, dpr: 1 };
     const resize = () => {
       const r = el.getBoundingClientRect();
@@ -323,6 +398,7 @@ export default function HubScreen({
       el.width = Math.round(r.width * size.dpr);
       el.height = Math.round(r.height * size.dpr);
       town.camera.zoom = Math.max(1, Math.min(2.4, Math.min(r.width / 430, r.height / 560)));
+      view3d.current?.resize(r.width, r.height, size.dpr);
     };
     resize();
     const ro = new ResizeObserver(resize);
@@ -333,10 +409,20 @@ export default function HubScreen({
       const moved = town.update(dt, now);
       const b = town.me();
       if (b && (moved || !b.moving)) conn.current?.move(b.x, b.y, b.facing, b.moving);
-      town.follow(size.w, size.h);
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, el.width, el.height);
-      town.draw(ctx, size.w, size.h, size.dpr);
+      const v = view3d.current;
+      if (v && town.map.id === 'plaza') {
+        if (sized !== v) {
+          v.resize(size.w, size.h, size.dpr);
+          sized = v;
+        }
+        v.render(now);
+        v.drawOverlay(ctx, size.dpr, town.meId);
+      } else {
+        town.follow(size.w, size.h);
+        town.draw(ctx, size.w, size.h, size.dpr);
+      }
       const n = town.nearby();
       if ((n?.id ?? null) !== nearId) {
         nearId = n?.id ?? null;
@@ -392,6 +478,12 @@ export default function HubScreen({
 
   return (
     <div className="hub" role="dialog" aria-modal="true" aria-label={t('hub.title')}>
+      <canvas
+        ref={canvas3d}
+        className="hub-canvas hub-canvas-3d"
+        hidden={!(ready3d && roomId === 'plaza')}
+        aria-hidden="true"
+      />
       <canvas ref={canvas} className="hub-canvas" aria-label={t('hub.canvasLabel')} role="img" />
 
       <header className="hub-top">
@@ -403,8 +495,22 @@ export default function HubScreen({
                 : t('hub.room.houseAny')
               : t(`hub.room.${roomId}`)}
           </strong>
-          <span className={`hub-status ${status}`}>{statusText}</span>
+          <span className={`hub-status ${status}`}>
+            {statusText}
+            {want3d && !ready3d && roomId === 'plaza' && ` · ${t('hub.loading3d')}`}
+          </span>
         </div>
+        {roomId === 'plaza' && (
+          <button
+            type="button"
+            className="secondary small hub-mode"
+            aria-pressed={want3d}
+            aria-label={want3d ? t('hub.mode2d') : t('hub.mode3d')}
+            onClick={toggle3d}
+          >
+            {want3d ? '2D' : '3D'}
+          </button>
+        )}
         <button
           type="button"
           className="secondary small"

@@ -289,7 +289,11 @@
       "chat_muted": "La tua chat è sospesa per ora da un moderatore.",
       "chat_rate_limited": "Rallenta un po’.",
       "chat_repeat": "L’hai appena detto."
-    }
+    },
+    "mode3d": "Mostra il paese in 3D",
+    "mode2d": "Mostra il paese in 2D",
+    "loading3d": "caricamento 3D…",
+    "failed3d": "Il paese in 3D non si è caricato su questo dispositivo: lo vedi in 2D."
   },
   "wardrobe": {
     "title": "Il tuo esploratore",

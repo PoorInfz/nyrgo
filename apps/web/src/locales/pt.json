@@ -289,7 +289,11 @@
       "chat_muted": "Seu chat foi pausado por um moderador.",
       "chat_rate_limited": "Vá com calma.",
       "chat_repeat": "Você acabou de dizer isso."
-    }
+    },
+    "mode3d": "Ver a vila em 3D",
+    "mode2d": "Ver a vila em 2D",
+    "loading3d": "a carregar 3D…",
+    "failed3d": "A vila em 3D não carregou neste dispositivo: vês em 2D."
   },
   "wardrobe": {
     "title": "Seu explorador",

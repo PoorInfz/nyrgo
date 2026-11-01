@@ -1,0 +1,11 @@
+3D models in this folder
+
+explorer.glb and town.glb are built (tools/town3d-assets.mts) from these KayKit asset packs,
+created and distributed by Kay Lousberg (www.kaylousberg.com):
+
+  - KayKit : Character Pack : Adventurers 1.0
+  - KayKit : Medieval Hexagon Pack 1.0
+  - KayKit : City Builder Bits 1.0
+
+License: Creative Commons Zero, CC0 (http://creativecommons.org/publicdomain/zero/1.0/).
+Free to use in personal, educational and commercial projects. Thank you, Kay.

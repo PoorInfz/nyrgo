@@ -289,7 +289,11 @@
       "chat_muted": "你的聊天已被管理员暂时禁用。",
       "chat_rate_limited": "慢一点哦。",
       "chat_repeat": "你刚说过这句话。"
-    }
+    },
+    "mode3d": "以3D显示小镇",
+    "mode2d": "以2D显示小镇",
+    "loading3d": "正在加载3D…",
+    "failed3d": "此设备无法加载3D小镇：以2D显示。"
   },
   "wardrobe": {
     "title": "你的探险者",

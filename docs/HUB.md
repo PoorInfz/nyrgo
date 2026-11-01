@@ -193,3 +193,43 @@ The sheet works, but a sheet drawn for slicing would look better and unlock the 
 - **Ground tiles** that tile seamlessly (grass, path, stone, water edges) at 32 × 32 px.
 - **Building interiors**: gym, arena and a house floor, plus furniture pieces one by one.
 - **Original** creatures and characters only — no ball emblems or look-alikes of another game.
+
+## 10. The square in 3D (2026-11-01)
+
+Playtesters did not like the flat town, so the **square** (Central Plaza) is now drawn in 3D by
+default on devices with WebGL 2. Nothing changed on the server: the 3D view reads the same `Town`
+state as the 2D one (the same map, collisions, doors, positions, chat and emotes), so the two can
+be switched at any moment with the **2D / 3D** button in the town's top bar (remembered on the
+device). Building interiors (gym, arena, houses) are still drawn in 2D.
+
+- **Models**: KayKit packs by Kay Lousberg (kaylousberg.com), **CC0** (free for commercial use,
+  no attribution required; credited here and in `apps/web/public/town3d/LICENSE.txt` anyway):
+  - _Character Pack: Adventurers_ — four bodies, five heads, hats and capes on one shared rig,
+    with the animations the town plays (idle, walk, run and one per emote);
+  - _Medieval Hexagon Pack_ — the buildings, trees, hills and props;
+  - _City Builder Bits_ — street lamps, benches, bushes.
+    The fountain, portal, notice board, monument and the hats, glasses, scarf and backpack the
+    packs do not have are modelled in code (`town3d/props.ts`, `town3d/plaza.ts`).
+- **Build** (`tools/town3d-assets.mts`): takes only what the town uses from the packs (no
+  weapons, 12 of the 76 animations), compresses it (meshopt) and writes
+  `apps/web/public/town3d/explorer.glb` (~0.9 MB) and `town.glb` (~0.65 MB). The packs are not
+  kept in the repository; the script's header says how to fetch them.
+- **Figures** (`town3d/looks.ts`, `town3d/explorer.ts`): each look picks pack parts — the top's
+  kind gives the body (a robe or coat the mage's, armour the knight's, tees and tunics the
+  rogue's, overalls the barbarian's), the hair style a head (plus a bun, spikes or curls made in
+  code) — and repaints the texture cells for skin, hair, top, trousers, hat and cape. Holder
+  outfits use their own colours and hats (the knight's helmet, the mage's hat, the hood…).
+- **The square** (`town3d/plaza.ts`): every building, tree and prop of the 2D map becomes a
+  model standing on the same spot (buildings sized to their solid footprint, doors at the front),
+  plus the countryside around it. Static models are merged by material into a few dozen draw
+  calls. Lamps glow in the evening; the light follows the player's local time (day, dusk, night).
+- **Performance**: the 3D code (~175 kB gzipped) and models (~1.5 MB) load only when the square is
+  opened in 3D, and the models are cached by the service worker. At most 30 players are drawn as
+  figures (the nearest); weak devices (≤ 4 cores or ≤ 3 GB) and any device that keeps dropping
+  frames switch to no shadows, fewer pixels and 16 figures. If WebGL fails, the town falls back to
+  2D with a message.
+- **Development**: `apps/web/town3d-lab.html` (Vite dev server only, not in the build) shows the
+  figures (`?set=outfits`, `?clip=all`) and the square with sample players (`?set=square`,
+  `&phase=night`).
+- **Not done yet**: interiors in 3D, companions as 3D models (they are their drawn sprite standing
+  in the world), camera zoom and rotation, and measured frame rates on real phones.

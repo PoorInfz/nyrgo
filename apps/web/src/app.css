@@ -3382,3 +3382,18 @@ button.hub-round {
 .pt-cat {
   font-weight: 700;
 }
+
+/* The square in 3D: its canvas under the 2D one, which then only carries names and speech */
+.hub-canvas[hidden] {
+  display: none;
+}
+
+.hub-canvas-3d {
+  image-rendering: auto;
+}
+
+.hub-top .hub-mode {
+  margin-left: auto;
+  min-width: 44px;
+  font-weight: 800;
+}

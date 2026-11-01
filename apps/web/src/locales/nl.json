@@ -289,7 +289,11 @@
       "chat_muted": "Je chat is voorlopig gepauzeerd door een moderator.",
       "chat_rate_limited": "Doe even rustig aan.",
       "chat_repeat": "Dat zei je net al."
-    }
+    },
+    "mode3d": "Toon het dorp in 3D",
+    "mode2d": "Toon het dorp in 2D",
+    "loading3d": "3D laden…",
+    "failed3d": "Het 3D-dorp kon niet laden op dit apparaat: je ziet het in 2D."
   },
   "wardrobe": {
     "title": "Je ontdekker",

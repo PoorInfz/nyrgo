@@ -289,7 +289,11 @@
       "chat_muted": "Your chat is paused for now by a moderator.",
       "chat_rate_limited": "Slow down a little.",
       "chat_repeat": "You just said that."
-    }
+    },
+    "mode3d": "Show the town in 3D",
+    "mode2d": "Show the town in 2D",
+    "loading3d": "loading 3D…",
+    "failed3d": "The 3D town could not load on this device: showing it in 2D."
   },
   "wardrobe": {
     "title": "Your explorer",

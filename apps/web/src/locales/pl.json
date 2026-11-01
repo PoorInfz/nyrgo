@@ -289,7 +289,11 @@
       "chat_muted": "Moderator tymczasowo wstrzymał Twój czat.",
       "chat_rate_limited": "Zwolnij trochę.",
       "chat_repeat": "Właśnie to napisałeś."
-    }
+    },
+    "mode3d": "Pokaż miasteczko w 3D",
+    "mode2d": "Pokaż miasteczko w 2D",
+    "loading3d": "ładowanie 3D…",
+    "failed3d": "Miasteczko 3D nie wczytało się na tym urządzeniu: widzisz je w 2D."
   },
   "wardrobe": {
     "title": "Twój odkrywca",

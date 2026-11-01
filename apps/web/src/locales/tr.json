@@ -289,7 +289,11 @@
       "chat_muted": "Sohbetin bir moderatör tarafından şimdilik durduruldu.",
       "chat_rate_limited": "Biraz yavaşla.",
       "chat_repeat": "Bunu az önce yazdın."
-    }
+    },
+    "mode3d": "Kasabayı 3B göster",
+    "mode2d": "Kasabayı 2B göster",
+    "loading3d": "3B yükleniyor…",
+    "failed3d": "3B kasaba bu cihazda yüklenemedi: 2B gösteriliyor."
   },
   "wardrobe": {
     "title": "Kaşifin",

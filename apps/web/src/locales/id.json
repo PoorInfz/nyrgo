@@ -289,7 +289,11 @@
       "chat_muted": "Obrolanmu sedang dijeda oleh moderator.",
       "chat_rate_limited": "Pelan-pelan sedikit.",
       "chat_repeat": "Kamu baru saja mengatakan itu."
-    }
+    },
+    "mode3d": "Tampilkan kota dalam 3D",
+    "mode2d": "Tampilkan kota dalam 2D",
+    "loading3d": "memuat 3D…",
+    "failed3d": "Kota 3D tidak bisa dimuat di perangkat ini: ditampilkan dalam 2D."
   },
   "wardrobe": {
     "title": "Penjelajahmu",

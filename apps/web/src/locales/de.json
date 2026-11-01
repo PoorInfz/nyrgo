@@ -289,7 +289,11 @@
       "chat_muted": "Dein Chat wurde vorerst von einem Moderator pausiert.",
       "chat_rate_limited": "Mach mal etwas langsamer.",
       "chat_repeat": "Das hast du gerade schon gesagt."
-    }
+    },
+    "mode3d": "Stadt in 3D zeigen",
+    "mode2d": "Stadt in 2D zeigen",
+    "loading3d": "3D wird geladen…",
+    "failed3d": "Die 3D-Stadt konnte auf diesem Gerät nicht geladen werden: Anzeige in 2D."
   },
   "wardrobe": {
     "title": "Dein Entdecker",

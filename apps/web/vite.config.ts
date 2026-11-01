@@ -41,6 +41,15 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
+            // The 3D town's models: fetched the first time someone opens the square in 3D.
+            urlPattern: /\/town3d\/.*\.glb$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'town3d',
+              expiration: { maxEntries: 8, maxAgeSeconds: 60 * 60 * 24 * 90 },
+            },
+          },
+          {
             urlPattern: /\/creatures\/.*\.webp$/,
             handler: 'CacheFirst',
             options: {

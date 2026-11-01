@@ -432,7 +432,7 @@ export class Town {
   }
 }
 
-function roundRect(
+export function roundRect(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -449,7 +449,7 @@ function roundRect(
   ctx.closePath();
 }
 
-function wrap(ctx: CanvasRenderingContext2D, text: string, max: number): string[] {
+export function wrap(ctx: CanvasRenderingContext2D, text: string, max: number): string[] {
   const words = text.split(' ');
   const lines: string[] = [];
   let line = '';
