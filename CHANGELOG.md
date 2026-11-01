@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.48.0 — 2026-11-01 — 3D only, and a 3D wardrobe
+
+- **The town is 3D only**: the 2D/3D button is gone. The drawn 2D town now appears only on a device
+  that cannot run 3D (no WebGL 2, or 3D failed to start, with a message); while the 3D town or a
+  building's furniture loads, the screen stays dark instead of showing the 2D town.
+- **The wardrobe in 3D**: your explorer stands on a turning stage (drag to turn it) and cheers when
+  you try something on; every item tile is a 3D portrait of you wearing it (head and shoulders for
+  skin, hair and hats; the whole explorer for clothes, accessories and outfits). Only the figures'
+  models load for it (~0.9 MB, cached), not the town.
+
 ## 0.47.0 — 2026-11-01 — Turn the camera, walk inside in 3D
 
 - **Camera**: drag to turn it around your explorer, pinch or use the mouse wheel to zoom (keys

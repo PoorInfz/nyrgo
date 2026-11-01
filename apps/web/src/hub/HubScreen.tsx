@@ -14,24 +14,13 @@ import type { TownView3D } from '../town3d/TownView3D';
 
 const PREF_3D = 'nyrgo.town3d';
 
-/** Whether this device can draw the square in 3D at all (WebGL 2). */
+/** Whether this device can draw the town in 3D at all (WebGL 2). */
 function webgl2(): boolean {
   try {
     return !!document.createElement('canvas').getContext('webgl2');
   } catch {
     return false;
   }
-}
-
-/** The player's choice of 2D or 3D for the square; 3D by default where it can run. */
-function prefers3d(): boolean {
-  let saved: string | null = null;
-  try {
-    saved = localStorage.getItem(PREF_3D);
-  } catch {
-    // no storage (private mode): the default
-  }
-  return saved === '0' ? false : webgl2();
 }
 
 interface ChatLine {
@@ -94,7 +83,12 @@ export default function HubScreen({
   /** The square in 3D: its own canvas under the 2D one, which then only carries the names. */
   const canvas3d = useRef<HTMLCanvasElement>(null);
   const view3d = useRef<TownView3D | null>(null);
-  const [want3d, setWant3d] = useState(prefers3d);
+  /**
+   * The town is 3D only. The 2D drawing is kept for devices that cannot run it (no WebGL 2, or
+   * the 3D view failed to start): `want3d` is false only then.
+   */
+  const [want3d, setWant3d] = useState(webgl2);
+  const loading3d = useRef(want3d);
   /** Whether the room on screen is drawn in 3D right now (a building's models may be loading). */
   const [drawing3d, setDrawing3d] = useState(false);
   const conn = useRef<HubConnection | null>(null);
@@ -283,6 +277,7 @@ export default function HubScreen({
       })
       .catch(() => {
         if (!live) return;
+        loading3d.current = false;
         setWant3d(false);
         say('hub.failed3d');
       });
@@ -297,20 +292,6 @@ export default function HubScreen({
     },
     [],
   );
-
-  function toggle3d() {
-    const next = !want3d;
-    try {
-      localStorage.setItem(PREF_3D, next ? '1' : '0');
-    } catch {
-      // not remembered, still switched
-    }
-    if (!next) {
-      view3d.current?.dispose();
-      view3d.current = null;
-    }
-    setWant3d(next);
-  }
 
   // my look can change in the wardrobe; keep the drawn one in step
   useEffect(() => {
@@ -441,6 +422,10 @@ export default function HubScreen({
         }
         v.render(now);
         v.drawOverlay(ctx, size.dpr, town.meId);
+      } else if (loading3d.current) {
+        // the 3D town (or a building's furniture) is on its way: a dark screen, not the 2D town
+        ctx.fillStyle = '#0b1230';
+        ctx.fillRect(0, 0, el.width, el.height);
       } else {
         town.follow(size.w, size.h);
         town.draw(ctx, size.w, size.h, size.dpr);
@@ -568,15 +553,6 @@ export default function HubScreen({
             {want3d && !drawing3d && ` · ${t('hub.loading3d')}`}
           </span>
         </div>
-        <button
-          type="button"
-          className="secondary small hub-mode"
-          aria-pressed={want3d}
-          aria-label={want3d ? t('hub.mode2d') : t('hub.mode3d')}
-          onClick={toggle3d}
-        >
-          {want3d ? '2D' : '3D'}
-        </button>
         <button
           type="button"
           className="secondary small"

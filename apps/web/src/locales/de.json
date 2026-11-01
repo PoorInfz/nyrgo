@@ -290,8 +290,6 @@
       "chat_rate_limited": "Mach mal etwas langsamer.",
       "chat_repeat": "Das hast du gerade schon gesagt."
     },
-    "mode3d": "Stadt in 3D zeigen",
-    "mode2d": "Stadt in 2D zeigen",
     "loading3d": "3D wird geladen…",
     "failed3d": "Die 3D-Stadt konnte auf diesem Gerät nicht geladen werden: Anzeige in 2D.",
     "cameraHint": "Ziehen dreht die Kamera; mit zwei Fingern oder dem Mausrad zoomen (Tasten Q/R und +/−)."

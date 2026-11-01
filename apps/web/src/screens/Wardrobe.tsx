@@ -8,10 +8,13 @@ import {
   type CosmeticSlot,
 } from '@nyrgo/shared';
 import { ApiError, type Api, type AvatarState } from '../api';
-import { Avatar } from '../avatar/Avatar';
+import { ExplorerStage, Portrait } from '../avatar/Avatar3D';
 import { setLook } from '../avatar/store';
 
 type Lang = 'es' | 'en';
+
+/** Slots whose tiles show the head and shoulders (the rest show the whole explorer). */
+const CLOSE_UP = new Set<CosmeticSlot>(['skin', 'hair', 'hairColor', 'hat']);
 
 /**
  * The explorer's wardrobe and the cosmetics shop: try any piece on, buy the ones you like with
@@ -113,7 +116,7 @@ export function Wardrobe({ api, onGold }: { api: Api; onGold?: (gold: number) =>
   return (
     <div className="stack">
       <div className="wardrobe-stage">
-        <Avatar look={draft} walking size={120} title={t('wardrobe.preview')} />
+        <ExplorerStage look={draft} label={t('wardrobe.preview')} />
         <p className="gold-line" aria-label={t('wardrobe.goldLabel', { gold: state.gold })}>
           {t('wardrobe.gold', { gold: state.gold })}
         </p>
@@ -139,7 +142,7 @@ export function Wardrobe({ api, onGold }: { api: Api; onGold?: (gold: number) =>
                 aria-pressed={wearing}
                 onClick={() => setDraft({ ...draft, [slot]: c.id })}
               >
-                <Avatar look={{ ...draft, [slot]: c.id }} size={56} />
+                <Portrait look={{ ...draft, [slot]: c.id }} close={CLOSE_UP.has(slot)} size={72} />
                 <span className="wardrobe-name">{c.name[lang]}</span>
                 <span className="muted small">
                   {c.holder

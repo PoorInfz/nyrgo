@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { clone as cloneRig } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import type { AvatarLook } from '@nyrgo/shared';
-import type { Library } from './assets';
+import type { Figures as Library } from './assets';
 import { cellColors, recipeFor, type Char, type Recipe } from './looks';
 import { extras, proceduralHat } from './props';
 

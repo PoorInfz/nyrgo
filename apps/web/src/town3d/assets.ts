@@ -7,6 +7,9 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
  * Lousberg): loaded once per session and shared by every figure and building.
  */
 
+/** The figures' parts, rig, animations and textures (what an explorer is built from). */
+export type Figures = Pick<Library, 'parts' | 'rig' | 'clips' | 'textures'>;
+
 export interface Library {
   /** Body parts by mesh name (Knight_Head, Mage_Body, …), each as loaded. */
   parts: Map<string, THREE.Mesh>;
@@ -31,13 +34,25 @@ export function loadLibrary(): Promise<Library> {
   return loading;
 }
 
+let figures: Promise<Figures> | null = null;
+
+/** Only the figures (the wardrobe needs no town). */
+export function loadFigures(): Promise<Figures> {
+  figures ??= new GLTFLoader()
+    .setMeshoptDecoder(MeshoptDecoder)
+    .loadAsync(`${BASE}explorer.glb`)
+    .then(explorerParts)
+    .catch((e: unknown) => {
+      figures = null;
+      throw e;
+    });
+  return figures;
+}
+
 async function load(): Promise<Library> {
   const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
-  const [explorer, town] = await Promise.all([
-    loader.loadAsync(`${BASE}explorer.glb`),
-    loader.loadAsync(`${BASE}town.glb`),
-  ]);
-  return { ...explorerParts(explorer), town: townModels(town) };
+  const [f, town] = await Promise.all([loadFigures(), loader.loadAsync(`${BASE}town.glb`)]);
+  return { ...f, town: townModels(town) };
 }
 
 function explorerParts(gltf: GLTF) {

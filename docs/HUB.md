@@ -197,10 +197,9 @@ The sheet works, but a sheet drawn for slicing would look better and unlock the 
 ## 10. The square in 3D (2026-11-01)
 
 Playtesters did not like the flat town, so the **square** (Central Plaza) is now drawn in 3D by
-default on devices with WebGL 2. Nothing changed on the server: the 3D view reads the same `Town`
-state as the 2D one (the same map, collisions, doors, positions, chat and emotes), so the two can
-be switched at any moment with the **2D / 3D** button in the town's top bar (remembered on the
-device). Since 0.47.0 the buildings' insides are in 3D too.
+on devices with WebGL 2 (since 0.48.0 there is no 2D/3D switch: the 2D drawing only appears on a
+device that cannot run 3D). Nothing changed on the server: the 3D view reads the same `Town`
+state as the 2D one (the same map, collisions, doors, positions, chat and emotes). Since 0.47.0 the buildings' insides are in 3D too.
 
 - **Models**: KayKit packs by Kay Lousberg (kaylousberg.com), **CC0** (free for commercial use,
   no attribution required; credited here and in `apps/web/public/town3d/LICENSE.txt` anyway):
@@ -246,3 +245,6 @@ device). Since 0.47.0 the buildings' insides are in 3D too.
   furniture file (`interior.glb`, ~0.35 MB) is fetched the first time someone walks into a building.
 - **Not done yet**: companions as 3D models (they are their drawn sprite standing in the world),
   and measured frame rates on real phones.
+- **Wardrobe** (0.48.0, `avatar/Avatar3D.tsx`, `town3d/stage.ts`): the explorer on a turning 3D
+  stage and 3D portraits on the item tiles, drawn one by one with a single shared renderer and
+  cached per look. Falls back to the drawn explorer without WebGL (and in tests).

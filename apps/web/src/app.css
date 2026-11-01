@@ -3392,8 +3392,51 @@ button.hub-round {
   image-rendering: auto;
 }
 
-.hub-top .hub-mode {
-  margin-left: auto;
-  min-width: 44px;
-  font-weight: 800;
+/* The wardrobe in 3D: the explorer on a turning stage, and 3D portraits on the tiles */
+.wardrobe-stage {
+  padding-top: 8px;
+  background: radial-gradient(ellipse at 50% 35%, #3a3a8a 0%, #17153f 70%);
+}
+
+.explorer-stage {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  display: grid;
+  place-items: center;
+}
+
+.explorer-stage canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+  /* a sideways drag turns the explorer; scrolling the page still works */
+  touch-action: pan-y;
+}
+
+.explorer-stage canvas:active {
+  cursor: grabbing;
+}
+
+.portrait3d {
+  display: block;
+  border-radius: 12px;
+  background: radial-gradient(ellipse at 50% 40%, #e8eeff 0%, #c9d2f0 75%);
+}
+
+.portrait3d.loading {
+  animation: portrait-wait 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes portrait-wait {
+  to {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portrait3d.loading {
+    animation: none;
+  }
 }

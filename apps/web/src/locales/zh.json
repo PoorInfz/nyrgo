@@ -290,8 +290,6 @@
       "chat_rate_limited": "慢一点哦。",
       "chat_repeat": "你刚说过这句话。"
     },
-    "mode3d": "以3D显示小镇",
-    "mode2d": "以2D显示小镇",
     "loading3d": "正在加载3D…",
     "failed3d": "此设备无法加载3D小镇：以2D显示。",
     "cameraHint": "拖动旋转镜头;双指捏合或滚轮缩放(按键 Q/R 和 +/−)。"

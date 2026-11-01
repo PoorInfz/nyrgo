@@ -290,8 +290,6 @@
       "chat_rate_limited": "Ralentis un peu.",
       "chat_repeat": "Tu viens de le dire."
     },
-    "mode3d": "Voir la ville en 3D",
-    "mode2d": "Voir la ville en 2D",
     "loading3d": "chargement 3D…",
     "failed3d": "La ville en 3D n'a pas pu se charger sur cet appareil : affichage en 2D.",
     "cameraHint": "Glisse pour tourner la caméra ; pince ou utilise la molette pour zoomer (touches Q/R et +/−)."
