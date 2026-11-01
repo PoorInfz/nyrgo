@@ -44,6 +44,7 @@ function partsOf(r: Recipe): string[] {
     `${r.legs}_LegLeft`,
     `${r.legs}_LegRight`,
   ];
+  if (r.hair) parts.push(`${r.hair}_Head`);
   if (r.hat && /^(Knight|Mage|Barbarian)_/.test(r.hat)) parts.push(r.hat);
   if (r.cape) parts.push(`${r.body}_Cape`);
   return parts;
@@ -172,5 +173,25 @@ describe('the 3D town', () => {
     const me = town.me()!;
     expect(me.x).toBeLessThan(900 - 20);
     expect(Math.abs(me.y - 290)).toBeLessThan(1);
+  });
+
+  it('gives every hair style its own shape', () => {
+    const shapes = new Set(
+      bySlot('hair').map((hair) => {
+        const r = recipeFor({ ...DEFAULT_AVATAR, hair });
+        const x = r.extras;
+        return JSON.stringify([
+          r.head,
+          r.hair,
+          x.bun,
+          x.spikes,
+          x.curls,
+          x.long,
+          x.tail,
+          x.stubble,
+        ]);
+      }),
+    );
+    expect(shapes.size).toBe(bySlot('hair').length);
   });
 });

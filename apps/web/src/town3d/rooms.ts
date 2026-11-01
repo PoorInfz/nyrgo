@@ -355,7 +355,9 @@ function pixels(img: CanvasImageSource): ImageData {
 }
 
 const hslOf = (d: ImageData, i: number, out: { h: number; s: number; l: number }) =>
-  new THREE.Color(d.data[i]! / 255, d.data[i + 1]! / 255, d.data[i + 2]! / 255).getHSL(out);
+  new THREE.Color()
+    .setRGB(d.data[i]! / 255, d.data[i + 1]! / 255, d.data[i + 2]! / 255, THREE.SRGBColorSpace)
+    .getHSL(out, THREE.SRGBColorSpace);
 
 /** The main colour's hue of a mesh: the most used saturated colour under its UVs (not wood). */
 function mainHue(mesh: THREE.Mesh, d: ImageData, flipY: boolean): number | null {
@@ -381,7 +383,7 @@ const tinted = new Map<string, THREE.Material>();
  * how light it was. The pack's models share one texture, so the result is a new material.
  */
 function tint(o: THREE.Object3D, to: string) {
-  const t = new THREE.Color(to).getHSL({ h: 0, s: 0, l: 0 });
+  const t = new THREE.Color(to).getHSL({ h: 0, s: 0, l: 0 }, THREE.SRGBColorSpace);
   o.traverse((x) => {
     const m = x as THREE.Mesh;
     if (!m.isMesh) return;
@@ -397,14 +399,20 @@ function tint(o: THREE.Object3D, to: string) {
       const data = new ImageData(new Uint8ClampedArray(base.data), 128, 128);
       const hsl = { h: 0, s: 0, l: 0 };
       const px = new THREE.Color();
+      const rgb = { r: 0, g: 0, b: 0 };
       for (let i = 0; i < data.data.length; i += 4) {
         hslOf(base, i, hsl);
         const dh = Math.min(Math.abs(hsl.h - hue), 1 - Math.abs(hsl.h - hue));
         if (dh < 0.06 && hsl.s > 0.25) {
-          px.setHSL(t.h, t.s, Math.min(0.92, Math.max(0.08, t.l + (hsl.l - 0.5) * 0.6)));
-          data.data[i] = px.r * 255;
-          data.data[i + 1] = px.g * 255;
-          data.data[i + 2] = px.b * 255;
+          px.setHSL(
+            t.h,
+            t.s,
+            Math.min(0.92, Math.max(0.08, t.l + (hsl.l - 0.5) * 0.6)),
+            THREE.SRGBColorSpace,
+          ).getRGB(rgb, THREE.SRGBColorSpace);
+          data.data[i] = rgb.r * 255;
+          data.data[i + 1] = rgb.g * 255;
+          data.data[i + 2] = rgb.b * 255;
         }
       }
       const c = document.createElement('canvas');

@@ -62,8 +62,8 @@ export class FigureStage {
     this.fig = new Figure(lib, look);
     this.fig.root.traverse((o) => (o.castShadow = true));
     this.scene.add(this.fig.root);
-    this.camera.position.set(0, 2.1, 6.1);
-    this.camera.lookAt(0, 1.35, 0);
+    this.camera.position.set(0, 2.3, 6.6);
+    this.camera.lookAt(0, 1.15, 0);
     this.resize();
     canvas.addEventListener('pointerdown', this.down);
     canvas.addEventListener('pointermove', this.move);
@@ -143,7 +143,8 @@ let shared: {
 } | null = null;
 let queue: Promise<unknown> = Promise.resolve();
 const portraits = new Map<string, Promise<ImageBitmap>>();
-const SIZE = 160;
+/** Portrait size in pixels: sharp on a 3× phone screen at the tiles' 72 px. */
+const SIZE = 224;
 
 /**
  * A still picture of a look (a bitmap to draw on a canvas), facing the viewer a little turned: the
@@ -169,20 +170,33 @@ export function portrait(look: AvatarLook, close: boolean): Promise<ImageBitmap>
         const scene = new THREE.Scene();
         lights(scene);
         const fig = new Figure(lib, look);
-        fig.root.rotation.y = 0.35;
+        fig.root.rotation.y = 0.3;
         scene.add(fig.root);
         shared = { renderer, scene, camera: new THREE.PerspectiveCamera(30, 1, 0.1, 50), fig };
       }
       const { renderer, scene, camera, fig } = shared;
       fig.setLook(look);
       fig.pose(0.4);
-      if (close) {
-        camera.position.set(0, 2.45, 4.1);
-        camera.lookAt(0, 2.0, 0);
-      } else {
-        camera.position.set(0, 1.8, 6.6);
-        camera.lookAt(0, 1.3, 0);
-      }
+      // frame what this look really fills: tall hats, a bun or curls need room above the head
+      fig.root.updateMatrixWorld(true);
+      const box = new THREE.Box3();
+      fig.root.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (!m.isMesh) return;
+        if ((m as THREE.SkinnedMesh).isSkinnedMesh) (m as THREE.SkinnedMesh).computeBoundingBox();
+        else m.geometry.computeBoundingBox();
+        const b = (m as THREE.SkinnedMesh).isSkinnedMesh
+          ? (m as THREE.SkinnedMesh).boundingBox!.clone().applyMatrix4(m.matrixWorld)
+          : m.geometry.boundingBox!.clone().applyMatrix4(m.matrixWorld);
+        box.union(b);
+      });
+      const top = Math.min(box.max.y, 4) + 0.08;
+      const bottom = close ? 1.12 : -0.05;
+      const h = top - bottom;
+      const mid = (top + bottom) / 2;
+      const dist = h / 2 / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) + 0.6;
+      camera.position.set(0, mid + 0.25, dist);
+      camera.lookAt(0, mid, 0);
       renderer.render(scene, camera);
       // a bitmap, not an encoded image: copying the pixels is quick, encoding a PNG is not
       const pic = await createImageBitmap(renderer.domElement);

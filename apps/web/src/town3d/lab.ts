@@ -5,6 +5,51 @@ import { loadLibrary } from './assets';
 import { Figure } from './explorer';
 
 const q = new URLSearchParams(location.search);
+if (q.get('set') === 'heads') {
+  const { loadFigures } = await import('./assets');
+  const { headPieces } = await import('./explorer');
+  (globalThis as { DBG?: boolean }).DBG = true;
+  const lib = await loadFigures();
+  const r = new THREE.WebGLRenderer({
+    canvas: document.getElementById('c') as HTMLCanvasElement,
+    antialias: true,
+  });
+  r.setSize(innerWidth, innerHeight, false);
+  const sc = new THREE.Scene();
+  sc.background = new THREE.Color('#cfe0ff');
+  sc.add(new THREE.HemisphereLight('#fff', '#668', 2));
+  const dl = new THREE.DirectionalLight('#fff', 2);
+  dl.position.set(2, 4, 5);
+  sc.add(dl);
+  const heads = ['Knight_Head', 'Mage_Head', 'Rogue_Head', 'Barbarian_Head', 'Rogue_Head_Hooded'];
+  const yaw = Number(q.get('rot') ?? 0.5);
+  heads.forEach((h, i) => {
+    const p = headPieces(lib, h)!;
+    const src = lib.parts.get(h)!;
+    const face = new THREE.Mesh(p.face, src.material);
+    const hair = new THREE.Mesh(p.hair, new THREE.MeshLambertMaterial({ color: '#ff3355' }));
+    const alone = new THREE.Mesh(p.skull, new THREE.MeshLambertMaterial({ color: '#33aa55' }));
+    for (const [m, row] of [
+      [face, 0],
+      [hair, 1],
+      [alone, 2],
+    ] as const) {
+      const g = new THREE.Group();
+      g.add(m);
+      g.add(new THREE.Mesh(p.brows, new THREE.MeshLambertMaterial({ color: '#2244ff' })));
+      if (row === 1) g.add(new THREE.Mesh(p.face, src.material));
+      g.position.set((i - 2) * 1.6, -row * 1.6 - 1.7, 0);
+      g.rotation.y = yaw;
+      sc.add(g);
+    }
+  });
+  const cam = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.1, 100);
+  cam.position.set(0, -2.6, 12);
+  cam.lookAt(0, -2.6, 0);
+  r.render(sc, cam);
+  document.title = 'done';
+  throw new Error('stop');
+}
 if (q.get('set') === 'portraits') {
   const { portrait } = await import('./stage');
   const { COSMETICS: C, DEFAULT_AVATAR: D } = await import('@nyrgo/shared');
@@ -49,6 +94,22 @@ const outfits = COSMETICS.filter((c) => c.slot === 'outfit').map((c) => c.id);
 const looks: AvatarLook[] = [];
 if (q.get('set') === 'outfits')
   for (const o of outfits) looks.push({ ...DEFAULT_AVATAR, outfit: o });
+else if (q.get('set') === 'hairs')
+  for (const h of [
+    'hair_short',
+    'hair_buzz',
+    'hair_ponytail',
+    'hair_long',
+    'hair_bun',
+    'hair_spiky',
+    'hair_curly',
+  ])
+    looks.push({
+      ...DEFAULT_AVATAR,
+      hair: h,
+      hairColor: q.get('hc') ?? 'hc_brown',
+      skin: q.get('skin') ?? 'skin_2',
+    });
 else {
   const hats = ['hat_none', 'hat_cap', 'hat_beanie', 'hat_explorer', 'hat_leaf', 'hat_crown'];
   const hairs = [
@@ -99,8 +160,9 @@ const figs = looks.map((l, i) => {
 });
 const rows = Math.ceil(looks.length / cols);
 const camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.1, 200);
-camera.position.set(0, 5 + rows, 12 + rows * 4.5);
-camera.lookAt(0, 1.2, (rows - 1) * 1.5);
+const close = q.get('close') === '1';
+camera.position.set(0, close ? 2.6 : 5 + rows, close ? 9 : 12 + rows * 4.5);
+camera.lookAt(0, close ? 1.9 : 1.2, close ? 0 : (rows - 1) * 1.5);
 const clip = q.get('clip');
 const t = Number(q.get('t') ?? 0.4);
 const now = performance.now();

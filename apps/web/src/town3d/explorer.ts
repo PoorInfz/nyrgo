@@ -64,9 +64,10 @@ function recoloured(lib: Library, char: Char, cells: [number, number, string][])
     const col = new THREE.Color();
     for (const [row, column, hex] of cells) {
       col.set(hex);
-      const tr = col.r * 255;
-      const tg = col.g * 255;
-      const tb = col.b * 255;
+      // HSL of the colour as written (sRGB), like the texture's pixels
+      const hsl = col.getHSL({ h: 0, s: 0, l: 0 }, THREE.SRGBColorSpace);
+      const rgb = { r: 0, g: 0, b: 0 };
+      const px = new THREE.Color();
       const x0 = column * cw;
       const y0 = row * ch;
       let sum = 0;
@@ -79,10 +80,17 @@ function recoloured(lib: Library, char: Char, cells: [number, number, string][])
       for (let y = y0; y < y0 + ch; y++)
         for (let x = x0; x < x0 + cw; x++) {
           const i = (y * TEX + x) * 4;
+          // the pack's shading as a gentle shift in lightness: the colour's hue stays true
+          // (scaling RGB would push light colours to saturated ones: blond to orange)
           const k = lum(base.data[i]!, base.data[i + 1]!, base.data[i + 2]!) / ref;
-          out.data[i] = tr * k;
-          out.data[i + 1] = tg * k;
-          out.data[i + 2] = tb * k;
+          const l = Math.min(
+            0.97,
+            Math.max(0.03, hsl.l + Math.max(-0.08, Math.min(0.08, (k - 1) * 0.2))),
+          );
+          px.setHSL(hsl.h, hsl.s, l, THREE.SRGBColorSpace).getRGB(rgb, THREE.SRGBColorSpace);
+          out.data[i] = rgb.r * 255;
+          out.data[i + 1] = rgb.g * 255;
+          out.data[i + 2] = rgb.b * 255;
         }
     }
     ctx.putImageData(out, 0, 0);
@@ -96,6 +104,112 @@ function recoloured(lib: Library, char: Char, cells: [number, number, string][])
 }
 
 const charOf = (part: string) => part.split('_')[0] as Char;
+
+export interface HeadPieces {
+  /** The face (an open shell for most heads: their hair is the top of the skull). */
+  face: THREE.BufferGeometry;
+  /** The hair (and the barbarian's beard). */
+  hair: THREE.BufferGeometry;
+  /** Only its biggest piece (without the mage's little knot at the nape, say). */
+  hairMain: THREE.BufferGeometry;
+  /** The eyebrows: painted from the hair cell too, but they belong with the face. */
+  brows: THREE.BufferGeometry;
+  /** The top and back of the skull (only whole on the barbarian's bald head). */
+  skull: THREE.BufferGeometry;
+  /** The face without that skull. */
+  rest: THREE.BufferGeometry;
+}
+
+const pieces = new Map<string, HeadPieces>();
+/**
+ * A pack head cut apart by its texture: the triangles painted from the hair cell (row 0,
+ * column 1 of the 8×4 grid) are hair, except small pieces in front (the eyebrows); the rest is
+ * the face. The heads share one shape, so a face can wear another pack's hair.
+ */
+export function headPieces(lib: Library, name: string): HeadPieces | null {
+  let p = pieces.get(name);
+  if (p) return p;
+  const src = lib.parts.get(name);
+  if (!src) return null;
+  const g = src.geometry;
+  const uv = g.getAttribute('uv');
+  const pos = g.getAttribute('position');
+  const index = g.getIndex();
+  if (!uv || !index || !pos) return null;
+  const isHair = (v: number) => {
+    const u = uv.getX(v);
+    const w = uv.getY(v);
+    return u >= 1 / 8 && u < 2 / 8 && w < 1 / 4;
+  };
+  const face: number[] = [];
+  const hairTris: number[][] = [];
+  for (let i = 0; i < index.count; i += 3) {
+    const t = [index.getX(i), index.getX(i + 1), index.getX(i + 2)];
+    if (t.filter(isHair).length >= 2) hairTris.push(t);
+    else face.push(...t);
+  }
+  // hair triangles in connected pieces (by shared corners, also across split vertices)
+  const keyOf = (v: number) =>
+    `${pos.getX(v).toFixed(3)},${pos.getY(v).toFixed(3)},${pos.getZ(v).toFixed(3)}`;
+  const parent = hairTris.map((_, i) => i);
+  const find = (i: number): number => (parent[i] === i ? i : (parent[i] = find(parent[i]!)));
+  const owner = new Map<string, number>();
+  hairTris.forEach((t, i) => {
+    for (const v of t) {
+      const k = keyOf(v);
+      const o = owner.get(k);
+      if (o === undefined) owner.set(k, i);
+      else parent[find(i)] = find(o);
+    }
+  });
+  const groups = new Map<number, number[][]>();
+  hairTris.forEach((t, i) => {
+    const r = find(i);
+    groups.set(r, [...(groups.get(r) ?? []), t]);
+  });
+  const hair: number[] = [];
+  const brows: number[] = [];
+  let main: number[][] = [];
+  const box = new THREE.Box3();
+  const v3 = new THREE.Vector3();
+  for (const tris of groups.values()) {
+    box.makeEmpty();
+    for (const t of tris) for (const v of t) box.expandByPoint(v3.fromBufferAttribute(pos, v));
+    const size = box.getSize(new THREE.Vector3());
+    // (the pack's positions are quantised to -1…1 across the head)
+    const small = size.x < 0.6 && size.y < 0.35 && box.min.z > 0.3 && box.max.y < 0.4;
+    (small ? brows : hair).push(...tris.flat());
+    if (!small && tris.length > main.length) main = tris;
+  }
+  // the skull: the face's triangles above the ears or behind them (whole only when bald)
+  const skull: number[] = [];
+  const rest: number[] = [];
+  for (let i = 0; i < face.length; i += 3) {
+    let y = 0;
+    let z = 0;
+    for (let k = 0; k < 3; k++) {
+      y += pos.getY(face[i + k]!) / 3;
+      z += pos.getZ(face[i + k]!) / 3;
+    }
+    (y > 0.2 || z < -0.15 ? skull : rest).push(face[i]!, face[i + 1]!, face[i + 2]!);
+  }
+  const part = (ids: number[]) => {
+    const out = g.clone();
+    out.setIndex(ids);
+    return out;
+  };
+  p = {
+    face: part(face),
+    hair: part(hair),
+    hairMain: part(main.flat()),
+    brows: part(brows),
+    skull: part(skull),
+    rest: part(rest),
+  };
+  pieces.set(name, p);
+  return p;
+}
+
 /** The loader makes names unique across the file's scenes (head, head_1, …): the bone's own name. */
 const boneName = (name: string) => name.replace(/_\d+$/, '');
 
@@ -141,7 +255,6 @@ export class Figure {
 
   private build(r: Recipe) {
     const skinned = [
-      r.head === 'Rogue_Hooded' ? 'Rogue_Head_Hooded' : `${r.head}_Head`,
       `${r.body}_Body`,
       `${r.body}_ArmLeft`,
       `${r.body}_ArmRight`,
@@ -154,10 +267,11 @@ export class Figure {
     if (r.cape) rigid.push(`${r.body}_Cape`);
 
     const mat = (part: string) => recoloured(this.lib, charOf(part), cellColors(charOf(part), r));
-    for (const name of skinned) {
+    /** A skinned piece: `geometry` (or the part's own) on this figure's bones. */
+    const skin = (name: string, material: THREE.Material, geometry?: THREE.BufferGeometry) => {
       const src = this.lib.parts.get(name) as THREE.SkinnedMesh | undefined;
-      if (!src?.isSkinnedMesh) continue;
-      const m = new THREE.SkinnedMesh(src.geometry, mat(name));
+      if (!src?.isSkinnedMesh) return;
+      const m = new THREE.SkinnedMesh(geometry ?? src.geometry, material);
       const bones = src.skeleton.bones.map(
         (b) => (this.bones.get(boneName(b.name)) as THREE.Bone | undefined) ?? b,
       );
@@ -166,6 +280,37 @@ export class Figure {
       m.frustumCulled = false;
       this.rig.add(m);
       this.parts.push(m);
+    };
+    for (const name of skinned) skin(name, mat(name));
+
+    // the head: a face, its eyebrows, and the chosen hair (or the whole hooded head)
+    if (r.head === 'Rogue_Hooded') skin('Rogue_Head_Hooded', mat('Rogue_Head_Hooded'));
+    else {
+      const faceName = `${r.head}_Head`;
+      const face = headPieces(this.lib, faceName);
+      if (face) {
+        skin(faceName, mat(faceName), face.face);
+        skin(faceName, mat(faceName), face.brows);
+        // the barbarian's beard is his "hair": shown only on a bearded look
+        if (r.head === 'Barbarian' && r.extras.beard) {
+          const beard = recoloured(this.lib, 'Barbarian', [[0, 1, r.extras.beard]]);
+          skin(faceName, beard, face.hair);
+        }
+      }
+      if (r.hair) {
+        const hairName = `${r.hair}_Head`;
+        const hair = headPieces(this.lib, hairName);
+        if (hair && r.extras.stubble) {
+          // a shaved head: the hair is a short shade of its colour over the skin
+          const scalp = new THREE.Color(r.colors.skin).lerp(new THREE.Color(r.colors.hair), 0.6);
+          const cells = cellColors(charOf(hairName), r).map(([row, col, c]) =>
+            row === 0 && col === 1
+              ? ([row, col, `#${scalp.getHexString()}`] as const)
+              : [row, col, c],
+          ) as [number, number, string][];
+          skin(hairName, recoloured(this.lib, charOf(hairName), cells), hair.hairMain);
+        } else if (hair) skin(hairName, mat(hairName), r.extras.bun ? hair.hairMain : hair.hair);
+      }
     }
     for (const name of rigid) {
       const src = this.lib.parts.get(name);

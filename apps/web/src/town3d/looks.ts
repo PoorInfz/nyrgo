@@ -28,7 +28,10 @@ export type Hat =
   | 'circlet';
 
 export interface Recipe {
+  /** The face (the hooded rogue's head is whole: face and hood). */
   head: Head;
+  /** Whose hair from the pack sits on the head; null for none (a shaved head, a hood). */
+  hair: Char | null;
   /** Body and arms. */
   body: Char;
   legs: Char;
@@ -52,6 +55,12 @@ export interface Recipe {
     bun?: boolean;
     spikes?: boolean;
     curls?: boolean;
+    /** Long hair falling down the back. */
+    long?: boolean;
+    /** A ponytail tied high at the back. */
+    tail?: boolean;
+    /** A shaved head: the scalp takes a shade of the hair colour. */
+    stubble?: boolean;
     beard?: string;
   };
 }
@@ -75,16 +84,41 @@ const BODY_OF: Record<TopKind, Char> = {
   overalls: 'Barbarian',
 };
 
-/** Hair styles on the pack's four heads, plus a bun or spikes made in code. */
-const HEAD_OF: Record<string, { head: Head; bun?: boolean; spikes?: boolean; curls?: boolean }> = {
-  hair_short: { head: 'Knight' },
-  hair_buzz: { head: 'Knight' },
-  hair_ponytail: { head: 'Rogue' },
-  hair_long: { head: 'Rogue' },
-  hair_bun: { head: 'Rogue', bun: true },
-  hair_spiky: { head: 'Mage', spikes: true },
-  hair_curly: { head: 'Knight', curls: true },
+/**
+ * Hair styles: a face from the pack, another pack head's hair on it (the heads share one shape),
+ * and pieces modelled in code (a bun, a ponytail, long hair, spikes, curls, a shaved scalp).
+ */
+interface Style {
+  head: Char;
+  hair: Char | null;
+  bun?: boolean;
+  spikes?: boolean;
+  curls?: boolean;
+  long?: boolean;
+  tail?: boolean;
+  stubble?: boolean;
+}
+const HEAD_OF: Record<string, Style> = {
+  hair_short: { head: 'Knight', hair: 'Knight' },
+  hair_buzz: { head: 'Knight', hair: 'Mage', stubble: true },
+  hair_ponytail: { head: 'Mage', hair: 'Mage', tail: true },
+  hair_long: { head: 'Rogue', hair: 'Rogue', long: true },
+  hair_bun: { head: 'Mage', hair: 'Mage', bun: true },
+  hair_spiky: { head: 'Knight', hair: 'Knight', spikes: true },
+  hair_curly: { head: 'Rogue', hair: 'Rogue', curls: true },
 };
+
+/** The code-made hair pieces of a style; a hat leaves only what shows under it. */
+function hairExtras(h: Style, hat: boolean) {
+  return {
+    ...(h.bun && !hat ? { bun: true } : {}),
+    ...(h.spikes && !hat ? { spikes: true } : {}),
+    ...(h.curls && !hat ? { curls: true } : {}),
+    ...(h.long ? { long: true } : {}),
+    ...(h.tail ? { tail: true } : {}),
+    ...(h.stubble ? { stubble: true } : {}),
+  };
+}
 
 /** The wardrobe's tops as outfit kinds. */
 const TOP_KIND: Record<string, TopKind> = {
@@ -137,6 +171,7 @@ export function recipeFor(look: AvatarLook): Recipe {
   const hat = WARDROBE_HAT[look.hat] ?? null;
   return {
     head: hair.head,
+    hair: hair.hair,
     body,
     legs: body === 'Knight' ? 'Rogue' : body,
     hat,
@@ -154,10 +189,7 @@ export function recipeFor(look: AvatarLook): Recipe {
       ...(acc === 'acc_glasses' ? { glasses: color(acc, '#06222b') } : {}),
       ...(acc === 'acc_scarf' ? { scarf: [color(acc, '#ef4a5b'), trimOf(acc, '#ffcf4d')] } : {}),
       ...(acc === 'acc_backpack' ? { backpack: color(acc, '#22c96b') } : {}),
-      // a hat covers a bun or spikes
-      ...(hair.bun && !hat ? { bun: true } : {}),
-      ...(hair.spikes && !hat ? { spikes: true } : {}),
-      ...(hair.curls && !hat ? { curls: true } : {}),
+      ...hairExtras(hair, !!hat),
     },
   };
 }
@@ -176,6 +208,8 @@ function fromOutfit(o: OutfitStyle, skin: string): Recipe {
         : o.beard
           ? 'Barbarian'
           : hair.head,
+    // a bearded face keeps its style's hair; a hood or a helmet hides it
+    hair: hooded || o.hat === 'helmet' ? null : (hair.hair ?? (o.beard ? 'Knight' : null)),
     body,
     // robes and dresses reach the shoes: the legs take the skirt's colour
     legs: body === 'Knight' ? 'Knight' : body,
@@ -194,9 +228,7 @@ function fromOutfit(o: OutfitStyle, skin: string): Recipe {
       ...(o.glasses ? { glasses: o.glasses } : {}),
       ...(o.backpack ? { backpack: o.backpack } : {}),
       ...(o.beard ? { beard: o.beard } : {}),
-      ...(hair.bun && !hat && !hooded ? { bun: true } : {}),
-      ...(hair.spikes && !hat && !hooded ? { spikes: true } : {}),
-      ...(hair.curls && !hat && !hooded ? { curls: true } : {}),
+      ...(hooded || o.hat === 'helmet' ? {} : hairExtras(hair, !!hat)),
     },
   };
 }

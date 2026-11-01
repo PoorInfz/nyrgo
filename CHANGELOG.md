@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.50.0 — 2026-11-01 — True colours and real hairstyles
+
+- **Fixed: the 3D explorers' colours.** Recolouring the KayKit textures mixed linear and sRGB
+  colour values, so clothes, skin and hair came out darker and more saturated than chosen (a
+  blond turned orange, the teal tee a dark green). Every colour now matches the wardrobe; the same
+  fix applies to the recoloured furniture.
+- **Sharper, better framed wardrobe pictures**: drawn at 224 px and framed on what each look
+  really fills (a tall hat, a bun or curls get room; the head no longer sits at the bottom).
+- **Seven distinct hairstyles in 3D.** The pack heads are cut into face, eyebrows and hair, and any
+  face can wear another pack's hair; on top, pieces modelled in code:
+  - Short: the knight's side parting.
+  - Buzz cut: the mage's slicked hair cut to a shaved shade of the hair colour over the skin.
+  - Ponytail: tied high, a smooth tail swinging down the back.
+  - Long: locks falling past the shoulders in three shades.
+  - Bun: a bun with a band in your top's trim colour.
+  - Spiky: two rows of swept-back spikes.
+  - Curly: a full head of round curls, open at the face.
+    Bearded outfits keep their style's hair with the beard.
+
 ## 0.49.0 — 2026-11-01 — The explorer in 3D everywhere
 
 - **On the map**, your explorer is the 3D figure: it walks when you move, stands when you stop and
