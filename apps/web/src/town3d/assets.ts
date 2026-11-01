@@ -70,3 +70,18 @@ function townModels(gltf: GLTF) {
   for (const child of gltf.scene.children) town.set(child.name, child);
   return town;
 }
+
+let interior: Promise<Map<string, THREE.Object3D>> | null = null;
+
+/** Furniture and room pieces, fetched the first time someone walks into a building. */
+export function loadInterior(): Promise<Map<string, THREE.Object3D>> {
+  interior ??= new GLTFLoader()
+    .setMeshoptDecoder(MeshoptDecoder)
+    .loadAsync(`${BASE}interior.glb`)
+    .then(townModels)
+    .catch((e: unknown) => {
+      interior = null;
+      throw e;
+    });
+  return interior;
+}

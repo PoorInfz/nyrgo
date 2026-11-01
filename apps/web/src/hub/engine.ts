@@ -91,8 +91,13 @@ export function newBody(p: {
 export class Town {
   bodies = new Map<string, Body>();
   meId: string | null = null;
-  /** Input direction for the local player, -1…1 on each axis. */
+  /** Input direction for the local player, -1…1 on each axis, as seen on the screen. */
   input = { x: 0, y: 0 };
+  /**
+   * How far the view is turned (radians): the 3D camera can circle the player, and "up" on the
+   * stick or the keys always means away from the camera.
+   */
+  inputYaw = 0;
   camera = { x: 0, y: 0, zoom: 1 };
   /** When the view last changed room (for a short fade from black). */
   private enteredAt = -1;
@@ -138,17 +143,21 @@ export class Town {
     let moved = false;
     const me = this.me();
     if (me) {
-      const len = Math.hypot(this.input.x, this.input.y);
+      const c = Math.cos(this.inputYaw);
+      const sn = Math.sin(this.inputYaw);
+      const ix = this.input.x * c + this.input.y * sn;
+      const iy = -this.input.x * sn + this.input.y * c;
+      const len = Math.hypot(ix, iy);
       if (len > 0.15) {
         const k = Math.min(1, len);
         const speed = WALK_TILES * TILE * k;
-        const nx = me.x + (this.input.x / len) * speed * dt;
-        const ny = me.y + (this.input.y / len) * speed * dt;
+        const nx = me.x + (ix / len) * speed * dt;
+        const ny = me.y + (iy / len) * speed * dt;
         const to = walk(this.map, { x: me.x, y: me.y }, { x: nx, y: ny });
         moved = to.x !== me.x || to.y !== me.y;
         me.x = me.tx = to.x;
         me.y = me.ty = to.y;
-        if (Math.abs(this.input.x) > 0.2) me.facing = this.input.x < 0 ? 'l' : 'r';
+        if (Math.abs(ix) > 0.2) me.facing = ix < 0 ? 'l' : 'r';
         me.moving = moved;
       } else {
         me.moving = false;

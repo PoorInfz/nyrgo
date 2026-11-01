@@ -293,7 +293,8 @@
     "mode3d": "Ver a vila em 3D",
     "mode2d": "Ver a vila em 2D",
     "loading3d": "a carregar 3D…",
-    "failed3d": "A vila em 3D não carregou neste dispositivo: vês em 2D."
+    "failed3d": "A vila em 3D não carregou neste dispositivo: vês em 2D.",
+    "cameraHint": "Arrasta para rodar a câmara; belisca ou usa a roda para aproximar (teclas Q/R e +/−)."
   },
   "wardrobe": {
     "title": "Seu explorador",

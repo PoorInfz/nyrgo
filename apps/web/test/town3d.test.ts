@@ -1,7 +1,16 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { COSMETICS, DEFAULT_AVATAR, HOLDER_OUTFITS, type AvatarLook } from '@nyrgo/shared';
+import {
+  COSMETICS,
+  DEFAULT_AVATAR,
+  FURNITURE,
+  HOLDER_OUTFITS,
+  HUB_MAPS,
+  hubMap,
+  type AvatarLook,
+} from '@nyrgo/shared';
+import { Town, newBody } from '../src/hub/engine';
 import { EMOTE_CLIP } from '../src/town3d/explorer';
 import { cellColors, recipeFor, type Recipe } from '../src/town3d/looks';
 import { EMOTE_ICONS } from '../src/hub/engine';
@@ -22,6 +31,8 @@ const meshNames = new Set(explorer.nodes.filter((n) => n.mesh !== undefined).map
 const clips = new Set((explorer.animations ?? []).map((a) => a.name));
 const town = glb('town.glb');
 const townIds = new Set(town.scenes[0]!.nodes.map((i) => town.nodes[i]!.name));
+const inside = glb('interior.glb');
+const interiorIds = new Set(inside.scenes[0]!.nodes.map((i) => inside.nodes[i]!.name));
 
 /** Every part a recipe asks the model file for. */
 function partsOf(r: Recipe): string[] {
@@ -118,5 +129,48 @@ describe('the 3D town', () => {
       used.add(id);
     expect(used.size).toBeGreaterThan(20);
     for (const id of used) expect(townIds, id).toContain(id);
+  });
+
+  it('has a 3D piece for every piece of furniture, and every model the rooms use', () => {
+    const src = readFileSync(path.join(process.cwd(), 'src/town3d/rooms.ts'), 'utf8');
+    for (const f of FURNITURE) expect(src, f.id).toContain(`case '${f.id}':`);
+    const used = new Set<string>();
+    for (const m of src.matchAll(/(?:interior\.get|k|put)\(\s*'([a-zA-Z_]+)'/g)) used.add(m[1]!);
+    expect(used.size).toBeGreaterThan(20);
+    for (const id of used) expect(interiorIds, id).toContain(id);
+  });
+
+  it('builds the gym, arena and house shells from their maps', () => {
+    // the rooms read their walls and door by position in the map's solid areas
+    for (const id of ['gym', 'arena', 'house:x']) {
+      const m = hubMap(id)!;
+      expect(m.blocked.length).toBeGreaterThanOrEqual(9);
+      expect(m.interactions.some((i) => i.kind === 'door')).toBe(true);
+    }
+    expect(HUB_MAPS.gym!.blocked[0]!.y).toBe(0);
+  });
+
+  it('walks away from the camera, however the camera is turned', () => {
+    const town = new Town(HUB_MAPS.plaza!);
+    town.meId = 'me';
+    town.bodies.set(
+      'me',
+      newBody({
+        id: 'me',
+        name: 'me',
+        level: 1,
+        look: DEFAULT_AVATAR,
+        companion: null,
+        x: 900,
+        y: 290,
+      }),
+    );
+    // the camera turned a quarter to the east: "up" walks west
+    town.inputYaw = Math.PI / 2;
+    town.input = { x: 0, y: -1 };
+    town.update(0.25, 0);
+    const me = town.me()!;
+    expect(me.x).toBeLessThan(900 - 20);
+    expect(Math.abs(me.y - 290)).toBeLessThan(1);
   });
 });

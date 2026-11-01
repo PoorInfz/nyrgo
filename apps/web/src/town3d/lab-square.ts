@@ -8,11 +8,28 @@ const canvas = document.getElementById('c') as HTMLCanvasElement;
 const over = document.createElement('canvas');
 over.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none';
 document.body.appendChild(over);
-const town = new Town(hubMap('plaza')!);
+const room = q.get('room') ?? 'plaza';
+const town = new Town(hubMap(room === 'house' ? 'house:lab' : room)!);
+if (room === 'house')
+  town.furniture = [
+    { f: 'sofa-red', x: 300, y: 560, flip: false },
+    { f: 'tv', x: 300, y: 430, flip: false },
+    { f: 'rug-purple', x: 300, y: 500, flip: false },
+    { f: 'aquarium', x: 470, y: 600, flip: false },
+    { f: 'plant-flowers', x: 140, y: 600, flip: false },
+    { f: 'arcade', x: 520, y: 470, flip: false },
+    { f: 'crystal', x: 120, y: 470, flip: false },
+    { f: 'bookcase', x: 430, y: 300, flip: false },
+    { f: 'clock', x: 560, y: 300, flip: false },
+  ];
 const outfits = COSMETICS.filter((c) => c.slot === 'outfit' && c.id !== 'outfit_none').map(
   (c) => c.id,
 );
-const at = q.get('at')?.split(',').map(Number) ?? [town.map.spawn.x, town.map.spawn.y - 200];
+const at =
+  q.get('at')?.split(',').map(Number) ??
+  (room === 'plaza'
+    ? [town.map.spawn.x, town.map.spawn.y - 200]
+    : [town.map.spawn.x, town.map.spawn.y - 120]);
 const me = newBody({
   id: 'me',
   name: 'Rivera',
@@ -69,6 +86,9 @@ const view = await TownView3D.create(
   (q.get('phase') as 'day' | 'dusk' | 'night' | null) ?? undefined,
 );
 const dpr = 1;
+while (!view.canDraw(town.map)) await new Promise((r) => setTimeout(r, 100));
+view.rotateBy(Number(q.get('yaw') ?? 0));
+view.zoomBy(Number(q.get('zoom') ?? 1));
 view.resize(innerWidth, innerHeight, dpr);
 over.width = innerWidth;
 over.height = innerHeight;
@@ -92,6 +112,10 @@ for (let i = 0; i < 5; i++) {
 ctx.clearRect(0, 0, over.width, over.height);
 view.drawOverlay(ctx, dpr, 'me');
 const info = view.renderer.info;
+console.warn(
+  'camera',
+  JSON.stringify((view as unknown as { camera: { position: unknown } }).camera.position),
+);
 document.title = 'done';
 console.warn(
   'calls',

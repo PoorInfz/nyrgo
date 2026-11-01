@@ -293,7 +293,8 @@
     "mode3d": "Pokaż miasteczko w 3D",
     "mode2d": "Pokaż miasteczko w 2D",
     "loading3d": "ładowanie 3D…",
-    "failed3d": "Miasteczko 3D nie wczytało się na tym urządzeniu: widzisz je w 2D."
+    "failed3d": "Miasteczko 3D nie wczytało się na tym urządzeniu: widzisz je w 2D.",
+    "cameraHint": "Przeciągnij, by obrócić kamerę; uszczypnij lub użyj kółka, by przybliżyć (klawisze Q/R i +/−)."
   },
   "wardrobe": {
     "title": "Twój odkrywca",

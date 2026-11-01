@@ -293,7 +293,8 @@
     "mode3d": "Show the town in 3D",
     "mode2d": "Show the town in 2D",
     "loading3d": "loading 3D…",
-    "failed3d": "The 3D town could not load on this device: showing it in 2D."
+    "failed3d": "The 3D town could not load on this device: showing it in 2D.",
+    "cameraHint": "Drag to turn the camera; pinch or use the wheel to zoom (keys Q/R and +/−)."
   },
   "wardrobe": {
     "title": "Your explorer",

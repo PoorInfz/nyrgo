@@ -95,7 +95,8 @@ export default function HubScreen({
   const canvas3d = useRef<HTMLCanvasElement>(null);
   const view3d = useRef<TownView3D | null>(null);
   const [want3d, setWant3d] = useState(prefers3d);
-  const [ready3d, setReady3d] = useState(false);
+  /** Whether the room on screen is drawn in 3D right now (a building's models may be loading). */
+  const [drawing3d, setDrawing3d] = useState(false);
   const conn = useRef<HubConnection | null>(null);
   const me = useRef<{ name: string; level: number; companion: string | null } | null>(null);
   const [status, setStatus] = useState<HubStatus>('connecting');
@@ -262,7 +263,7 @@ export default function HubScreen({
 
   // the 3D square: loaded on demand (its code and models are fetched only by those who use it)
   useEffect(() => {
-    if (!want3d || roomId !== 'plaza' || view3d.current) return;
+    if (!want3d || view3d.current) return;
     const el = canvas3d.current;
     if (!el) return;
     let live = true;
@@ -271,7 +272,14 @@ export default function HubScreen({
       .then((v) => {
         if (!live) return v.dispose();
         view3d.current = v;
-        setReady3d(true);
+        try {
+          if (!localStorage.getItem(`${PREF_3D}.hint`)) {
+            localStorage.setItem(`${PREF_3D}.hint`, '1');
+            say('hub.cameraHint');
+          }
+        } catch {
+          // no storage: no hint
+        }
       })
       .catch(() => {
         if (!live) return;
@@ -281,7 +289,7 @@ export default function HubScreen({
     return () => {
       live = false;
     };
-  }, [want3d, roomId, getTown, say]);
+  }, [want3d, getTown, say]);
   useEffect(
     () => () => {
       view3d.current?.dispose();
@@ -300,7 +308,6 @@ export default function HubScreen({
     if (!next) {
       view3d.current?.dispose();
       view3d.current = null;
-      setReady3d(false);
     }
     setWant3d(next);
   }
@@ -355,6 +362,14 @@ export default function HubScreen({
       } else if (e.key === 'Escape') {
         setDialog(null);
         setEmotes(false);
+      } else if (view3d.current && (e.key === 'q' || e.key === 'Q')) {
+        view3d.current.rotateBy(0.4);
+      } else if (view3d.current && (e.key === 'r' || e.key === 'R')) {
+        view3d.current.rotateBy(-0.4);
+      } else if (view3d.current && (e.key === '+' || e.key === '=')) {
+        view3d.current.zoomBy(0.85);
+      } else if (view3d.current && (e.key === '-' || e.key === '_')) {
+        view3d.current.zoomBy(1 / 0.85);
       }
     };
     const up = (e: KeyboardEvent) => {
@@ -389,6 +404,7 @@ export default function HubScreen({
     let nearId: string | null = null;
     /** The 3D view last given the screen's size. */
     let sized: TownView3D | null = null;
+    let shown3d = false;
     const size = { w: 0, h: 0, dpr: 1 };
     const resize = () => {
       const r = el.getBoundingClientRect();
@@ -406,13 +422,19 @@ export default function HubScreen({
     const frame = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
+      const v3 = view3d.current?.canDraw(town.map) ? view3d.current : null;
+      if (!!v3 !== shown3d) {
+        shown3d = !!v3;
+        setDrawing3d(shown3d);
+      }
+      town.inputYaw = v3 ? v3.yaw : 0;
       const moved = town.update(dt, now);
       const b = town.me();
       if (b && (moved || !b.moving)) conn.current?.move(b.x, b.y, b.facing, b.moving);
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, el.width, el.height);
-      const v = view3d.current;
-      if (v && town.map.id === 'plaza') {
+      const v = v3;
+      if (v) {
         if (sized !== v) {
           v.resize(size.w, size.h, size.dpr);
           sized = v;
@@ -438,6 +460,42 @@ export default function HubScreen({
   }, [getTown]);
 
   const interact = useCallback(() => open(getTown().nearby()), [getTown, open]);
+
+  // the 3D camera: drag to turn it, pinch (or the wheel) to come closer, two fingers to turn too
+  const pointers = useRef(new Map<number, { x: number; y: number }>());
+  const camera = {
+    down: (e: React.PointerEvent<HTMLCanvasElement>) => {
+      if (!view3d.current) return;
+      e.currentTarget.setPointerCapture(e.pointerId);
+      pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    },
+    move: (e: React.PointerEvent<HTMLCanvasElement>) => {
+      const v = view3d.current;
+      const map = pointers.current;
+      const prev = map.get(e.pointerId);
+      if (!v || !prev) return;
+      const next = { x: e.clientX, y: e.clientY };
+      if (map.size === 1) v.rotateBy(-(next.x - prev.x) * 0.008);
+      else if (map.size === 2) {
+        const other = [...map.entries()].find(([id]) => id !== e.pointerId)?.[1];
+        if (other) {
+          const before = Math.hypot(prev.x - other.x, prev.y - other.y);
+          const after = Math.hypot(next.x - other.x, next.y - other.y);
+          if (before > 10 && after > 10) v.zoomBy(before / after);
+          const a0 = Math.atan2(prev.y - other.y, prev.x - other.x);
+          const a1 = Math.atan2(next.y - other.y, next.x - other.x);
+          v.rotateBy(Math.atan2(Math.sin(a1 - a0), Math.cos(a1 - a0)));
+        }
+      }
+      map.set(e.pointerId, next);
+    },
+    up: (e: React.PointerEvent<HTMLCanvasElement>) => {
+      pointers.current.delete(e.pointerId);
+    },
+    wheel: (e: React.WheelEvent<HTMLCanvasElement>) => {
+      view3d.current?.zoomBy(e.deltaY > 0 ? 1.1 : 1 / 1.1);
+    },
+  };
 
   function send(e: FormEvent) {
     e.preventDefault();
@@ -481,10 +539,20 @@ export default function HubScreen({
       <canvas
         ref={canvas3d}
         className="hub-canvas hub-canvas-3d"
-        hidden={!(ready3d && roomId === 'plaza')}
+        hidden={!drawing3d}
         aria-hidden="true"
       />
-      <canvas ref={canvas} className="hub-canvas" aria-label={t('hub.canvasLabel')} role="img" />
+      <canvas
+        ref={canvas}
+        className="hub-canvas"
+        aria-label={t('hub.canvasLabel')}
+        role="img"
+        onPointerDown={camera.down}
+        onPointerMove={camera.move}
+        onPointerUp={camera.up}
+        onPointerCancel={camera.up}
+        onWheel={camera.wheel}
+      />
 
       <header className="hub-top">
         <div>
@@ -497,20 +565,18 @@ export default function HubScreen({
           </strong>
           <span className={`hub-status ${status}`}>
             {statusText}
-            {want3d && !ready3d && roomId === 'plaza' && ` · ${t('hub.loading3d')}`}
+            {want3d && !drawing3d && ` · ${t('hub.loading3d')}`}
           </span>
         </div>
-        {roomId === 'plaza' && (
-          <button
-            type="button"
-            className="secondary small hub-mode"
-            aria-pressed={want3d}
-            aria-label={want3d ? t('hub.mode2d') : t('hub.mode3d')}
-            onClick={toggle3d}
-          >
-            {want3d ? '2D' : '3D'}
-          </button>
-        )}
+        <button
+          type="button"
+          className="secondary small hub-mode"
+          aria-pressed={want3d}
+          aria-label={want3d ? t('hub.mode2d') : t('hub.mode3d')}
+          onClick={toggle3d}
+        >
+          {want3d ? '2D' : '3D'}
+        </button>
         <button
           type="button"
           className="secondary small"

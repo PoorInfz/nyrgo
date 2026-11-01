@@ -293,7 +293,8 @@
     "mode3d": "Xem thị trấn 3D",
     "mode2d": "Xem thị trấn 2D",
     "loading3d": "đang tải 3D…",
-    "failed3d": "Không tải được thị trấn 3D trên thiết bị này: hiển thị 2D."
+    "failed3d": "Không tải được thị trấn 3D trên thiết bị này: hiển thị 2D.",
+    "cameraHint": "Kéo để xoay camera; chụm ngón hoặc dùng con lăn để phóng to (phím Q/R và +/−)."
   },
   "wardrobe": {
     "title": "Nhà thám hiểm của bạn",

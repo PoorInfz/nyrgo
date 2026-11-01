@@ -293,7 +293,8 @@
     "mode3d": "Kasabayı 3B göster",
     "mode2d": "Kasabayı 2B göster",
     "loading3d": "3B yükleniyor…",
-    "failed3d": "3B kasaba bu cihazda yüklenemedi: 2B gösteriliyor."
+    "failed3d": "3B kasaba bu cihazda yüklenemedi: 2B gösteriliyor.",
+    "cameraHint": "Kamerayı döndürmek için sürükle; yakınlaşmak için iki parmakla sıkıştır veya tekerleği kullan (Q/R ve +/− tuşları)."
   },
   "wardrobe": {
     "title": "Kaşifin",

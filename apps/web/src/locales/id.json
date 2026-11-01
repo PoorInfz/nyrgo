@@ -293,7 +293,8 @@
     "mode3d": "Tampilkan kota dalam 3D",
     "mode2d": "Tampilkan kota dalam 2D",
     "loading3d": "memuat 3D…",
-    "failed3d": "Kota 3D tidak bisa dimuat di perangkat ini: ditampilkan dalam 2D."
+    "failed3d": "Kota 3D tidak bisa dimuat di perangkat ini: ditampilkan dalam 2D.",
+    "cameraHint": "Seret untuk memutar kamera; cubit atau gunakan roda untuk zoom (tombol Q/R dan +/−)."
   },
   "wardrobe": {
     "title": "Penjelajahmu",

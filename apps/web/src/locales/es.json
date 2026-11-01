@@ -293,7 +293,8 @@
     "mode3d": "Ver el pueblo en 3D",
     "mode2d": "Ver el pueblo en 2D",
     "loading3d": "cargando 3D…",
-    "failed3d": "El pueblo en 3D no se pudo cargar en este dispositivo: lo ves en 2D."
+    "failed3d": "El pueblo en 3D no se pudo cargar en este dispositivo: lo ves en 2D.",
+    "cameraHint": "Arrastra para girar la cámara; pellizca o usa la rueda para acercarte (teclas Q/R y +/−)."
   },
   "wardrobe": {
     "title": "Tu explorador",

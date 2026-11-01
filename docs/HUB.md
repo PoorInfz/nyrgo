@@ -200,7 +200,7 @@ Playtesters did not like the flat town, so the **square** (Central Plaza) is now
 default on devices with WebGL 2. Nothing changed on the server: the 3D view reads the same `Town`
 state as the 2D one (the same map, collisions, doors, positions, chat and emotes), so the two can
 be switched at any moment with the **2D / 3D** button in the town's top bar (remembered on the
-device). Building interiors (gym, arena, houses) are still drawn in 2D.
+device). Since 0.47.0 the buildings' insides are in 3D too.
 
 - **Models**: KayKit packs by Kay Lousberg (kaylousberg.com), **CC0** (free for commercial use,
   no attribution required; credited here and in `apps/web/public/town3d/LICENSE.txt` anyway):
@@ -231,5 +231,18 @@ device). Building interiors (gym, arena, houses) are still drawn in 2D.
 - **Development**: `apps/web/town3d-lab.html` (Vite dev server only, not in the build) shows the
   figures (`?set=outfits`, `?clip=all`) and the square with sample players (`?set=square`,
   `&phase=night`).
-- **Not done yet**: interiors in 3D, companions as 3D models (they are their drawn sprite standing
-  in the world), camera zoom and rotation, and measured frame rates on real phones.
+- **Camera** (0.47.0): drag to turn it around the player, pinch or the mouse wheel to come closer
+  (keys Q/R and +/−). "Up" on the stick always walks away from the camera (`Town.inputYaw`).
+  When a building or tree stands between the camera and the player, the camera climbs over the
+  player and looks down instead (boxes around the big models, tested with a ray every frame).
+- **Interiors in 3D** (0.47.0, `town3d/rooms.ts`): the gym, the arena and every house, built from
+  their interior maps — walls on the map's wall areas (the front wall low, so the camera sees in),
+  the fixed pieces on its solid areas (gym: punching bags, kettlebells, a weight bench, a dumbbell
+  rack and the big screen; arena: stands, the ring on the floor, two consoles, the screen; house:
+  bed, desks, kitchen and table) and the way out as a glowing circle where the map's door is.
+  A house shows its owner's furniture where they placed it, each of the 34 pieces as a model
+  (KayKit _Furniture Bits_ and _Restaurant Bits_, recoloured to the piece's colour, or modelled in
+  code: TV, computer, aquarium, clock, arcade, crystal…), updated as soon as they move it. The
+  furniture file (`interior.glb`, ~0.35 MB) is fetched the first time someone walks into a building.
+- **Not done yet**: companions as 3D models (they are their drawn sprite standing in the world),
+  and measured frame rates on real phones.

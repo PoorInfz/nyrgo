@@ -6,12 +6,15 @@
  *   capes, a few hand items) on their shared rig, plus the animations the town uses. The game
  *   builds each player's figure from these parts.
  * - town.glb: the buildings, trees and props of the square, one named root node per model.
+ * - interior.glb: furniture and kitchen pieces for the buildings' insides, the same way.
  *
  * The packs are not kept in the repository. To rebuild:
  *
  *   git clone --depth 1 https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0 /tmp/kaykit/adv
  *   git clone --depth 1 https://github.com/KayKit-Game-Assets/KayKit-Medieval-Hexagon-Pack-1.0 /tmp/kaykit/hex
  *   git clone --depth 1 https://github.com/KayKit-Game-Assets/KayKit-City-Builder-Bits-1.0 /tmp/kaykit/city
+ *   git clone --depth 1 https://github.com/KayKit-Game-Assets/KayKit-Furniture-Bits-1.0 /tmp/kaykit/furn
+ *   git clone --depth 1 https://github.com/KayKit-Game-Assets/KayKit-Restaurant-Bits-1.0 /tmp/kaykit/rest
  *   KAYKIT=/tmp/kaykit pnpm exec tsx tools/town3d-assets.mts
  */
 import { mkdirSync } from 'node:fs';
@@ -34,6 +37,62 @@ const OUT = path.resolve(import.meta.dirname, '../apps/web/public/town3d');
 const ADV = `${ROOT}/adv/addons/kaykit_character_pack_adventures/Characters/gltf`;
 const HEX = `${ROOT}/hex/addons/kaykit_medieval_hexagon_pack/Assets/gltf`;
 const CITY = `${ROOT}/city/addons/kaykit_city_builder_bits/Assets/gltf`;
+const FURN = `${ROOT}/furn/addons/kaykit_furniture_bits/Assets/gltf`;
+const REST = `${ROOT}/rest/addons/kaykit_restaurant_bits/Assets/gltf`;
+
+/** Furniture and room pieces for the interiors (loaded only when a building is entered). */
+const INTERIOR: Record<string, string> = {
+  ...Object.fromEntries(
+    [
+      'armchair',
+      'armchair_pillows',
+      'bed_single_A',
+      'bed_single_B',
+      'bed_double_A',
+      'book_set',
+      'cabinet_medium',
+      'cabinet_medium_decorated',
+      'cabinet_small',
+      'cabinet_small_decorated',
+      'cactus_medium_A',
+      'cactus_small_A',
+      'chair_A',
+      'chair_A_wood',
+      'chair_B',
+      'chair_stool',
+      'chair_stool_wood',
+      'couch',
+      'couch_pillows',
+      'lamp_standing',
+      'lamp_table',
+      'pictureframe_large_A',
+      'pictureframe_medium',
+      'rug_oval_A',
+      'rug_rectangle_A',
+      'rug_rectangle_stripes_A',
+      'shelf_A_big',
+      'shelf_B_large_decorated',
+      'shelf_B_small_decorated',
+      'table_low',
+      'table_medium',
+      'table_medium_long',
+      'table_small',
+    ].map((n) => [n, `${FURN}/${n}.gltf`]),
+  ),
+  ...Object.fromEntries(
+    [
+      'fridge_A',
+      'kitchencounter_straight_A_decorated',
+      'kitchencounter_sink',
+      'stove_single_countertop',
+      'kitchencabinet',
+      'table_round_A',
+      'wall',
+      'wall_window_open',
+      'wall_half',
+    ].map((n) => [n, `${REST}/${n}.gltf`]),
+  ),
+};
 
 /** The clips the town plays (the rest of the pack's 76 are combat moves). */
 export const CLIPS = [
@@ -148,10 +207,11 @@ async function explorer() {
   await write(doc, 'explorer.glb');
 }
 
-async function town() {
+/** Several pack models in one file, one named root node each. */
+async function collection(models: Record<string, string>, name: string) {
   const doc = new Document();
-  const scene = doc.createScene('town');
-  for (const [id, file] of Object.entries(TOWN)) {
+  const scene = doc.createScene(name);
+  for (const [id, file] of Object.entries(models)) {
     const src = await io.read(file);
     const map = mergeDocuments(doc, src);
     for (const s of src.getRoot().listScenes()) {
@@ -165,10 +225,11 @@ async function town() {
       merged.dispose();
     }
   }
-  // every hexagon model points at its own copy of the same texture: dedup joins them
-  await write(doc, 'town.glb');
+  // every model of a pack points at its own copy of the same texture: dedup joins them
+  await write(doc, `${name}.glb`);
 }
 
 await explorer();
-await town();
+await collection(TOWN, 'town');
+await collection(INTERIOR, 'interior');
 console.warn('written to', OUT);

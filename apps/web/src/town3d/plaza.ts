@@ -19,14 +19,15 @@ export interface Square {
   tick: (t: number) => void;
   /** Where the lamps' lights are, for the evening. */
   lamps: THREE.Vector3[];
+  /** Boxes around what is big enough to hide a player (buildings, trees): the camera stays out. */
+  colliders: THREE.Box3[];
 }
 
 /**
  * A copy of a pack model, its feet on the ground, scaled to `width` units across (x), or to
  * `height` units tall when given.
  */
-function model(lib: Library, id: string, width?: number, height?: number): THREE.Object3D {
-  const src = lib.town.get(id);
+export function fit(src: THREE.Object3D | undefined, width?: number, height?: number): THREE.Group {
   const g = new THREE.Group();
   if (!src) return g;
   const o = src.clone();
@@ -43,11 +44,17 @@ function model(lib: Library, id: string, width?: number, height?: number): THREE
   g.add(o);
   g.userData.depth = size.z * k;
   g.userData.height = size.y * k;
+  g.userData.width = size.x * k;
   return g;
 }
 
+/** A town model (see `fit`). */
+function model(lib: Library, id: string, width?: number, height?: number): THREE.Object3D {
+  return fit(lib.town.get(id), width, height);
+}
+
 /** Puts `o` with its base centre on map pixel (x, y). */
-function at<T extends THREE.Object3D>(o: T, x: number, y: number, rotY = 0): T {
+export function at<T extends THREE.Object3D>(o: T, x: number, y: number, rotY = 0): T {
   o.position.set(U(x), 0, U(y));
   o.rotation.y = rotY;
   return o;
@@ -57,7 +64,7 @@ const solidBottom = (p: Placed) =>
   p.solid.length ? Math.max(...p.solid.map((r) => r.y + r.h)) : p.y + HUB_SPRITES[p.sprite].h;
 
 /** A seeded random, so the square looks the same for everyone. */
-function rand(seed: number) {
+export function rand(seed: number) {
   let s = seed;
   return () => {
     s = (s * 16807) % 2147483647;
@@ -66,7 +73,7 @@ function rand(seed: number) {
 }
 
 /** A small canvas texture of speckles over a base colour (grass, paths, stone). */
-function speckle(base: string, dots: string[], n: number, size = 128) {
+export function speckle(base: string, dots: string[], n: number, size = 128) {
   const c = document.createElement('canvas');
   c.width = c.height = size;
   const ctx = c.getContext('2d')!;
@@ -85,7 +92,7 @@ function speckle(base: string, dots: string[], n: number, size = 128) {
   return t;
 }
 
-function flowers(seed: number, w: number, d: number): THREE.Group {
+export function flowers(seed: number, w: number, d: number): THREE.Group {
   const g = new THREE.Group();
   const r = rand(seed);
   const colors = ['#ff6b8a', '#ffcf4d', '#ffffff', '#9b7bff', '#ff9a3c'];
@@ -104,7 +111,7 @@ function flowers(seed: number, w: number, d: number): THREE.Group {
   return g;
 }
 
-function board(): THREE.Group {
+export function board(): THREE.Group {
   const g = new THREE.Group();
   const wood = flat('#8a5a32');
   for (const x of [-1, 1]) {
@@ -213,7 +220,7 @@ function fountain(): { g: THREE.Group; water: THREE.Mesh; spray: THREE.Group } {
  * The portal back to the map: a glowing circle on the ground with low crystal stones around it
  * and a column of light, low enough that it never hides the players standing beside it.
  */
-function portal(width: number): {
+export function portal(width: number): {
   g: THREE.Group;
   swirl: THREE.Mesh;
   ring: THREE.Mesh;
@@ -287,7 +294,7 @@ function portal(width: number): {
  * Joins everything static that shares a material into one mesh (two pack textures and a handful
  * of flat colours): a few dozen draw calls for the whole square instead of thousands.
  */
-function batch(root: THREE.Object3D): THREE.Group {
+export function batch(root: THREE.Object3D): THREE.Group {
   root.updateMatrixWorld(true);
   const groups = new Map<THREE.Material, THREE.BufferGeometry[]>();
   root.traverse((o) => {
@@ -649,7 +656,16 @@ export function buildSquare(lib: Library, map: HubMap): Square {
     });
   });
 
+  statics.updateMatrixWorld(true);
+  const colliders: THREE.Box3[] = [];
+  for (const child of statics.children) {
+    const box = new THREE.Box3().setFromObject(child);
+    const size = box.getSize(new THREE.Vector3());
+    // the solid body, not the eaves, steps and props around it
+    if (size.y > 2.5 && Math.min(size.x, size.z) > 1.2)
+      colliders.push(box.expandByVector(new THREE.Vector3(-size.x * 0.12, 0, -size.z * 0.12)));
+  }
   const group = new THREE.Group();
   group.add(batch(statics), live);
-  return { group, tick: (t) => animated.forEach((a) => a(t)), lamps };
+  return { group, tick: (t) => animated.forEach((a) => a(t)), lamps, colliders };
 }

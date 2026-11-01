@@ -1,9 +1,11 @@
 import * as THREE from 'three';
 import type { Body, Town } from '../hub/engine';
 import { EMOTE_ICONS, roundRect, wrap } from '../hub/engine';
-import { loadLibrary, type Library } from './assets';
+import type { HubMap } from '@nyrgo/shared';
+import { loadInterior, loadLibrary, type Library } from './assets';
 import { Figure } from './explorer';
-import { U, buildSquare, type Square } from './plaza';
+import { U, buildSquare } from './plaza';
+import { buildRoom, furnitureGroup, roomKind, type Stage } from './rooms';
 
 /**
  * The square drawn in 3D. It only draws: the same Town as the 2D view moves the player, predicts
@@ -14,6 +16,7 @@ import { U, buildSquare, type Square } from './plaza';
 /** Where the camera sits relative to the player (units), and what it looks at. */
 const CAM = new THREE.Vector3(0, 14.5, 15.5);
 const LOOK_UP = 1.3;
+const UP = new THREE.Vector3(0, 1, 0);
 /** Height of a name over a figure's feet (units). */
 const HEAD = 2.8;
 /** At most this many players are drawn as figures (the nearest ones); fewer on weak devices. */
@@ -67,10 +70,26 @@ export class TownView3D {
   private camera = new THREE.PerspectiveCamera(36, 1, 0.5, 260);
   private sun: THREE.DirectionalLight;
   private hemi: THREE.HemisphereLight;
-  private square: Square;
+  /** What is drawn: the square or a building's inside, built once each. */
+  private stages = new Map<string, Stage>();
+  private stage: Stage | null = null;
+  private shown: HubMap | null = null;
+  private interior: Map<string, THREE.Object3D> | null = null;
+  private interiorLoading = false;
+  /** A house's furniture, rebuilt when the owner moves things. */
+  private furniture: { layout: unknown; group: THREE.Group; tick: (t: number) => void } | null =
+    null;
+  private phase: Phase;
   private actors = new Map<string, Actor>();
   private npcs: Figure[] = [];
   private focus = new THREE.Vector3();
+  /** The camera around the player: turn (radians) and distance (1 = default), and their targets. */
+  yaw = 0;
+  private yawTo = 0;
+  private zoom = 1;
+  private zoomTo = 1;
+  /** How far the camera currently is along its arm (pulled in when something is in the way). */
+  private arm = 1;
   private last = 0;
   private start = performance.now();
   private size = { w: 1, h: 1 };
@@ -118,13 +137,84 @@ export class TownView3D {
     this.sun.shadow.normalBias = 0.04;
     this.scene.add(this.hemi, this.sun, this.sun.target);
 
-    this.square = buildSquare(lib, town.map);
-    this.scene.add(this.square.group);
+    this.phase = phase;
+    this.lightFor(false);
+  }
 
+  /** Whether `map` can be drawn in 3D now (a building's furniture may still be on its way). */
+  canDraw(map: HubMap): boolean {
+    if (map.id === 'plaza') return true;
+    if (!roomKind(map)) return false;
+    if (this.interior) return true;
+    if (!this.interiorLoading) {
+      this.interiorLoading = true;
+      loadInterior()
+        .then((m) => (this.interior = m))
+        .catch(() => (this.interiorLoading = false));
+    }
+    return false;
+  }
+
+  private stageFor(map: HubMap): Stage {
+    const kind = map.id === 'plaza' ? 'plaza' : roomKind(map)!;
+    let st = this.stages.get(kind);
+    if (!st) {
+      st =
+        kind === 'plaza'
+          ? { ...buildSquare(this.lib, map), indoor: false }
+          : buildRoom(this.lib, this.interior!, map, kind);
+      this.stages.set(kind, st);
+    }
+    return st;
+  }
+
+  /** Day, dusk and night outdoors; warm light indoors. */
+  private lightFor(indoor: boolean) {
+    if (indoor) {
+      this.scene.background = new THREE.Color('#1a1430');
+      this.scene.fog = null;
+      this.hemi.color.set('#fff6e8');
+      this.hemi.groundColor.set('#6a5a4a');
+      this.hemi.intensity = 1.7;
+      this.sun.color.set('#fff1d6');
+      this.sun.intensity = 1.5;
+      return;
+    }
+    const p = PALETTE[this.phase];
+    this.scene.background = new THREE.Color(p.sky);
+    this.scene.fog = new THREE.Fog(p.sky, p.fog[0], p.fog[1]);
+    this.hemi.color.set(p.hemi[0]);
+    this.hemi.groundColor.set(p.hemi[1]);
+    this.hemi.intensity = p.hemi[2];
+    this.sun.color.set(p.sun[0]);
+    this.sun.intensity = p.sun[1];
+  }
+
+  /** Puts `map`'s stage on screen (after a door, or the first time). */
+  private show(map: HubMap) {
+    if (this.shown === map) return;
+    this.shown = map;
+    if (this.stage) this.scene.remove(this.stage.group);
+    for (const h of this.halos) h.removeFromParent();
+    this.halos = [];
+    for (const n of this.npcs) n.dispose();
+    this.npcs = [];
+    for (const a of this.actors.values()) {
+      a.fig.dispose();
+      a.pet?.removeFromParent();
+    }
+    this.actors.clear();
+    if (this.furniture) this.furniture.group.removeFromParent();
+    this.furniture = null;
+
+    const st = this.stageFor(map);
+    this.stage = st;
+    this.scene.add(st.group);
+    this.lightFor(st.indoor);
     // lamps glow in the evening
-    if (phase !== 'day') {
+    if (!st.indoor && this.phase !== 'day') {
       const tex = glowTexture();
-      for (const l of this.square.lamps) {
+      for (const l of st.lamps) {
         const s = new THREE.Sprite(
           new THREE.SpriteMaterial({
             map: tex,
@@ -135,21 +225,33 @@ export class TownView3D {
           }),
         );
         s.position.copy(l).setY(4.1);
-        s.scale.setScalar(phase === 'night' ? 3.2 : 2);
+        s.scale.setScalar(this.phase === 'night' ? 3.2 : 2);
         this.scene.add(s);
         this.halos.push(s);
       }
     }
-
-    for (const n of town.map.npcs) {
-      const f = new Figure(lib, n.look);
+    for (const n of map.npcs) {
+      const f = new Figure(this.lib, n.look);
       f.root.position.set(U(n.x), 0, U(n.y));
       f.root.rotation.y = n.facing === 'left' ? -0.7 : 0.7;
       this.scene.add(f.root);
       this.npcs.push(f);
     }
-    const me = town.me();
+    const me = this.town.me();
     if (me) this.focus.set(U(me.x), 0, U(me.y));
+    // indoors the camera starts a little closer
+    this.zoomTo = 1;
+  }
+
+  /** A house's furniture follows the owner's layout. */
+  private syncFurniture() {
+    const layout = this.town.furniture;
+    if (!this.interior || roomKind(this.town.map) !== 'house') return;
+    if (this.furniture?.layout === layout) return;
+    this.furniture?.group.removeFromParent();
+    const f = furnitureGroup(layout, this.interior, this.lib);
+    this.scene.add(f.group);
+    this.furniture = { layout, ...f };
   }
 
   resize(w: number, h: number, dpr: number) {
@@ -249,6 +351,30 @@ export class TownView3D {
     }
   }
 
+  /** Turns the camera around the player (radians, positive is to the left). */
+  rotateBy(d: number) {
+    this.yawTo += d;
+  }
+
+  /** Moves the camera closer (< 1) or further (> 1). */
+  zoomBy(f: number) {
+    this.zoomTo = Math.min(1.6, Math.max(0.5, this.zoomTo * f));
+  }
+
+  /** The share (0–1) of the camera's arm that is clear from `eye` along `offset`. */
+  private blocked(eye: THREE.Vector3, offset: THREE.Vector3): number {
+    const len = offset.length();
+    this.ray.set(eye, offset.clone().normalize());
+    let near = len;
+    const hit = new THREE.Vector3();
+    for (const box of this.stage?.colliders ?? []) {
+      if (box.containsPoint(eye)) continue;
+      if (this.ray.intersectBox(box, hit)) near = Math.min(near, hit.distanceTo(eye));
+    }
+    return Math.max(0, Math.min(1, (near - 0.6) / len));
+  }
+  private ray = new THREE.Ray();
+
   /** Draws the frame (the Town has already moved everyone). */
   render(now: number) {
     const dt = this.last ? Math.min(0.05, (now - this.last) / 1000) : 0;
@@ -260,9 +386,12 @@ export class TownView3D {
     }
     this.last = now;
     const t = (now - this.start) / 1000;
+    this.show(this.town.map);
+    this.syncFurniture();
     this.sync(now, dt);
     for (const n of this.npcs) n.update(dt, now, 0);
-    this.square.tick(t);
+    this.stage?.tick(t);
+    this.furniture?.tick(t);
 
     const me = this.town.me();
     if (me) {
@@ -270,8 +399,23 @@ export class TownView3D {
       if (this.focus.lengthSq() === 0) this.focus.copy(target);
       this.focus.lerp(target, Math.min(1, dt * 6));
     }
+    this.yaw += (this.yawTo - this.yaw) * Math.min(1, dt * 10);
+    this.zoom += (this.zoomTo - this.zoom) * Math.min(1, dt * 10);
     // wide screens see more of the square from a little further back
-    this.camera.position.copy(this.focus).addScaledVector(CAM, this.size.w > this.size.h ? 1.3 : 1);
+    const offset = CAM.clone()
+      .multiplyScalar(this.zoom * (this.size.w > this.size.h ? 1.3 : 1))
+      .applyAxisAngle(UP, this.yaw);
+    const eye = new THREE.Vector3(this.focus.x, LOOK_UP + 0.6, this.focus.z);
+    // never behind a building or a tree: when something is in the way the camera climbs over the
+    // player (looking down) instead, which nothing can hide
+    const want = this.blocked(eye, offset);
+    this.arm += (want - this.arm) * Math.min(1, dt * (want < this.arm ? 14 : 4));
+    const across = 0.08 + 0.92 * this.arm;
+    this.camera.position.set(
+      this.focus.x + offset.x * across,
+      this.focus.y + offset.y,
+      this.focus.z + offset.z * across,
+    );
     this.camera.lookAt(this.focus.x, LOOK_UP, this.focus.z);
     this.sun.position.copy(this.focus).add(new THREE.Vector3(9, 18, 7));
     this.sun.target.position.copy(this.focus);

@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.47.0 — 2026-11-01 — Turn the camera, walk inside in 3D
+
+- **Camera**: drag to turn it around your explorer, pinch or use the mouse wheel to zoom (keys
+  Q/R and +/−). The stick and the keys follow the camera: "up" always walks away from it. When a
+  building or a tree would hide you, the camera rises and looks down over you instead. A short
+  hint the first time (19 languages).
+- **The gym, the arena and the houses in 3D**: walls, floors and their equipment (punching bags,
+  weight bench and dumbbells; the arena's stands, ring and screen; the house's bed, desks,
+  kitchen and table), and the door out as a glowing circle. In a house, the owner's furniture
+  appears where they placed it, all 34 pieces, and follows them as they redecorate.
+- The furniture models (KayKit _Furniture Bits_ and _Restaurant Bits_, CC0) load only the first
+  time someone walks into a building.
+
 ## 0.46.0 — 2026-11-01 — The square in 3D
 
 - **The town's square in 3D**, with each player's own look:
