@@ -49,6 +49,7 @@ jobs:
           check "app furniture" "curl -fsS -o /dev/null -w '%{http_code}' https://app.nyrgo.fun/hub/f-sofa-red.webp"
           check "api leaderboards" "curl -sS -o /dev/null -w '%{http_code}' 'https://api.nyrgo.fun/v1/leaderboards?by=level' | grep -x 401"
           check "api holder"    "curl -sS -o /dev/null -w '%{http_code}' https://api.nyrgo.fun/v1/me/holder | grep -x 401"
+          check "api feedback"  "curl -sS -o /dev/null -w '%{http_code}' -X POST -H 'content-type: application/json' -d '{\"category\":\"idea\",\"body\":\"hi there\"}' https://api.nyrgo.fun/v1/feedback | grep -x 401"
           check "api public"    "curl -fsS -o /dev/null -w '%{http_code}' https://api.nyrgo.fun/v1/public/captures"
           check "site globe"    "curl -fsS -o /dev/null -w '%{http_code}' https://nyrgo.fun/globe-data.js"
           check "site demo"     "curl -fsS -o /dev/null -w '%{http_code}' https://nyrgo.fun/assets/media/battle.mp4"
